@@ -29,28 +29,57 @@ struct MenuBarView: View {
     @AppStorage("showInactive") private var showInactive: Bool = false
     @AppStorage("showOtherAdapters") private var showOtherAdapters: Bool = false
     @AppStorage("useBits") private var useBits: Bool = false
+    @AppStorage("showTopApps") private var showTopApps: Bool = false
 
     var body: some View {
         let adapters = filteredAdapters()
 
-        if adapters.isEmpty {
-            Text("No active adapters")
-                .padding(.vertical, 8)
-        } else {
-            ForEach(adapters) { adapter in
-                AdapterRow(adapter: adapter, useBits: useBits)
+        VStack(alignment: .leading, spacing: 8) {
+            if adapters.isEmpty {
+                Text("No active adapters")
+                    .padding(.vertical, 8)
+            } else {
+                ForEach(adapters) { adapter in
+                    AdapterRow(adapter: adapter, useBits: useBits)
+                }
+            }
+
+            Divider()
+
+            Button("Preferences...") {
+                PreferencesWindowController.shared.show(monitor: monitor)
+            }
+
+            Button("Quit Netfluss") {
+                NSApplication.shared.terminate(nil)
+            }
+
+            if showTopApps {
+                Divider()
+
+                Text("Top Apps")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.secondary)
+
+                if monitor.topApps.isEmpty {
+                    if let error = monitor.topAppsError, !error.isEmpty {
+                        Text("No app data: \(error)")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("No app data")
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                    }
+                } else {
+                    ForEach(monitor.topApps) { app in
+                        AppTrafficRow(app: app, useBits: useBits)
+                    }
+                }
             }
         }
-
-        Divider()
-
-        Button("Preferences...") {
-            PreferencesWindowController.shared.show(monitor: monitor)
-        }
-
-        Button("Quit Netfluss") {
-            NSApplication.shared.terminate(nil)
-        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 
     private func filteredAdapters() -> [AdapterStatus] {
@@ -60,6 +89,25 @@ struct MenuBarView: View {
             if !showInactive, adapter.rxRateBps == 0, adapter.txRateBps == 0, adapter.isUp == false { return false }
             if hidden.contains(adapter.id) { return false }
             return true
+        }
+    }
+}
+
+struct AppTrafficRow: View {
+    let app: AppTraffic
+    let useBits: Bool
+
+    var body: some View {
+        HStack {
+            Text(app.name)
+                .font(.system(size: 12))
+            Spacer()
+            Text("DL \(RateFormatter.formatRate(app.rxRateBps, useBits: useBits))")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+            Text("UL \(RateFormatter.formatRate(app.txRateBps, useBits: useBits))")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
         }
     }
 }

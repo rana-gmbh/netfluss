@@ -27,6 +27,13 @@ struct RateTotals {
     let txRateBps: Double
 }
 
+struct AppTraffic: Identifiable {
+    let id: String
+    let name: String
+    let rxRateBps: Double
+    let txRateBps: Double
+}
+
 struct InterfaceSample {
     let name: String
     let flags: UInt32

@@ -11,7 +11,8 @@ final class AppState: ObservableObject {
             "showInactive": false,
             "showOtherAdapters": false,
             "useBits": false,
-            "hiddenAdapters": []
+            "hiddenAdapters": [],
+            "showTopApps": false
         ])
         let monitor = NetworkMonitor()
         self.monitor = monitor
