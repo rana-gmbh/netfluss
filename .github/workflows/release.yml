@@ -17,7 +17,11 @@ jobs:
 
       - name: Assemble app bundle
         run: |
+          mkdir -p Netfluss.app/Contents/MacOS
+          mkdir -p Netfluss.app/Contents/Resources
           cp .build/release/Netfluss Netfluss.app/Contents/MacOS/Netfluss
+          cp Packaging/Info.plist Netfluss.app/Contents/Info.plist
+          cp Packaging/Resources/AppIcon.icns Netfluss.app/Contents/Resources/AppIcon.icns
           VERSION="${GITHUB_REF_NAME#v}"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" Netfluss.app/Contents/Info.plist
           BUILD=$(git rev-list --count HEAD)
