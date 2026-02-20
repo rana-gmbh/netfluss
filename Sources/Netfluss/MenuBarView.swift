@@ -47,7 +47,12 @@ struct MenuBarView: View {
             } else {
                 VStack(spacing: 6) {
                     ForEach(adapters) { adapter in
-                        AdapterCard(adapter: adapter, useBits: useBits)
+                        AdapterCard(
+                            adapter: adapter,
+                            useBits: useBits,
+                            isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
+                            onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
+                        )
                     }
                 }
                 .padding(.horizontal, 12)
@@ -57,7 +62,8 @@ struct MenuBarView: View {
             Divider()
             IPAddressSection(
                 externalIP: monitor.externalIP,
-                internalIP: monitor.internalIP
+                internalIP: monitor.internalIP,
+                gatewayIP: monitor.gatewayIP
             )
 
             if showTopApps {
@@ -141,6 +147,8 @@ struct NetRateCell: View {
 struct AdapterCard: View {
     let adapter: AdapterStatus
     let useBits: Bool
+    let isReconnecting: Bool
+    var onReconnect: (() -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -153,6 +161,21 @@ struct AdapterCard: View {
                     .font(.system(size: 12, weight: .semibold))
                     .lineLimit(1)
                 Spacer()
+                if let onReconnect {
+                    if isReconnecting {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: 16, height: 16)
+                    } else {
+                        Button(action: onReconnect) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Reconnect")
+                    }
+                }
                 let link = linkText()
                 if !link.isEmpty {
                     Text(link)
@@ -241,11 +264,13 @@ struct AdapterCard: View {
 struct IPAddressSection: View {
     let externalIP: String
     let internalIP: String
+    let gatewayIP: String
 
     var body: some View {
         VStack(spacing: 2) {
             IPRow(label: "External", ip: externalIP, icon: "globe")
             IPRow(label: "Internal", ip: internalIP, icon: "network")
+            IPRow(label: "Router", ip: gatewayIP, icon: "wifi.router")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -313,21 +338,26 @@ struct TopAppsSection: View {
                 .padding(.top, 8)
                 .padding(.bottom, 6)
 
-            if topApps.isEmpty {
-                Text(error.map { "Error: \($0)" } ?? "Gathering data…")
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 10)
-            } else {
-                VStack(spacing: 2) {
-                    ForEach(topApps) { app in
-                        AppTrafficRow(app: app, useBits: useBits, maxTotal: maxTotal)
+            ZStack(alignment: .topLeading) {
+                if topApps.isEmpty {
+                    Text(error.map { "Error: \($0)" } ?? "Gathering data…")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.top, 2)
+                } else {
+                    VStack(spacing: 2) {
+                        ForEach(topApps) { app in
+                            AppTrafficRow(app: app, useBits: useBits, maxTotal: maxTotal)
+                        }
                     }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 8)
                 }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 8)
             }
+            .frame(height: 166, alignment: .top)
+            .clipped()
         }
     }
 }

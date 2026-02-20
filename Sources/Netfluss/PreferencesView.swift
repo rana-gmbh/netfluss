@@ -102,9 +102,9 @@ struct PreferencesView: View {
             }
 
             Section("Top Apps") {
-                Toggle("Show top apps (uses nettop)", isOn: $showTopApps)
+                Toggle("Show top apps by network usage", isOn: $showTopApps)
                 if showTopApps {
-                    Text("If this shows no data, macOS may restrict nettop access on your system.")
+                    Text("Shows the top 10 processes ranked by current network traffic.")
                         .foregroundStyle(.secondary)
                         .font(.caption)
                 }

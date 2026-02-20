@@ -61,4 +61,4 @@ Or open `Package.swift` in Xcode, select the `Netfluss` scheme, and run.
 - Wi-Fi SSID and band use CoreWLAN. macOS may prompt for Location Services permission to expose SSID details.
 - Ethernet link speed is read from `ifi_baudrate` and may show `—` when unavailable.
 - External IP is fetched from `api.ipify.org` and cached for 60 seconds.
-- Top Apps uses `nettop -P -L 1 -n -x`. If no data appears, macOS NStat restrictions may be in effect on your system.
+- Top Apps reads per-connection byte counts from `netstat -n -b -v` and correlates them with process names via `proc_pidpath`. Only processes with active TCP/UDP connections appear in the list.

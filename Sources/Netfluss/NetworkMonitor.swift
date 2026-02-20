@@ -8,17 +8,20 @@ final class NetworkMonitor: ObservableObject {
     @Published var totals = RateTotals(rxRateBps: 0, txRateBps: 0)
     @Published var topApps: [AppTraffic] = []
     @Published var topAppsError: String? = nil
+    @Published var reconnectingAdapters: Set<String> = []
     @Published var internalIP: String = "—"
+    @Published var gatewayIP: String = "—"
     @Published var externalIP: String = "—"
 
     private var timer: DispatchSourceTimer?
     private var lastSample: [String: InterfaceSample] = [:]
     private var lastUpdate: Date?
     private var currentInterval: Double?
-    private var lastTopAppsUpdate: Date?
-    private var topAppsInFlight = false
     private var lastExternalIPUpdate: Date?
     private var externalIPInFlight = false
+    private var processSnapshot: [String: (rx: UInt64, tx: UInt64)] = [:]
+    private var processSnapshotTime: Date?
+    private var topAppsTaskInFlight = false
 
     func start(interval: Double) {
         let clamped = max(0.2, min(interval, 10.0))
@@ -55,9 +58,7 @@ final class NetworkMonitor: ObservableObject {
 
             let type = typeMap[sample.name] ?? .other
             let displayName = displayMap[sample.name] ?? sample.name
-
             let wifiInfo = wifiInfoMap[sample.name]
-
             let isUp = (sample.flags & UInt32(IFF_UP)) != 0
             let linkSpeed = type == .ethernet ? sample.baudrate : nil
 
@@ -77,7 +78,6 @@ final class NetworkMonitor: ObservableObject {
                 txRateBps: txRate
             )
             updatedAdapters.append(adapter)
-
             totalRxRate += rxRate
             totalTxRate += txRate
         }
@@ -87,12 +87,55 @@ final class NetworkMonitor: ObservableObject {
         lastSample = Dictionary(uniqueKeysWithValues: samples.map { ($0.name, $0) })
         lastUpdate = now
 
-        updateTopAppsIfNeeded()
+        updateTopApps()
         updateIPsIfNeeded()
     }
 
+    // MARK: - Top Apps
+
+    private func updateTopApps() {
+        guard UserDefaults.standard.bool(forKey: "showTopApps") else {
+            if !topApps.isEmpty { topApps = [] }
+            return
+        }
+        guard !topAppsTaskInFlight else { return }
+        topAppsTaskInFlight = true
+
+        let previousSnapshot = processSnapshot
+        let previousTime = processSnapshotTime
+
+        Task { [weak self] in
+            let sampleTime = Date()
+            let snapshot = await Task.detached(priority: .utility) {
+                ProcessNetworkSampler.sample()
+            }.value
+
+            guard let self else { return }
+            self.topAppsTaskInFlight = false
+
+            if let prevTime = previousTime, !previousSnapshot.isEmpty {
+                let elapsed = sampleTime.timeIntervalSince(prevTime)
+                if elapsed >= 0.1 {
+                    self.topApps = ProcessNetworkSampler.rates(
+                        current: snapshot,
+                        previous: previousSnapshot,
+                        elapsed: elapsed,
+                        limit: 5
+                    )
+                    self.topAppsError = nil
+                }
+            }
+
+            self.processSnapshot = snapshot
+            self.processSnapshotTime = sampleTime
+        }
+    }
+
+    // MARK: - IP Addresses
+
     private func updateIPsIfNeeded() {
         internalIP = InterfaceSampler.primaryInternalIP()
+        gatewayIP = InterfaceSampler.defaultGatewayIP()
 
         let now = Date()
         if let lastExternalIPUpdate, now.timeIntervalSince(lastExternalIPUpdate) < 60.0 { return }
@@ -114,148 +157,191 @@ final class NetworkMonitor: ObservableObject {
         return String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func updateTopAppsIfNeeded() {
-        let showTopApps = UserDefaults.standard.bool(forKey: "showTopApps")
-        guard showTopApps else {
-            if !topApps.isEmpty {
-                topApps = []
+    // MARK: - Reconnect
+
+    func reconnect(adapter: AdapterStatus) {
+        guard adapter.type == .wifi || adapter.type == .ethernet else { return }
+        reconnectingAdapters.insert(adapter.id)
+
+        Task.detached(priority: .userInitiated) { [weak self, name = adapter.name, type = adapter.type, id = adapter.id] in
+            switch type {
+            case .wifi:
+                let port = Self.hardwarePortName(for: name)
+                Self.runSync("/usr/sbin/networksetup", ["-setairportpower", port, "off"])
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                Self.runSync("/usr/sbin/networksetup", ["-setairportpower", port, "on"])
+            case .ethernet:
+                let script = "do shell script \"ifconfig \(name) down && sleep 1 && ifconfig \(name) up\" with administrator privileges"
+                Self.runSync("/usr/bin/osascript", ["-e", script])
+            case .other:
+                break
             }
-            return
+            _ = await MainActor.run { [weak self] in self?.reconnectingAdapters.remove(id) }
         }
+    }
 
-        let now = Date()
-        if let lastTopAppsUpdate, now.timeIntervalSince(lastTopAppsUpdate) < 2.0 { return }
-        guard !topAppsInFlight else { return }
-
-        topAppsInFlight = true
-        Task { [weak self] in
-            let result = await Task.detached(priority: .utility) {
-                AppTrafficSampler.fetchTopApps(limit: 10)
-            }.value
-
-            guard let self else { return }
-            switch result {
-            case .success(let apps):
-                self.topApps = apps
-                self.topAppsError = nil
-            case .failure(let error):
-                self.topApps = []
-                self.topAppsError = error.localizedDescription
+    /// Returns the hardware port display name (e.g. "Wi-Fi") for a BSD interface.
+    /// Falls back to the BSD name if not found.
+    private nonisolated static func hardwarePortName(for bsdName: String) -> String {
+        let output = runSyncOutput("/usr/sbin/networksetup", ["-listallhardwareports"])
+        var currentPort = ""
+        for line in output.split(whereSeparator: \.isNewline) {
+            let t = line.trimmingCharacters(in: .whitespaces)
+            if t.hasPrefix("Hardware Port:") {
+                currentPort = String(t.dropFirst("Hardware Port:".count)).trimmingCharacters(in: .whitespaces)
+            } else if t.hasPrefix("Device:") {
+                let dev = String(t.dropFirst("Device:".count)).trimmingCharacters(in: .whitespaces)
+                if dev == bsdName { return currentPort }
             }
-            self.lastTopAppsUpdate = Date()
-            self.topAppsInFlight = false
         }
+        return bsdName
+    }
+
+    private nonisolated static func runSync(_ path: String, _ args: [String]) {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: path)
+        p.arguments = args
+        p.standardOutput = Pipe()
+        p.standardError = Pipe()
+        try? p.run()
+        p.waitUntilExit()
+    }
+
+    private nonisolated static func runSyncOutput(_ path: String, _ args: [String]) -> String {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: path)
+        p.arguments = args
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = Pipe()
+        guard (try? p.run()) != nil else { return "" }
+        p.waitUntilExit()
+        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
     }
 }
 
-enum AppTrafficSampler {
-    enum AppTrafficError: LocalizedError {
-        case message(String)
+// MARK: - Process Network Sampler
 
-        var errorDescription: String? {
-            switch self {
-            case .message(let value):
-                return value
-            }
-        }
-    }
+enum ProcessNetworkSampler {
 
-    static func fetchTopApps(limit: Int) -> Result<[AppTraffic], AppTrafficError> {
-        let result = runNettop()
-        guard !result.output.isEmpty else {
-            let reason = result.error.isEmpty ? "nettop returned no data (NStat may be restricted)." : result.error
-            return .failure(.message(reason))
-        }
+    /// Snapshot: cumulative inet bytes per process name at a point in time.
+    /// Uses `netstat -n -b -v` which exposes per-connection rxbytes/txbytes with process:pid.
+    static func sample() -> [String: (rx: UInt64, tx: UInt64)] {
+        let output = runNetstat()
+        var pidBytes: [pid_t: (rx: UInt64, tx: UInt64)] = [:]
 
-        let lines = result.output.split(whereSeparator: \.isNewline).map(String.init)
-        guard lines.count >= 2 else { return .failure(.message("nettop output was incomplete.")) }
+        for line in output.components(separatedBy: "\n") {
+            let parts = line.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+            guard parts.count >= 8 else { continue }
+            let proto = parts[0]
+            let isTCP = proto.hasPrefix("tcp")
+            let isUDP = proto.hasPrefix("udp")
+            guard isTCP || isUDP else { continue }
 
-        let header = splitCSV(lines[0])
-        let rows = lines.dropFirst()
+            // TCP: proto recv-q send-q local foreign STATE rxbytes txbytes ...
+            // UDP: proto recv-q send-q local foreign rxbytes txbytes ...
+            let rxIndex = isTCP ? 6 : 5
+            let txIndex = isTCP ? 7 : 6
+            guard txIndex < parts.count,
+                  let rx = UInt64(parts[rxIndex]),
+                  let tx = UInt64(parts[txIndex]),
+                  rx > 0 || tx > 0 else { continue }
 
-        let processIndex = indexOfColumn(in: header, candidates: ["process", "proc", "comm", "name"])
-        let inIndex = indexOfColumn(in: header, candidates: ["bytes_in", "rx_bytes", "in_bytes", "bytes-in", "recv_bytes", "rcv_bytes"])
-        let outIndex = indexOfColumn(in: header, candidates: ["bytes_out", "tx_bytes", "out_bytes", "bytes-out", "sent_bytes", "snd_bytes"])
+            // The process:pid token ends with :digits after the last colon.
+            // IPv6 address tokens (e.g. "2a02:810a:912:d5.57207") are excluded because
+            // their last colon-suffix contains a dot ("d5.57207"), so Int32 parsing fails.
+            guard let pidToken = parts.first(where: { token in
+                token.contains(":") &&
+                token.split(separator: ":", omittingEmptySubsequences: true)
+                     .last.flatMap({ Int32($0) }) != nil
+            }) else { continue }
 
-        guard let processIndex, let inIndex, let outIndex else {
-            return .failure(.message("nettop columns not found. Output format may have changed."))
-        }
+            guard let pid = pidToken.split(separator: ":").last.flatMap({ Int32($0) }),
+                  pid > 0 else { continue }
 
-        var totals: [String: (rx: Double, tx: Double)] = [:]
-
-        for row in rows {
-            let cols = splitCSV(row)
-            if cols.count <= max(processIndex, inIndex, outIndex) { continue }
-            let name = cols[processIndex].isEmpty ? "Unknown" : cols[processIndex]
-            let rx = Double(cols[inIndex]) ?? 0
-            let tx = Double(cols[outIndex]) ?? 0
-            let current = totals[name] ?? (0, 0)
-            totals[name] = (current.rx + rx, current.tx + tx)
+            let prev = pidBytes[pid] ?? (rx: 0, tx: 0)
+            pidBytes[pid] = (rx: prev.rx + rx, tx: prev.tx + tx)
         }
 
-        let sorted = totals.map { AppTraffic(id: $0.key, name: $0.key, rxRateBps: $0.value.rx, txRateBps: $0.value.tx) }
-            .sorted { ($0.rxRateBps + $0.txRateBps) > ($1.rxRateBps + $1.txRateBps) }
-
-        return .success(Array(sorted.prefix(limit)))
-    }
-
-    private static func runNettop() -> (output: String, error: String) {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/nettop")
-        process.arguments = ["-P", "-L", "1", "-n", "-x"]
-
-        let outPipe = Pipe()
-        let errPipe = Pipe()
-        process.standardOutput = outPipe
-        process.standardError = errPipe
-
-        do {
-            try process.run()
-        } catch {
-            return ("", "Failed to run nettop.")
+        // Resolve PIDs to clean display names via proc_pidpath
+        var result: [String: (rx: UInt64, tx: UInt64)] = [:]
+        for (pid, bytes) in pidBytes {
+            let name = processName(for: pid) ?? "PID \(pid)"
+            let prev = result[name] ?? (rx: 0, tx: 0)
+            result[name] = (rx: prev.rx + bytes.rx, tx: prev.tx + bytes.tx)
         }
-
-        process.waitUntilExit()
-        let outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-        let output = String(data: outData, encoding: .utf8) ?? ""
-        let error = String(data: errData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-
-        guard process.terminationStatus == 0 else { return ("", error) }
-        return (output, error)
-    }
-
-    private static func indexOfColumn(in header: [String], candidates: [String]) -> Int? {
-        let lower = header.map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
-        for candidate in candidates {
-            if let index = lower.firstIndex(where: { $0 == candidate || $0.contains(candidate) }) {
-                return index
-            }
-        }
-        return nil
-    }
-
-    private static func splitCSV(_ line: String) -> [String] {
-        var result: [String] = []
-        var current = ""
-        var inQuotes = false
-
-        for char in line {
-            if char == "\"" {
-                inQuotes.toggle()
-                continue
-            }
-            if char == "," && !inQuotes {
-                result.append(current)
-                current = ""
-            } else {
-                current.append(char)
-            }
-        }
-        result.append(current)
         return result
     }
+
+    /// Convert two snapshots into per-second rates, sorted by total traffic.
+    static func rates(current: [String: (rx: UInt64, tx: UInt64)],
+                      previous: [String: (rx: UInt64, tx: UInt64)],
+                      elapsed: Double,
+                      limit: Int) -> [AppTraffic] {
+        var apps: [AppTraffic] = []
+
+        for (name, curr) in current {
+            let prev = previous[name] ?? (rx: 0, tx: 0)
+            // Guard against counter reset (connection closed/reopened)
+            let rxDelta = curr.rx >= prev.rx ? curr.rx - prev.rx : curr.rx
+            let txDelta = curr.tx >= prev.tx ? curr.tx - prev.tx : curr.tx
+            let rxRate = Double(rxDelta) / elapsed
+            let txRate = Double(txDelta) / elapsed
+            guard rxRate > 0 || txRate > 0 else { continue }
+            apps.append(AppTraffic(id: name, name: name, rxRateBps: rxRate, txRateBps: txRate))
+        }
+
+        return apps
+            .sorted { ($0.rxRateBps + $0.txRateBps) > ($1.rxRateBps + $1.txRateBps) }
+            .prefix(limit)
+            .map { $0 }
+    }
+
+    // MARK: - Helpers
+
+    private static func runNetstat() -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/sbin/netstat")
+        process.arguments = ["-n", "-b", "-v"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+        guard (try? process.run()) != nil else { return "" }
+        // Read before waitUntilExit to avoid pipe-buffer deadlock (~185 KB output)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    /// Best-effort process name: tries full path (for clean app names), falls back to proc_name.
+    private static func processName(for pid: pid_t) -> String? {
+        var pathBuf = [CChar](repeating: 0, count: Int(PATH_MAX) * 4)
+        let pathLen = pathBuf.withUnsafeMutableBytes {
+            proc_pidpath(pid, $0.baseAddress, UInt32($0.count))
+        }
+        if pathLen > 0 {
+            let path = pathBuf.withUnsafeBufferPointer { String(cString: $0.baseAddress!) }
+            // Strip .app bundle path: ".../Safari.app/Contents/MacOS/Safari" → "Safari"
+            let url = URL(fileURLWithPath: path)
+            if let appRange = path.range(of: ".app/", options: .caseInsensitive) {
+                let appPath = String(path[path.startIndex..<appRange.lowerBound])
+                let name = URL(fileURLWithPath: appPath).lastPathComponent
+                if !name.isEmpty { return name }
+            }
+            let name = url.deletingPathExtension().lastPathComponent
+            if !name.isEmpty { return name }
+        }
+
+        var nameBuf = [CChar](repeating: 0, count: 1024)
+        let nameLen = nameBuf.withUnsafeMutableBytes {
+            proc_name(pid, $0.baseAddress, UInt32($0.count))
+        }
+        guard nameLen > 0 else { return nil }
+        return nameBuf.withUnsafeBufferPointer { String(cString: $0.baseAddress!) }
+    }
 }
+
+// MARK: - Interface Sampler
 
 enum InterfaceSampler {
     static func fetchSamples() -> [InterfaceSample] {
@@ -343,18 +429,10 @@ enum InterfaceSampler {
     static func wifiModeString(for iface: CWInterface) -> String {
         let band = iface.wlanChannel()?.channelBand
         switch band {
-        case .band6GHz?:
-            return "Wi-Fi (6 GHz)"
-        case .band5GHz?:
-            return "Wi-Fi (5 GHz)"
-        case .band2GHz?:
-            return "Wi-Fi (2.4 GHz)"
-        case .bandUnknown?:
-            return "Wi-Fi"
-        case nil:
-            return "Wi-Fi"
-        @unknown default:
-            return "Wi-Fi"
+        case .band6GHz?: return "Wi-Fi (6 GHz)"
+        case .band5GHz?: return "Wi-Fi (5 GHz)"
+        case .band2GHz?: return "Wi-Fi (2.4 GHz)"
+        default: return "Wi-Fi"
         }
     }
 
@@ -362,6 +440,15 @@ enum InterfaceSampler {
         guard let previous, deltaTime > 0 else { return 0 }
         let delta = current >= previous ? current - previous : 0
         return Double(delta) / deltaTime
+    }
+
+    static func defaultGatewayIP() -> String {
+        let store = SCDynamicStoreCreate(nil, "Netfluss" as CFString, nil, nil)
+        let key = SCDynamicStoreKeyCreateNetworkGlobalEntity(nil, kSCDynamicStoreDomainState, kSCEntNetIPv4)
+        guard let dict = SCDynamicStoreCopyValue(store, key) as? [String: Any],
+              let router = dict[kSCPropNetIPv4Router as String] as? String,
+              !router.isEmpty else { return "—" }
+        return router
     }
 
     static func primaryInternalIP() -> String {
