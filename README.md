@@ -16,8 +16,9 @@ A minimal macOS menubar app showing real-time upload and download rates across a
   - Link speed badge (Wi-Fi TX rate or Ethernet speed)
   - Per-card DL/UL rates with coloured arrows
   - Wi-Fi frequency band (2.4 GHz / 5 GHz / 6 GHz) or "Ethernet"
-- **IP addresses** — External and Internal IP shown between adapters and Top Apps, each with a one-click copy button
-- **Top Apps** — optional section listing the top 10 processes by network traffic, with a relative usage bar per app (enable in Preferences)
+  - ↺ reconnect button — cycles the adapter off and back on (Wi-Fi: no password needed; Ethernet: macOS admin dialog)
+- **IP addresses** — External, Internal, and Router IP, each with a one-click copy button
+- **Top Apps** — optional section listing the top 5 processes by current network traffic, with a relative usage bar per app (enable in Preferences)
 - **Footer** — quick access to Preferences and Quit
 
 ### Preferences
@@ -27,7 +28,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Per-adapter visibility toggles
 - Display rates in bits or bytes
 - Upload / Download label colours (8 swatches: Green, Blue, Orange, Yellow, Teal, Purple, Pink, White)
-- Top Apps toggle (uses `nettop` — may be restricted on some systems)
+- Top Apps toggle
 
 ## Requirements
 
@@ -36,7 +37,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.2.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.3.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 **First launch — Gatekeeper**
 
