@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  notarize:
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build -c release
+
+      - name: Assemble app bundle
+        run: |
+          cp .build/release/Netfluss Netfluss.app/Contents/MacOS/Netfluss
+          VERSION="${GITHUB_REF_NAME#v}"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" Netfluss.app/Contents/Info.plist
+          BUILD=$(git rev-list --count HEAD)
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD" Netfluss.app/Contents/Info.plist
+
+      - name: Import Developer ID certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.DEVELOPER_ID_CERTIFICATE }}
+          CERTIFICATE_PASSWORD: ${{ secrets.DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          echo "$CERTIFICATE_BASE64" | base64 --decode > certificate.p12
+          security create-keychain -p "ci" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security unlock-keychain -p "ci" build.keychain
+          security import certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          security list-keychains -d user -s build.keychain
+          security set-key-partition-list -S apple-tool:,apple: -s -k "ci" build.keychain
+
+      - name: Sign
+        run: |
+          codesign --force --deep \
+            --sign "Developer ID Application: Rana GmbH (D6P24X5377)" \
+            --options=runtime \
+            --timestamp \
+            --entitlements Netfluss.entitlements \
+            Netfluss.app
+          codesign --verify --deep --strict Netfluss.app
+
+      - name: Package
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          ditto -c -k --sequesterRsrc --keepParent Netfluss.app "Netfluss-${VERSION}.zip"
+
+      - name: Notarize
+        env:
+          APPLE_ID: ${{ secrets.NOTARIZATION_APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.NOTARIZATION_PASSWORD }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcrun notarytool submit "Netfluss-${VERSION}.zip" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "D6P24X5377" \
+            --wait
+
+      - name: Staple
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          xcrun stapler staple Netfluss.app
+          rm "Netfluss-${VERSION}.zip"
+          ditto -c -k --sequesterRsrc --keepParent Netfluss.app "Netfluss-${VERSION}.zip"
+
+      - name: Upload to GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          gh release upload "v${VERSION}" "Netfluss-${VERSION}.zip" --clobber
