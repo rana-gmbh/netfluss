@@ -1,5 +1,7 @@
 # Netfluss
 
+[![GitHub release](https://img.shields.io/github/v/release/rana-gmbh/netfluss)](https://github.com/rana-gmbh/netfluss/releases/latest)
+
 A minimal macOS menubar app showing real-time upload and download rates across all active network adapters.
 
 ## Features
