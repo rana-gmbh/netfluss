@@ -44,7 +44,10 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 Download `Netfluss-1.4.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
-Netfluss is notarized and signed with a Developer ID certificate — Gatekeeper will clear it on first launch without any extra steps.
+**First launch — Gatekeeper:** right-click → Open → Open, or run once in Terminal:
+```bash
+xattr -dr com.apple.quarantine /Applications/Netfluss.app
+```
 
 ## Build from source
 
