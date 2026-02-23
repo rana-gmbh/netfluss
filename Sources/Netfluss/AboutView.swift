@@ -14,15 +14,16 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+
             // App identity
             VStack(spacing: 8) {
-                Image(nsImage: NSApp.applicationIconImage ?? NSImage())
-                    .resizable()
-                    .frame(width: 64, height: 64)
-
+                if let icon = NSApp.applicationIconImage {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .frame(width: 64, height: 64)
+                }
                 Text("Netfluss")
                     .font(.title2.bold())
-
                 HStack(spacing: 6) {
                     Text("Version \(version)")
                         .foregroundStyle(.secondary)
@@ -54,12 +55,14 @@ struct AboutView: View {
 
             Divider()
 
-            // Update section
+            // Update section — fills remaining space so it stays centered in
+            // idle state and has room for release notes when an update is found
             updateSection
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 300)
+        .frame(width: 300, height: 420)
     }
 
     @ViewBuilder
@@ -70,7 +73,6 @@ struct AboutView: View {
                 checker.check()
             }
             .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
 
         case .checking:
             HStack(spacing: 8) {
@@ -94,7 +96,7 @@ struct AboutView: View {
             }
 
         case .available(let update):
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: 10) {
                 Label("Netfluss \(update.version) is available!", systemImage: "arrow.down.circle.fill")
                     .foregroundStyle(Color.accentColor)
                     .font(.callout.bold())
@@ -103,8 +105,10 @@ struct AboutView: View {
                 if !update.releaseNotes.isEmpty {
                     ScrollView {
                         Group {
-                            if let attr = try? AttributedString(markdown: update.releaseNotes,
-                                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)) {
+                            if let attr = try? AttributedString(
+                                markdown: update.releaseNotes,
+                                options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+                            ) {
                                 Text(attr)
                             } else {
                                 Text(update.releaseNotes)
@@ -114,7 +118,7 @@ struct AboutView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(2)
                     }
-                    .frame(height: 120)
+                    .frame(height: 80)
                     .padding(8)
                     .background(.quinary, in: RoundedRectangle(cornerRadius: 6))
                 }

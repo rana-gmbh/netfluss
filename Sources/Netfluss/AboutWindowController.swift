@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class AboutWindowController: NSObject {
+final class AboutWindowController {
     static let shared = AboutWindowController()
     private var window: NSWindow?
 
@@ -14,27 +14,14 @@ final class AboutWindowController: NSObject {
         }
 
         let hosting = NSHostingController(rootView: AboutView())
-        hosting.sizingOptions = .preferredContentSize
-
         let window = NSWindow(contentViewController: hosting)
         window.title = "About Netfluss"
         window.styleMask = [.titled, .closable]
         window.isReleasedWhenClosed = false
+        window.setContentSize(NSSize(width: 300, height: 420))
         window.center()
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(windowWillClose),
-            name: NSWindow.willCloseNotification,
-            object: window
-        )
-
         self.window = window
-    }
-
-    @objc private func windowWillClose() {
-        window = nil
     }
 }
