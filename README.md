@@ -10,6 +10,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Live upload ↑ and download ↓ rates displayed in the menu bar
 - Monospaced digits for stable layout
 - Configurable colours for upload and download labels (Preferences → Appearance)
+- Configurable font size (8–16 pt) and font style (Monospaced / System / Rounded)
 
 ### Popover
 - **Header** — total Download and Upload rates shown prominently at the top
@@ -29,7 +30,9 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Show/hide other adapters (VPN, virtual interfaces)
 - Per-adapter visibility toggles
 - Display rates in bits or bytes
-- Upload / Download label colours (8 swatches: Green, Blue, Orange, Yellow, Teal, Purple, Pink, White)
+- **Themes** — System (default), Dracula, Nord, Solarized; changes popover colours and menu bar label accent colours
+- Upload / Download label colours (8 swatches, System theme only)
+- Menu bar font size (8–16 pt stepper) and font style (Monospaced / System / Rounded)
 - Top Apps toggle
 
 ## Requirements
@@ -39,17 +42,9 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.3.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.4.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
-**First launch — Gatekeeper**
-
-Because Netfluss is not notarized with an Apple Developer certificate, macOS will block it on first run. Two ways to open it:
-
-- **Right-click** `Netfluss.app` → **Open** → **Open** in the dialog
-- Or run once in Terminal, then launch normally:
-  ```bash
-  xattr -dr com.apple.quarantine /Applications/Netfluss.app
-  ```
+Netfluss is notarized and signed with a Developer ID certificate — Gatekeeper will clear it on first launch without any extra steps.
 
 ## Build from source
 
