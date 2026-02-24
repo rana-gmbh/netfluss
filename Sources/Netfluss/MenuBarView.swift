@@ -1,3 +1,20 @@
+// Copyright (C) 2026 Rana GmbH
+//
+// This file is part of Netfluss.
+//
+// Netfluss is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Netfluss is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Netfluss. If not, see <https://www.gnu.org/licenses/>.
+
 import SwiftUI
 import AppKit
 
@@ -40,6 +57,8 @@ struct MenuBarView: View {
             Divider()
 
             let adapters = filteredAdapters()
+            let customNames = (try? JSONDecoder().decode([String: String].self,
+                from: UserDefaults.standard.data(forKey: "adapterCustomNames") ?? Data())) ?? [:]
             if adapters.isEmpty {
                 Text("No active adapters")
                     .font(.system(size: 12))
@@ -52,6 +71,7 @@ struct MenuBarView: View {
                         AdapterCard(
                             adapter: adapter,
                             useBits: useBits,
+                            customName: customNames[adapter.id],
                             isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
                             onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
                         )
@@ -86,12 +106,22 @@ struct MenuBarView: View {
 
     private func filteredAdapters() -> [AdapterStatus] {
         let hidden = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
-        return monitor.adapters.filter { adapter in
+        var filtered = monitor.adapters.filter { adapter in
             if !showOtherAdapters, adapter.type == .other { return false }
             if !showInactive, adapter.rxRateBps == 0, adapter.txRateBps == 0, adapter.isUp == false { return false }
             if hidden.contains(adapter.id) { return false }
             return true
         }
+        let order = UserDefaults.standard.stringArray(forKey: "adapterOrder") ?? []
+        if !order.isEmpty {
+            filtered.sort {
+                let ai = order.firstIndex(of: $0.id) ?? Int.max
+                let bi = order.firstIndex(of: $1.id) ?? Int.max
+                return ai != bi ? ai < bi
+                     : $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+            }
+        }
+        return filtered
     }
 }
 
@@ -153,6 +183,7 @@ struct NetRateCell: View {
 struct AdapterCard: View {
     let adapter: AdapterStatus
     let useBits: Bool
+    var customName: String? = nil
     let isReconnecting: Bool
     var onReconnect: (() -> Void)? = nil
 
@@ -241,9 +272,8 @@ struct AdapterCard: View {
     }
 
     private func titleText() -> String {
-        if adapter.type == .wifi, let ssid = adapter.wifiSSID, !ssid.isEmpty {
-            return ssid
-        }
+        if let c = customName, !c.isEmpty { return c }
+        if adapter.type == .wifi, let ssid = adapter.wifiSSID, !ssid.isEmpty { return ssid }
         return adapter.displayName
     }
 
