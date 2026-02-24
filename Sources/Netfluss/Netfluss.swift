@@ -19,12 +19,25 @@ import SwiftUI
 
 @main
 struct NetflussApp: App {
-    @StateObject private var appState = AppState()
+    // AppDelegate owns AppState so that StatusBarController (which calls
+    // NSStatusBar) is created inside applicationDidFinishLaunching — after
+    // the window-server connection is established.  Initialising it earlier
+    // (e.g. as a @StateObject) causes an NSCGSPanic / EXC_BAD_INSTRUCTION
+    // crash on Intel Macs running macOS 13.
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
-        Settings {
-            PreferencesView()
-                .environmentObject(appState.monitor)
-        }
+        // PreferencesWindowController manages its own NSWindow; this scene
+        // is required by SwiftUI but produces no visible UI.
+        Settings { EmptyView() }
+    }
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var appState: AppState?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        appState = AppState()
     }
 }
