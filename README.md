@@ -4,6 +4,10 @@
 
 A minimal macOS menubar app showing real-time upload and download rates across all active network adapters.
 
+<p align="center">
+  <img src="screenshot.png" width="420" alt="Netfluss screenshot">
+</p>
+
 ## Features
 
 ### Menubar
