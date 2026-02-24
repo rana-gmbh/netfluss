@@ -1,3 +1,20 @@
+// Copyright (C) 2026 Rana GmbH
+//
+// This file is part of Netfluss.
+//
+// Netfluss is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Netfluss is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Netfluss. If not, see <https://www.gnu.org/licenses/>.
+
 import AppKit
 import Combine
 import SwiftUI
@@ -71,6 +88,24 @@ final class StatusBarController: NSObject, ObservableObject {
     }
 
     private func updateLabel() {
+        let mode = UserDefaults.standard.string(forKey: "menuBarMode") ?? "rates"
+
+        if mode == "icon" {
+            stackView.isHidden = true
+            let cfg = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
+            statusItem.button?.image = NSImage(
+                systemSymbolName: "network",
+                accessibilityDescription: "Network")?.withSymbolConfiguration(cfg)
+            statusItem.button?.imagePosition = .imageOnly
+            statusItem.length = NSStatusItem.squareLength
+            return
+        }
+
+        // mode == "rates" — restore and continue as before
+        stackView.isHidden = false
+        statusItem.button?.image = nil
+        statusItem.button?.imagePosition = .noImage
+
         let useBits = UserDefaults.standard.bool(forKey: "useBits")
         let upText = "↑ \(RateFormatter.formatRate(monitor.totals.txRateBps, useBits: useBits))"
         let downText = "↓ \(RateFormatter.formatRate(monitor.totals.rxRateBps, useBits: useBits))"

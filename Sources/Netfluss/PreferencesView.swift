@@ -1,3 +1,20 @@
+// Copyright (C) 2026 Rana GmbH
+//
+// This file is part of Netfluss.
+//
+// Netfluss is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Netfluss is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Netfluss. If not, see <https://www.gnu.org/licenses/>.
+
 import SwiftUI
 
 private let colorOptions: [(id: String, label: String)] = [
@@ -88,7 +105,13 @@ struct PreferencesView: View {
     @AppStorage("theme") private var themeName: String = "system"
     @AppStorage("menuBarFontSize") private var menuBarFontSize: Double = 10.0
     @AppStorage("menuBarFontDesign") private var menuBarFontDesign: String = "monospaced"
+    @AppStorage("menuBarMode") private var menuBarMode: String = "rates"
     @State private var hiddenAdapters: Set<String> = []
+    @State private var adapterNames: [String: String] = [:]
+    @State private var adapterOrder: [String] = []
+    @State private var draggingID: String? = nil
+    @State private var dragBaseOrder: [String] = []
+    @State private var renamingAdapter: AdapterStatus? = nil
 
     @EnvironmentObject private var monitor: NetworkMonitor
 
@@ -109,12 +132,56 @@ struct PreferencesView: View {
             }
 
             Section("Adapters") {
-                if adapterRows.isEmpty {
+                if sortedAdapterRows.isEmpty {
                     Text("No adapters match current filters.")
                         .foregroundStyle(.secondary)
                 } else {
-                    ForEach(adapterRows, id: \.id) { adapter in
-                        Toggle(adapter.displayName, isOn: bindingFor(adapter.id))
+                    ForEach(sortedAdapterRows, id: \.id) { adapter in
+                        HStack(spacing: 8) {
+                            Image(systemName: "line.3.horizontal")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.tertiary)
+                                .frame(width: 16)
+                            Toggle("", isOn: bindingFor(adapter.id)).labelsHidden()
+                            Text(adapterDisplayLabel(for: adapter))
+                                .lineLimit(1)
+                            Spacer()
+                            Text(adapter.id)
+                                .font(.caption2).foregroundStyle(.tertiary)
+                            Button {
+                                renamingAdapter = adapter
+                            } label: {
+                                Image(systemName: "pencil")
+                                    .font(.system(size: 11))
+                            }
+                            .buttonStyle(.borderless)
+                            .help("Rename")
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.accentColor.opacity(draggingID == adapter.id ? 0.12 : 0))
+                        )
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 4, coordinateSpace: .global)
+                                .onChanged { value in
+                                    if draggingID != adapter.id {
+                                        draggingID = adapter.id
+                                        dragBaseOrder = sortedAdapterRows.map(\.id)
+                                    }
+                                    let rowH: CGFloat = 36
+                                    let shift = Int((value.translation.height / rowH).rounded())
+                                    guard let src = dragBaseOrder.firstIndex(of: adapter.id) else { return }
+                                    let dst = max(0, min(dragBaseOrder.count - 1, src + shift))
+                                    var newOrder = dragBaseOrder
+                                    newOrder.move(fromOffsets: IndexSet(integer: src),
+                                                  toOffset: dst > src ? dst + 1 : dst)
+                                    if adapterOrder != newOrder { adapterOrder = newOrder }
+                                }
+                                .onEnded { _ in
+                                    UserDefaults.standard.set(adapterOrder, forKey: "adapterOrder")
+                                    draggingID = nil
+                                }
+                        )
                     }
                 }
             }
@@ -141,6 +208,14 @@ struct PreferencesView: View {
                     LabeledContent("Download ↓") {
                         ColorSwatchPicker(selection: $downloadColor)
                     }
+                }
+                LabeledContent("Menu bar") {
+                    Picker("", selection: $menuBarMode) {
+                        Text("Rates").tag("rates")
+                        Text("Icon").tag("icon")
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(maxWidth: 160)
                 }
                 LabeledContent("Menu bar size") {
                     HStack(spacing: 8) {
@@ -172,9 +247,23 @@ struct PreferencesView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 640)
+        .frame(width: 420, height: 700)
         .onAppear {
             hiddenAdapters = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
+            adapterNames = loadAdapterNames()
+            adapterOrder = UserDefaults.standard.stringArray(forKey: "adapterOrder") ?? []
+        }
+        .sheet(item: $renamingAdapter) { adapter in
+            RenameAdapterSheet(
+                adapter: adapter,
+                currentName: adapterNames[adapter.id] ?? "",
+                onSave: { newName in
+                    adapterNames[adapter.id] = newName.isEmpty ? nil : newName
+                    saveAdapterNames(adapterNames)
+                    renamingAdapter = nil
+                },
+                onCancel: { renamingAdapter = nil }
+            )
         }
     }
 
@@ -186,6 +275,22 @@ struct PreferencesView: View {
                 if !showInactive, adapter.rxRateBps == 0, adapter.txRateBps == 0, adapter.isUp == false { return false }
                 return true
             }
+    }
+
+    private var sortedAdapterRows: [AdapterStatus] {
+        let rows = adapterRows
+        if adapterOrder.isEmpty { return rows }
+        return rows.sorted {
+            let ai = adapterOrder.firstIndex(of: $0.id) ?? Int.max
+            let bi = adapterOrder.firstIndex(of: $1.id) ?? Int.max
+            return ai != bi ? ai < bi
+                 : $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
+        }
+    }
+
+    private func adapterDisplayLabel(for adapter: AdapterStatus) -> String {
+        if let custom = adapterNames[adapter.id], !custom.isEmpty { return custom }
+        return adapter.displayName
     }
 
     private func bindingFor(_ id: String) -> Binding<Bool> {
@@ -200,5 +305,47 @@ struct PreferencesView: View {
                 UserDefaults.standard.set(Array(hiddenAdapters), forKey: "hiddenAdapters")
             }
         )
+    }
+
+    private func loadAdapterNames() -> [String: String] {
+        guard let data = UserDefaults.standard.data(forKey: "adapterCustomNames"),
+              let dict = try? JSONDecoder().decode([String: String].self, from: data)
+        else { return [:] }
+        return dict
+    }
+
+    private func saveAdapterNames(_ names: [String: String]) {
+        UserDefaults.standard.set(try? JSONEncoder().encode(names), forKey: "adapterCustomNames")
+    }
+}
+
+// MARK: - Rename Sheet
+
+struct RenameAdapterSheet: View {
+    let adapter: AdapterStatus
+    let currentName: String
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    @State private var text: String = ""
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Rename \"\(adapter.displayName)\"")
+                .font(.headline)
+            TextField("Custom name", text: $text)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 220)
+                .onSubmit { onSave(text) }
+            HStack(spacing: 12) {
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") { onSave(text) }
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .onAppear { text = currentName }
     }
 }
