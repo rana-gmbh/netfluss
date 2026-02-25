@@ -50,68 +50,78 @@ struct MenuBarView: View {
     @AppStorage("theme") private var themeName: String = "system"
     @AppStorage("totalsOnlyVisibleAdapters") private var totalsOnlyVisibleAdapters: Bool = false
 
+    // Height for one adapter card (padding + title row + spacing + rates row) + inter-card spacing.
+    // Used to size the scroll area to show exactly 6 cards before scrolling kicks in.
+    private static let cardHeight: CGFloat = 58   // per card incl. vertical padding
+    private static let cardSpacing: CGFloat = 6   // VStack spacing between cards
+    private static let adapterListPadding: CGFloat = 20 // .padding(.vertical, 10) top+bottom
+    private static func adapterScrollHeight(for count: Int) -> CGFloat {
+        let n = CGFloat(min(count, 6))
+        return n * cardHeight + max(0, n - 1) * cardSpacing + adapterListPadding
+    }
+
     var body: some View {
         let theme = AppTheme.named(themeName)
         let adapters = filteredAdapters()
         let headerTotals = totalsOnlyVisibleAdapters ? totals(for: adapters) : monitor.totals
-        let maxHeight = (NSScreen.main?.visibleFrame.height ?? 800) - 60
+        let customNames = (try? JSONDecoder().decode([String: String].self,
+            from: UserDefaults.standard.data(forKey: "adapterCustomNames") ?? Data())) ?? [:]
+
         VStack(spacing: 0) {
             TotalRatesHeader(totals: headerTotals, useBits: useBits)
 
             Divider()
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    let customNames = (try? JSONDecoder().decode([String: String].self,
-                        from: UserDefaults.standard.data(forKey: "adapterCustomNames") ?? Data())) ?? [:]
-                    if adapters.isEmpty {
-                        Text("No active adapters")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                    } else {
-                        VStack(spacing: 6) {
-                            ForEach(adapters) { adapter in
-                                AdapterCard(
-                                    adapter: adapter,
-                                    useBits: useBits,
-                                    customName: customNames[adapter.id],
-                                    isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
-                                    onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
-                                )
-                            }
+            if adapters.isEmpty {
+                Text("No active adapters")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            } else {
+                ScrollView {
+                    VStack(spacing: cardSpacing) {
+                        ForEach(adapters) { adapter in
+                            AdapterCard(
+                                adapter: adapter,
+                                useBits: useBits,
+                                customName: customNames[adapter.id],
+                                isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
+                                onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
+                            )
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
                     }
-
-                    Divider()
-                    IPAddressSection(
-                        externalIP: monitor.externalIP,
-                        internalIP: monitor.internalIP,
-                        gatewayIP: monitor.gatewayIP
-                    )
-
-                    if showTopApps {
-                        Divider()
-                        TopAppsSection(
-                            topApps: monitor.topApps,
-                            error: monitor.topAppsError,
-                            useBits: useBits
-                        )
-                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                 }
+                .scrollIndicators(adapters.count > 6 ? .visible : .never)
+                .frame(height: Self.adapterScrollHeight(for: adapters.count))
             }
-            .scrollIndicators(.never)
+
+            Divider()
+            IPAddressSection(
+                externalIP: monitor.externalIP,
+                internalIP: monitor.internalIP,
+                gatewayIP: monitor.gatewayIP
+            )
+
+            if showTopApps {
+                Divider()
+                TopAppsSection(
+                    topApps: monitor.topApps,
+                    error: monitor.topAppsError,
+                    useBits: useBits
+                )
+            }
 
             Divider()
             FooterBar()
         }
-        .frame(maxHeight: maxHeight)
         .background(theme.backgroundColor ?? .clear)
         .environment(\.appTheme, theme)
     }
+
+    private var cardSpacing: CGFloat { Self.cardSpacing }
 
     private func filteredAdapters() -> [AdapterStatus] {
         let hidden = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
