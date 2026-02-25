@@ -16,6 +16,7 @@
 // along with Netfluss. If not, see <https://www.gnu.org/licenses/>.
 
 import SwiftUI
+import ServiceManagement
 
 private let colorOptions: [(id: String, label: String)] = [
     ("green", "Green"), ("blue", "Blue"), ("orange", "Orange"), ("yellow", "Yellow"),
@@ -113,6 +114,7 @@ struct PreferencesView: View {
     @State private var draggingID: String? = nil
     @State private var dragBaseOrder: [String] = []
     @State private var renamingAdapter: AdapterStatus? = nil
+    @State private var launchAtLogin: Bool = false
 
     @EnvironmentObject private var monitor: NetworkMonitor
 
@@ -251,13 +253,32 @@ struct PreferencesView: View {
                         .font(.caption)
                 }
             }
+
+            Section("Launch") {
+                Toggle("Launch at login", isOn: Binding(
+                    get: { launchAtLogin },
+                    set: { enable in
+                        do {
+                            if enable {
+                                try SMAppService.mainApp.register()
+                            } else {
+                                try SMAppService.mainApp.unregister()
+                            }
+                        } catch {
+                            // Silently ignore — expected in dev builds outside /Applications
+                        }
+                        launchAtLogin = SMAppService.mainApp.status == .enabled
+                    }
+                ))
+            }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 700)
+        .frame(width: 420, height: 760)
         .onAppear {
             hiddenAdapters = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
             adapterNames = loadAdapterNames()
             adapterOrder = UserDefaults.standard.stringArray(forKey: "adapterOrder") ?? []
+            launchAtLogin = SMAppService.mainApp.status == .enabled
         }
         .sheet(item: $renamingAdapter) { adapter in
             RenameAdapterSheet(
