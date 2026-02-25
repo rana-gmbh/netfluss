@@ -54,54 +54,61 @@ struct MenuBarView: View {
         let theme = AppTheme.named(themeName)
         let adapters = filteredAdapters()
         let headerTotals = totalsOnlyVisibleAdapters ? totals(for: adapters) : monitor.totals
+        let maxHeight = (NSScreen.main?.visibleFrame.height ?? 800) - 60
         VStack(spacing: 0) {
             TotalRatesHeader(totals: headerTotals, useBits: useBits)
 
             Divider()
 
-            let customNames = (try? JSONDecoder().decode([String: String].self,
-                from: UserDefaults.standard.data(forKey: "adapterCustomNames") ?? Data())) ?? [:]
-            if adapters.isEmpty {
-                Text("No active adapters")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            } else {
-                VStack(spacing: 6) {
-                    ForEach(adapters) { adapter in
-                        AdapterCard(
-                            adapter: adapter,
-                            useBits: useBits,
-                            customName: customNames[adapter.id],
-                            isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
-                            onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
+            ScrollView {
+                VStack(spacing: 0) {
+                    let customNames = (try? JSONDecoder().decode([String: String].self,
+                        from: UserDefaults.standard.data(forKey: "adapterCustomNames") ?? Data())) ?? [:]
+                    if adapters.isEmpty {
+                        Text("No active adapters")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                    } else {
+                        VStack(spacing: 6) {
+                            ForEach(adapters) { adapter in
+                                AdapterCard(
+                                    adapter: adapter,
+                                    useBits: useBits,
+                                    customName: customNames[adapter.id],
+                                    isReconnecting: monitor.reconnectingAdapters.contains(adapter.id),
+                                    onReconnect: adapter.type != .other ? { monitor.reconnect(adapter: adapter) } : nil
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                    }
+
+                    Divider()
+                    IPAddressSection(
+                        externalIP: monitor.externalIP,
+                        internalIP: monitor.internalIP,
+                        gatewayIP: monitor.gatewayIP
+                    )
+
+                    if showTopApps {
+                        Divider()
+                        TopAppsSection(
+                            topApps: monitor.topApps,
+                            error: monitor.topAppsError,
+                            useBits: useBits
                         )
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
             }
-
-            Divider()
-            IPAddressSection(
-                externalIP: monitor.externalIP,
-                internalIP: monitor.internalIP,
-                gatewayIP: monitor.gatewayIP
-            )
-
-            if showTopApps {
-                Divider()
-                TopAppsSection(
-                    topApps: monitor.topApps,
-                    error: monitor.topAppsError,
-                    useBits: useBits
-                )
-            }
+            .scrollIndicators(.never)
 
             Divider()
             FooterBar()
         }
+        .frame(maxHeight: maxHeight)
         .background(theme.backgroundColor ?? .clear)
         .environment(\.appTheme, theme)
     }
