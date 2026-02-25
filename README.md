@@ -17,6 +17,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Configurable colours for upload and download labels (Preferences → Appearance)
 - Configurable font size (8–16 pt) and font style (Monospaced / System / Rounded)
 - **Icon mode** — switch to a single network globe SF Symbol instead of rate text (Preferences → Appearance → Menu bar)
+- **Launch at login** — toggle in Preferences → Launch
 
 ### Popover
 - **Header** — total Download and Upload rates shown prominently at the top
@@ -35,12 +36,15 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Show/hide inactive adapters
 - Show/hide other adapters (VPN, virtual interfaces)
 - Per-adapter visibility toggles, custom names (pencil button), and drag-to-reorder (≡ handle) — order and names are reflected in the popover
+- Adapter list scrolls when more than 6 interfaces are shown
+- Option to exclude hidden adapters from the total bandwidth shown in the header and menu bar
 - Display rates in bits or bytes
 - **Themes** — System (default), Dracula, Nord, Solarized; changes popover colours and menu bar label accent colours
 - Upload / Download label colours (8 swatches, System theme only)
 - **Menu bar display** — Rates (live ↑/↓ numbers, default) or Icon (network globe symbol)
 - Menu bar font size (8–16 pt stepper) and font style (Monospaced / System / Rounded)
 - Top Apps toggle
+- **Launch at login** toggle
 
 ### About
 - Version number with link to release notes on GitHub
@@ -54,7 +58,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.6.1.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.7.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 Netfluss is notarized and signed with a Developer ID — Gatekeeper will clear it automatically on first launch.
 
