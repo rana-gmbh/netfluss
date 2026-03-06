@@ -49,7 +49,8 @@ final class AppState {
             "showDNSSwitcher": false,
             "customDNSPresets": Data(),
             "hiddenDNSPresets": [],
-            "dnsPresetOrder": []
+            "dnsPresetOrder": [],
+            "useTouchID": true
         ])
         let monitor = NetworkMonitor()
         self.monitor = monitor

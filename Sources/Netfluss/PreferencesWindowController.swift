@@ -34,11 +34,14 @@ final class PreferencesWindowController {
         let view = PreferencesView()
             .environmentObject(monitor)
         let hosting = NSHostingController(rootView: view)
+        hosting.sizingOptions = []
 
         let window = NSWindow(contentViewController: hosting)
         window.title = "Preferences"
-        window.styleMask = [.titled, .closable, .miniaturizable]
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
         window.setContentSize(NSSize(width: 420, height: 820))
+        window.minSize = NSSize(width: 420, height: 400)
+        window.maxSize = NSSize(width: 600, height: 10000)
         window.isReleasedWhenClosed = false
         window.center()
         window.makeKeyAndOrderFront(nil)

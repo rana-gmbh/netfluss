@@ -115,6 +115,7 @@ struct PreferencesView: View {
     @AppStorage("topAppsGracePeriodSeconds") private var topAppsGracePeriodSeconds: Double = 3.0
     @AppStorage("externalIPv6") private var externalIPv6: Bool = false
     @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
+    @AppStorage("useTouchID") private var useTouchID: Bool = true
     @State private var hiddenAdapters: Set<String> = []
     @State private var adapterNames: [String: String] = [:]
     @State private var adapterOrder: [String] = []
@@ -316,7 +317,8 @@ struct PreferencesView: View {
             Section("DNS Switcher") {
                 Toggle("Show DNS switcher in popover", isOn: $showDNSSwitcher)
                 if showDNSSwitcher {
-                    Text("Switch between DNS providers directly from the popover. Changing DNS requires an admin password.")
+                    Toggle("Use Touch ID for authentication", isOn: $useTouchID)
+                    Text("When enabled, Touch ID is used to authenticate DNS changes and Ethernet reconnects. Falls back to admin password if Touch ID is unavailable.")
                         .foregroundStyle(.secondary)
                         .font(.caption)
 
@@ -412,7 +414,7 @@ struct PreferencesView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 880)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .onAppear {
             hiddenAdapters = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
             adapterNames = loadAdapterNames()
