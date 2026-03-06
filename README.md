@@ -1,6 +1,7 @@
 # Netfluss
 
 [![GitHub release](https://img.shields.io/github/v/release/rana-gmbh/netfluss)](https://github.com/rana-gmbh/netfluss/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/rana-gmbh/netfluss/total)](https://github.com/rana-gmbh/netfluss/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 A minimal macOS menubar app showing real-time upload and download rates across all active network adapters.
