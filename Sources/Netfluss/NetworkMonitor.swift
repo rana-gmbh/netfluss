@@ -30,6 +30,10 @@ final class NetworkMonitor: ObservableObject {
     @Published var gatewayIP: String = "—"
     @Published var externalIP: String = "—"
     @Published var externalIPCountryCode: String = ""
+    @Published var recentAppNames: [String] = []
+    @Published var currentDNSServers: [String] = []
+    @Published var activeDNSPresetID: String? = nil
+    @Published var dnsChanging = false
 
     private var timer: DispatchSourceTimer?
     private var lastSample: [String: InterfaceSample] = [:]
@@ -42,6 +46,7 @@ final class NetworkMonitor: ObservableObject {
     private var topAppsTaskInFlight = false
     private var adapterLastActiveTime: [String: Date] = [:]
     private var topAppLastActiveTime: [String: (lastSeen: Date, rxRate: Double, txRate: Double)] = [:]
+    private var allAppLastSeen: [String: Date] = [:]
 
     func start(interval: Double) {
         let clamped = max(0.2, min(interval, 10.0))
@@ -171,16 +176,28 @@ final class NetworkMonitor: ObservableObject {
             if let prevTime = previousTime, !previousSnapshot.isEmpty {
                 let elapsed = sampleTime.timeIntervalSince(prevTime)
                 if elapsed >= 0.1 {
-                    var apps = ProcessNetworkSampler.rates(
+                    let hiddenApps = Set(UserDefaults.standard.stringArray(forKey: "hiddenApps") ?? [])
+                    let now = Date()
+
+                    // Get all active apps (unlimited) to track recently seen names
+                    let allActive = ProcessNetworkSampler.rates(
                         current: snapshot,
                         previous: previousSnapshot,
                         elapsed: elapsed,
-                        limit: 5
+                        limit: Int.max
                     )
+                    for app in allActive {
+                        self.allAppLastSeen[app.name] = now
+                    }
+                    // Expire entries older than 60 seconds and publish sorted list
+                    self.allAppLastSeen = self.allAppLastSeen.filter { now.timeIntervalSince($0.value) < 60 }
+                    self.recentAppNames = self.allAppLastSeen.keys.sorted()
+
+                    // Top 5 visible apps (filter out hidden)
+                    var apps = Array(allActive.filter { !hiddenApps.contains($0.name) }.prefix(5))
 
                     let topAppsGraceEnabled = UserDefaults.standard.bool(forKey: "topAppsGracePeriodEnabled")
                     let topAppsGraceSeconds = UserDefaults.standard.double(forKey: "topAppsGracePeriodSeconds")
-                    let now = Date()
 
                     // Update last-active tracking for currently active apps
                     let activeNames = Set(apps.map(\.name))
@@ -192,6 +209,7 @@ final class NetworkMonitor: ObservableObject {
                         // Re-insert recently-active apps that are no longer active
                         for (name, entry) in self.topAppLastActiveTime {
                             if activeNames.contains(name) { continue }
+                            if hiddenApps.contains(name) { continue }
                             let deadline = entry.lastSeen.addingTimeInterval(topAppsGraceSeconds)
                             if now < deadline {
                                 apps.append(AppTraffic(id: name, name: name, rxRateBps: 0, txRateBps: 0))
@@ -227,6 +245,9 @@ final class NetworkMonitor: ObservableObject {
     private func updateIPsIfNeeded() {
         internalIP = InterfaceSampler.primaryInternalIP()
         gatewayIP = InterfaceSampler.defaultGatewayIP()
+        if UserDefaults.standard.bool(forKey: "showDNSSwitcher") {
+            updateCurrentDNS()
+        }
 
         let now = Date()
         if let lastExternalIPUpdate, now.timeIntervalSince(lastExternalIPUpdate) < 60.0 { return }
@@ -244,14 +265,115 @@ final class NetworkMonitor: ObservableObject {
     }
 
     private static func fetchExternalIP() async -> (ip: String, countryCode: String)? {
-        guard let url = URL(string: "https://ipapi.co/json/") else { return nil }
-        var request = URLRequest(url: url)
-        request.setValue("Netfluss/1.0", forHTTPHeaderField: "User-Agent")
-        guard let (data, _) = try? await URLSession.shared.data(for: request) else { return nil }
-        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let ip = json["ip"] as? String else { return nil }
-        let country = json["country_code"] as? String ?? ""
-        return (ip: ip, countryCode: country)
+        // Primary: ipwho.is (IP + country code)
+        if let url = URL(string: "https://ipwho.is/") {
+            var request = URLRequest(url: url, timeoutInterval: 8)
+            request.setValue("Netfluss/1.0", forHTTPHeaderField: "User-Agent")
+            if let (data, _) = try? await URLSession.shared.data(for: request),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let ip = json["ip"] as? String {
+                let country = json["country_code"] as? String ?? ""
+                return (ip: ip, countryCode: country)
+            }
+        }
+        // Fallback: api.ipify.org (IP only, very reliable)
+        if let url = URL(string: "https://api.ipify.org?format=json") {
+            let request = URLRequest(url: url, timeoutInterval: 8)
+            if let (data, _) = try? await URLSession.shared.data(for: request),
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let ip = json["ip"] as? String {
+                return (ip: ip, countryCode: "")
+            }
+        }
+        return nil
+    }
+
+    // MARK: - DNS
+
+    private func updateCurrentDNS() {
+        let service = Self.primaryNetworkService()
+        guard !service.isEmpty else { return }
+        let output = Self.runSyncOutput("/usr/sbin/networksetup", ["-getdnsservers", service])
+        let trimmed = output.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.contains("aren't any DNS") || trimmed.isEmpty {
+            currentDNSServers = []
+        } else {
+            currentDNSServers = trimmed.split(whereSeparator: \.isNewline)
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }
+        }
+        activeDNSPresetID = matchPreset(servers: currentDNSServers)
+    }
+
+    private func matchPreset(servers: [String]) -> String? {
+        let allPresets = Self.allDNSPresets()
+        for preset in allPresets {
+            if preset.servers.isEmpty && servers.isEmpty { return preset.id }
+            if preset.servers == servers { return preset.id }
+        }
+        return nil
+    }
+
+    static func allDNSPresets() -> [DNSPreset] {
+        var presets = DNSPreset.builtIn
+        if let data = UserDefaults.standard.data(forKey: "customDNSPresets"),
+           let custom = try? JSONDecoder().decode([DNSPreset].self, from: data) {
+            presets += custom
+        }
+        let hidden = Set(UserDefaults.standard.stringArray(forKey: "hiddenDNSPresets") ?? [])
+        presets.removeAll { hidden.contains($0.id) }
+        let order = UserDefaults.standard.stringArray(forKey: "dnsPresetOrder") ?? []
+        if !order.isEmpty {
+            presets.sort {
+                let ai = order.firstIndex(of: $0.id) ?? Int.max
+                let bi = order.firstIndex(of: $1.id) ?? Int.max
+                return ai < bi
+            }
+        }
+        return presets
+    }
+
+    func applyDNS(preset: DNSPreset) {
+        guard !dnsChanging else { return }
+        // Validate server addresses: only allow IP-safe characters
+        let validChars = CharacterSet(charactersIn: "0123456789abcdefABCDEF.:[]")
+        for s in preset.servers {
+            guard s.unicodeScalars.allSatisfy({ validChars.contains($0) }) else { return }
+        }
+        dnsChanging = true
+
+        let servers = preset.servers
+        Task.detached(priority: .userInitiated) { [weak self] in
+            let service = Self.primaryNetworkService()
+            guard !service.isEmpty else {
+                _ = await MainActor.run { [weak self] in self?.dnsChanging = false }
+                return
+            }
+
+            let args: String
+            if servers.isEmpty {
+                args = "/usr/sbin/networksetup -setdnsservers '\(service)' empty"
+            } else {
+                let joined = servers.joined(separator: " ")
+                args = "/usr/sbin/networksetup -setdnsservers '\(service)' \(joined)"
+            }
+            let script = "do shell script \"\(args)\" with administrator privileges"
+            Self.runSync("/usr/bin/osascript", ["-e", script])
+
+            _ = await MainActor.run { [weak self] in
+                self?.dnsChanging = false
+                self?.updateCurrentDNS()
+            }
+        }
+    }
+
+    private nonisolated static func primaryNetworkService() -> String {
+        // Find the primary interface from SCDynamicStore
+        let store = SCDynamicStoreCreate(nil, "Netfluss.DNS" as CFString, nil, nil)
+        let key = SCDynamicStoreKeyCreateNetworkGlobalEntity(nil, kSCDynamicStoreDomainState, kSCEntNetIPv4)
+        guard let dict = SCDynamicStoreCopyValue(store, key) as? [String: Any],
+              let primaryInterface = dict["PrimaryInterface"] as? String else { return "" }
+        return hardwarePortName(for: primaryInterface)
     }
 
     // MARK: - Reconnect

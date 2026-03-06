@@ -113,6 +113,7 @@ struct PreferencesView: View {
     @AppStorage("adapterGracePeriodSeconds") private var adapterGracePeriodSeconds: Double = 3.0
     @AppStorage("topAppsGracePeriodEnabled") private var topAppsGracePeriodEnabled: Bool = false
     @AppStorage("topAppsGracePeriodSeconds") private var topAppsGracePeriodSeconds: Double = 3.0
+    @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
     @State private var hiddenAdapters: Set<String> = []
     @State private var adapterNames: [String: String] = [:]
     @State private var adapterOrder: [String] = []
@@ -120,6 +121,13 @@ struct PreferencesView: View {
     @State private var dragBaseOrder: [String] = []
     @State private var renamingAdapter: AdapterStatus? = nil
     @State private var launchAtLogin: Bool = false
+    @State private var hiddenApps: [String] = []
+    @State private var showHiddenAppsSheet = false
+    @State private var customDNSPresets: [DNSPreset] = []
+    @State private var hiddenDNSPresets: Set<String> = []
+    @State private var dnsPresetOrder: [String] = []
+    @State private var dnsDraggingID: String? = nil
+    @State private var dnsDragBaseOrder: [String] = []
 
     @EnvironmentObject private var monitor: NetworkMonitor
 
@@ -288,6 +296,91 @@ struct PreferencesView: View {
                             .frame(maxWidth: 160)
                         }
                     }
+                    HStack {
+                        Button("Apps to Hide\(hiddenApps.isEmpty ? "" : " (\(hiddenApps.count))")…") {
+                            showHiddenAppsSheet = true
+                        }
+                    }
+                }
+            }
+
+            Section("DNS Switcher") {
+                Toggle("Show DNS switcher in popover", isOn: $showDNSSwitcher)
+                if showDNSSwitcher {
+                    Text("Switch between DNS providers directly from the popover. Changing DNS requires an admin password.")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+
+                    ForEach(sortedDNSPresets) { preset in
+                        HStack(spacing: 8) {
+                            Image(systemName: "line.3.horizontal")
+                                .font(.system(size: 12))
+                                .foregroundStyle(.tertiary)
+                                .frame(width: 16)
+                            Toggle("", isOn: dnsBindingFor(preset.id)).labelsHidden()
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(preset.name)
+                                    .lineLimit(1)
+                                if !preset.servers.isEmpty {
+                                    Text(preset.servers.joined(separator: ", "))
+                                        .font(.caption2)
+                                        .foregroundStyle(.tertiary)
+                                }
+                            }
+                            Spacer()
+                            if !preset.isBuiltIn {
+                                Button {
+                                    customDNSPresets.removeAll { $0.id == preset.id }
+                                    saveCustomDNSPresets()
+                                    dnsPresetOrder.removeAll { $0 == preset.id }
+                                    UserDefaults.standard.set(dnsPresetOrder, forKey: "dnsPresetOrder")
+                                } label: {
+                                    Image(systemName: "trash")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.red)
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Delete")
+                            }
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(Color.accentColor.opacity(dnsDraggingID == preset.id ? 0.12 : 0))
+                        )
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 4, coordinateSpace: .global)
+                                .onChanged { value in
+                                    if dnsDraggingID != preset.id {
+                                        dnsDraggingID = preset.id
+                                        dnsDragBaseOrder = sortedDNSPresets.map(\.id)
+                                    }
+                                    let rowH: CGFloat = 36
+                                    let shift = Int((value.translation.height / rowH).rounded())
+                                    guard let src = dnsDragBaseOrder.firstIndex(of: preset.id) else { return }
+                                    let dst = max(0, min(dnsDragBaseOrder.count - 1, src + shift))
+                                    var newOrder = dnsDragBaseOrder
+                                    newOrder.move(fromOffsets: IndexSet(integer: src),
+                                                  toOffset: dst > src ? dst + 1 : dst)
+                                    if dnsPresetOrder != newOrder { dnsPresetOrder = newOrder }
+                                }
+                                .onEnded { _ in
+                                    UserDefaults.standard.set(dnsPresetOrder, forKey: "dnsPresetOrder")
+                                    dnsDraggingID = nil
+                                }
+                        )
+                    }
+
+                    Button("Add Custom DNS…") {
+                        AddDNSWindowController.shared.show { [self] preset in
+                            customDNSPresets.append(preset)
+                            saveCustomDNSPresets()
+                            // Add to order so it appears at the end
+                            if !dnsPresetOrder.contains(preset.id) {
+                                dnsPresetOrder.append(preset.id)
+                                UserDefaults.standard.set(dnsPresetOrder, forKey: "dnsPresetOrder")
+                            }
+                        }
+                    }
                 }
             }
 
@@ -310,11 +403,15 @@ struct PreferencesView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 420, height: 820)
+        .frame(width: 420, height: 880)
         .onAppear {
             hiddenAdapters = Set(UserDefaults.standard.stringArray(forKey: "hiddenAdapters") ?? [])
             adapterNames = loadAdapterNames()
             adapterOrder = UserDefaults.standard.stringArray(forKey: "adapterOrder") ?? []
+            hiddenApps = UserDefaults.standard.stringArray(forKey: "hiddenApps") ?? []
+            customDNSPresets = loadCustomDNSPresets()
+            hiddenDNSPresets = Set(UserDefaults.standard.stringArray(forKey: "hiddenDNSPresets") ?? [])
+            dnsPresetOrder = UserDefaults.standard.stringArray(forKey: "dnsPresetOrder") ?? []
             launchAtLogin = SMAppService.mainApp.status == .enabled
         }
         .sheet(item: $renamingAdapter) { adapter in
@@ -327,6 +424,13 @@ struct PreferencesView: View {
                     renamingAdapter = nil
                 },
                 onCancel: { renamingAdapter = nil }
+            )
+        }
+        .sheet(isPresented: $showHiddenAppsSheet) {
+            HiddenAppsSheet(
+                recentAppNames: monitor.recentAppNames,
+                hiddenApps: $hiddenApps,
+                onDone: { showHiddenAppsSheet = false }
             )
         }
     }
@@ -381,6 +485,46 @@ struct PreferencesView: View {
     private func saveAdapterNames(_ names: [String: String]) {
         UserDefaults.standard.set(try? JSONEncoder().encode(names), forKey: "adapterCustomNames")
     }
+
+    private var allDNSPresets: [DNSPreset] {
+        DNSPreset.builtIn + customDNSPresets
+    }
+
+    private var sortedDNSPresets: [DNSPreset] {
+        let presets = allDNSPresets
+        if dnsPresetOrder.isEmpty { return presets }
+        return presets.sorted {
+            let ai = dnsPresetOrder.firstIndex(of: $0.id) ?? Int.max
+            let bi = dnsPresetOrder.firstIndex(of: $1.id) ?? Int.max
+            return ai < bi
+        }
+    }
+
+    private func dnsBindingFor(_ id: String) -> Binding<Bool> {
+        Binding(
+            get: { !hiddenDNSPresets.contains(id) },
+            set: { isOn in
+                if isOn {
+                    hiddenDNSPresets.remove(id)
+                } else {
+                    hiddenDNSPresets.insert(id)
+                }
+                UserDefaults.standard.set(Array(hiddenDNSPresets), forKey: "hiddenDNSPresets")
+            }
+        )
+    }
+
+    private func loadCustomDNSPresets() -> [DNSPreset] {
+        guard let data = UserDefaults.standard.data(forKey: "customDNSPresets"),
+              let presets = try? JSONDecoder().decode([DNSPreset].self, from: data)
+        else { return [] }
+        return presets
+    }
+
+    private func saveCustomDNSPresets() {
+        UserDefaults.standard.set(try? JSONEncoder().encode(customDNSPresets), forKey: "customDNSPresets")
+    }
+
 }
 
 // MARK: - Rename Sheet
@@ -413,3 +557,103 @@ struct RenameAdapterSheet: View {
         .onAppear { text = currentName }
     }
 }
+
+// MARK: - Hidden Apps Sheet
+
+struct HiddenAppsSheet: View {
+    let recentAppNames: [String]
+    @Binding var hiddenApps: [String]
+    let onDone: () -> Void
+
+    private var visibleRecent: [String] {
+        recentAppNames.filter { !hiddenApps.contains($0) }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Hide Apps")
+                .font(.headline)
+
+            Text("Apps that used bandwidth in the last 60 seconds:")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            if visibleRecent.isEmpty {
+                Text("No recent apps detected yet. Keep Top Apps enabled and check back shortly.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.vertical, 4)
+            } else {
+                ScrollView {
+                    VStack(spacing: 2) {
+                        ForEach(visibleRecent, id: \.self) { name in
+                            HStack {
+                                Text(name)
+                                    .font(.system(size: 12))
+                                    .lineLimit(1)
+                                Spacer()
+                                Button {
+                                    hiddenApps.append(name)
+                                    UserDefaults.standard.set(hiddenApps, forKey: "hiddenApps")
+                                } label: {
+                                    Image(systemName: "eye.slash")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(.secondary)
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Hide \(name)")
+                            }
+                            .padding(.vertical, 3)
+                            .padding(.horizontal, 6)
+                        }
+                    }
+                }
+                .frame(maxHeight: 160)
+            }
+
+            if !hiddenApps.isEmpty {
+                Divider()
+                Text("Hidden apps:")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ScrollView {
+                    VStack(spacing: 2) {
+                        ForEach(hiddenApps, id: \.self) { name in
+                            HStack {
+                                Text(name)
+                                    .font(.system(size: 12))
+                                    .lineLimit(1)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button {
+                                    hiddenApps.removeAll { $0 == name }
+                                    UserDefaults.standard.set(hiddenApps, forKey: "hiddenApps")
+                                } label: {
+                                    Image(systemName: "eye")
+                                        .font(.system(size: 11))
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Show \(name)")
+                            }
+                            .padding(.vertical, 3)
+                            .padding(.horizontal, 6)
+                        }
+                    }
+                }
+                .frame(maxHeight: 120)
+            }
+
+            HStack {
+                Spacer()
+                Button("Done") { onDone() }
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(20)
+        .frame(width: 340)
+    }
+}
+

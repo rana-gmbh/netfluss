@@ -127,12 +127,12 @@ final class StatusBarController: NSObject {
             downLabel.textColor = NSColor(theme.downloadColor)
         }
 
-        // Keep the status item width snug to the content so the gap to the
-        // next menu bar icon stays consistent regardless of font size.
+        // Fixed width: measure the widest possible rate string so the menu bar
+        // never shifts when values cross unit boundaries (e.g. 999 KB/s → 1.2 MB/s).
         let attrs: [NSAttributedString.Key: Any] = [.font: font]
-        let upW   = (upText   as NSString).size(withAttributes: attrs).width
-        let downW = (downText as NSString).size(withAttributes: attrs).width
-        statusItem.length = ceil(max(upW, downW)) + 4  // 2 px padding each side
+        let refText = useBits ? "↓ 9.99 Mb/s" : "↓ 9.99 MB/s"
+        let refW = (refText as NSString).size(withAttributes: attrs).width
+        statusItem.length = ceil(refW) + 4  // 2 px padding each side
     }
 
     private func menuBarFont() -> NSFont {
@@ -195,7 +195,7 @@ final class StatusBarController: NSObject {
     private func configureLabels(in button: NSStatusBarButton) {
         stackView.orientation = .vertical
         stackView.spacing = 1
-        stackView.alignment = .leading
+        stackView.alignment = .trailing
         stackView.addArrangedSubview(upLabel)
         stackView.addArrangedSubview(downLabel)
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -206,7 +206,7 @@ final class StatusBarController: NSObject {
 
         NSLayoutConstraint.activate([
             stackView.centerYAnchor.constraint(equalTo: button.centerYAnchor),
-            stackView.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 2)
+            stackView.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -2)
         ])
     }
 }

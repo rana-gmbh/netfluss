@@ -31,7 +31,13 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - **IP addresses** — two display modes:
   - **List view** — External, Internal, and Router IP, each with a one-click copy button
   - **Connection flow view** — visual network path from your Mac through the router (and VPN, if active) to the internet, with country flag for VPN exit nodes
+- **DNS Switcher** — switch between DNS providers directly from the popover (enable in Preferences):
+  - Built-in presets: System Default, Cloudflare, Google, Quad9, OpenDNS
+  - Add your own custom DNS presets
+  - Shows the currently active DNS with a green checkmark
+  - One-click switching (prompts for admin password)
 - **Top Apps** — optional section listing the top 5 processes by current network traffic, with a relative usage bar per app (enable in Preferences)
+  - **App filtering** — hide noisy background processes (e.g. mDNSResponder) from the list via Preferences or hover to hide directly
 - **Footer** — quick access to Preferences, About, and Quit
 
 ### Preferences
@@ -50,6 +56,8 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - **Connection status mode** — choose between the classic IP list or the new connection flow view
 - Top Apps toggle
 - **Top Apps grace period** — keep apps visible for 3 s, 5 s, or 10 s after their traffic stops, preventing the list from constantly reshuffling
+- **App filtering** — hide specific apps from the Top Apps list; "Apps to Hide" shows all recently active processes for easy selection
+- **DNS Switcher** — toggle to show the DNS picker in the popover; includes built-in presets (System Default, Cloudflare, Google, Quad9, OpenDNS) plus custom presets; visibility toggles, drag-to-reorder, and delete for each preset
 - **Launch at login** toggle
 
 ### About
@@ -65,7 +73,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.8.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.9.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 Netfluss is notarized and signed with a Developer ID — Gatekeeper will clear it automatically on first launch.
 
@@ -86,7 +94,7 @@ Or open `Package.swift` in Xcode, select the `Netfluss` scheme, and run.
 
 - Wi-Fi SSID and band use CoreWLAN. macOS may prompt for Location Services permission to expose SSID details.
 - Ethernet link speed is read from `ifi_baudrate` and may show `—` when unavailable.
-- External IP is fetched from `api.ipify.org` and cached for 60 seconds.
+- External IP is fetched from `ipwho.is` (with `api.ipify.org` as fallback) and cached for 60 seconds.
 - Top Apps reads per-connection byte counts from `netstat -n -b -v` and correlates them with process names via `proc_pidpath`. Only processes with active TCP/UDP connections appear in the list.
 
 ## License
