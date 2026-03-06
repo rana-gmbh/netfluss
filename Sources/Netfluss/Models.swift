@@ -68,3 +68,18 @@ struct InterfaceSample {
     let txBytes: UInt64
     let baudrate: UInt64
 }
+
+struct DNSPreset: Identifiable, Codable, Equatable {
+    let id: String
+    let name: String
+    let servers: [String]  // empty = system default (DHCP)
+    let isBuiltIn: Bool
+
+    static let builtIn: [DNSPreset] = [
+        DNSPreset(id: "system",    name: "System Default", servers: [],                              isBuiltIn: true),
+        DNSPreset(id: "cloudflare",name: "Cloudflare",     servers: ["1.1.1.1", "1.0.0.1"],          isBuiltIn: true),
+        DNSPreset(id: "google",    name: "Google",         servers: ["8.8.8.8", "8.8.4.4"],          isBuiltIn: true),
+        DNSPreset(id: "quad9",     name: "Quad9",          servers: ["9.9.9.9", "149.112.112.112"],  isBuiltIn: true),
+        DNSPreset(id: "opendns",   name: "OpenDNS",        servers: ["208.67.222.222", "208.67.220.220"], isBuiltIn: true),
+    ]
+}

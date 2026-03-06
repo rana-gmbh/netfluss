@@ -43,7 +43,12 @@ final class AppState {
             "adapterGracePeriodSeconds": 3.0,
             "topAppsGracePeriodEnabled": false,
             "topAppsGracePeriodSeconds": 3.0,
-            "connectionStatusMode": "list"
+            "connectionStatusMode": "list",
+            "hiddenApps": [],
+            "showDNSSwitcher": false,
+            "customDNSPresets": Data(),
+            "hiddenDNSPresets": [],
+            "dnsPresetOrder": []
         ])
         let monitor = NetworkMonitor()
         self.monitor = monitor

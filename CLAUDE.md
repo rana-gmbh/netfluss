@@ -51,11 +51,11 @@ Netfluss is a pure-SwiftPM macOS menu bar app with no third-party dependencies.
 |---|---|
 | `Netfluss.swift` | `@main` entry, `AppDelegate` wiring |
 | `AppState.swift` | Owns `NetworkMonitor` + `StatusBarController`; registers all `UserDefaults` defaults |
-| `NetworkMonitor.swift` | `@MainActor ObservableObject`; drives a `DispatchSourceTimer`; publishes `adapters`, `totals`, `topApps`, IP addresses |
+| `NetworkMonitor.swift` | `@MainActor ObservableObject`; drives a `DispatchSourceTimer`; publishes `adapters`, `totals`, `topApps`, IP addresses, DNS state |
 | `StatusBarController.swift` | Owns `NSStatusItem` + `NSPopover`; subscribes to `monitor.$totals` via Combine; handles menu bar label vs icon mode |
-| `MenuBarView.swift` | SwiftUI popover content (header totals, adapter cards in a ScrollView capped at 6, IP section, Top Apps) |
+| `MenuBarView.swift` | SwiftUI popover content (header totals, adapter cards in a ScrollView capped at 6, IP section, DNS switcher, Top Apps) |
 | `PreferencesView.swift` | SwiftUI `Form` inside an `NSWindow` managed by `PreferencesWindowController` |
-| `Models.swift` | Value types: `AdapterStatus`, `RateTotals`, `AppTraffic`, `InterfaceSample` |
+| `Models.swift` | Value types: `AdapterStatus`, `RateTotals`, `AppTraffic`, `InterfaceSample`, `DNSPreset` |
 | `Themes.swift` | `AppTheme` struct + Dracula/Nord/Solarized presets; `Color(hex:)` extension |
 | `Formatters.swift` | `RateFormatter.formatRate()` — bits vs bytes, auto-scaling |
 | `UpdateChecker.swift` | Queries GitHub Releases API; used by `AboutView` |

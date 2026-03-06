@@ -28,6 +28,7 @@ struct MenuBarView: View {
     @AppStorage("theme") private var themeName: String = "system"
     @AppStorage("totalsOnlyVisibleAdapters") private var totalsOnlyVisibleAdapters: Bool = false
     @AppStorage("connectionStatusMode") private var connectionStatusMode: String = "list"
+    @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
 
     // Height for one adapter card (padding + title row + spacing + rates row) + inter-card spacing.
     // Used to size the scroll area to show exactly 6 cards before scrolling kicks in.
@@ -92,6 +93,11 @@ struct MenuBarView: View {
                     internalIP: monitor.internalIP,
                     gatewayIP: monitor.gatewayIP
                 )
+            }
+
+            if showDNSSwitcher {
+                Divider()
+                DNSSwitcherSection()
             }
 
             if showTopApps {
@@ -727,6 +733,84 @@ struct AppTrafficRow: View {
         }
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
+    }
+}
+
+// MARK: - DNS Switcher Section
+
+struct DNSSwitcherSection: View {
+    @EnvironmentObject private var monitor: NetworkMonitor
+
+    private var presets: [DNSPreset] { NetworkMonitor.allDNSPresets() }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("DNS")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+
+            VStack(spacing: 2) {
+                ForEach(presets) { preset in
+                    DNSPresetRow(
+                        preset: preset,
+                        isActive: monitor.activeDNSPresetID == preset.id,
+                        isChanging: monitor.dnsChanging,
+                        onSelect: { monitor.applyDNS(preset: preset) }
+                    )
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 8)
+        }
+    }
+}
+
+struct DNSPresetRow: View {
+    let preset: DNSPreset
+    let isActive: Bool
+    let isChanging: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 8) {
+                Image(systemName: isActive ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 12))
+                    .foregroundStyle(isActive ? .green : .secondary)
+                    .frame(width: 16)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(preset.name)
+                        .font(.system(size: 11, weight: isActive ? .semibold : .regular))
+                        .lineLimit(1)
+                    if !preset.servers.isEmpty {
+                        Text(preset.servers.joined(separator: ", "))
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    } else {
+                        Text("Automatic (DHCP)")
+                            .font(.system(size: 9))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                if isActive && isChanging {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(width: 14, height: 14)
+                }
+            }
+            .padding(.vertical, 4)
+            .padding(.horizontal, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(isActive ? Color.accentColor.opacity(0.1) : Color.clear)
+            )
+        }
+        .buttonStyle(.borderless)
+        .disabled(isActive || isChanging)
     }
 }
 
