@@ -35,7 +35,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
   - Built-in presets: System Default, Cloudflare, Google, Quad9, OpenDNS
   - Add your own custom DNS presets
   - Shows the currently active DNS with a green checkmark
-  - One-click switching (prompts for admin password)
+  - One-click switching with **Touch ID** authentication (falls back to admin password when Touch ID is unavailable)
 - **Top Apps** — optional section listing the top 5 processes by current network traffic, with a relative usage bar per app (enable in Preferences)
   - **App filtering** — hide noisy background processes (e.g. mDNSResponder) from the list via Preferences or hover to hide directly
 - **Footer** — quick access to Preferences, About, and Quit
@@ -58,6 +58,8 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - **Top Apps grace period** — keep apps visible for 3 s, 5 s, or 10 s after their traffic stops, preventing the list from constantly reshuffling
 - **App filtering** — hide specific apps from the Top Apps list; "Apps to Hide" shows all recently active processes for easy selection
 - **DNS Switcher** — toggle to show the DNS picker in the popover; includes built-in presets (System Default, Cloudflare, Google, Quad9, OpenDNS) plus custom presets; visibility toggles, drag-to-reorder, and delete for each preset
+- **Touch ID** — use Touch ID for DNS changes and Ethernet reconnects (enabled by default, configurable in DNS Switcher section)
+- **Resizable preferences window** — drag edges to resize for smaller screens (note: resize cursor may not be visible due to a macOS/SwiftUI limitation)
 - **Launch at login** toggle
 
 ### About
@@ -73,7 +75,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.9.1.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.9.2.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 Netfluss is notarized and signed with a Developer ID — Gatekeeper will clear it automatically on first launch.
 

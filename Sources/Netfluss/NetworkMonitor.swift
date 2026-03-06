@@ -17,6 +17,7 @@
 
 import Foundation
 import CoreWLAN
+import LocalAuthentication
 import SystemConfiguration
 
 @MainActor
@@ -361,15 +362,14 @@ final class NetworkMonitor: ObservableObject {
                 return
             }
 
-            let args: String
+            let command: String
             if servers.isEmpty {
-                args = "/usr/sbin/networksetup -setdnsservers '\(service)' empty"
+                command = "/usr/sbin/networksetup -setdnsservers '\(service)' empty"
             } else {
                 let joined = servers.joined(separator: " ")
-                args = "/usr/sbin/networksetup -setdnsservers '\(service)' \(joined)"
+                command = "/usr/sbin/networksetup -setdnsservers '\(service)' \(joined)"
             }
-            let script = "do shell script \"\(args)\" with administrator privileges"
-            Self.runSync("/usr/bin/osascript", ["-e", script])
+            await Self.executeWithAuth(command: command)
 
             _ = await MainActor.run { [weak self] in
                 self?.dnsChanging = false
@@ -405,8 +405,7 @@ final class NetworkMonitor: ObservableObject {
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
                 Self.runSync("/usr/sbin/networksetup", ["-setairportpower", port, "on"])
             case .ethernet:
-                let script = "do shell script \"ifconfig \(bsdName) down && sleep 1 && ifconfig \(bsdName) up\" with administrator privileges"
-                Self.runSync("/usr/bin/osascript", ["-e", script])
+                await Self.executeWithAuth(command: "ifconfig \(bsdName) down && sleep 1 && ifconfig \(bsdName) up")
             case .other:
                 break
             }
@@ -429,6 +428,37 @@ final class NetworkMonitor: ObservableObject {
             }
         }
         return bsdName
+    }
+
+    /// Runs a shell command with authentication. Uses TouchID when available and
+    /// enabled in preferences; falls back to the AppleScript admin-password dialog.
+    private nonisolated static func executeWithAuth(command: String) async {
+        let useTouchID = UserDefaults.standard.bool(forKey: "useTouchID")
+
+        if useTouchID {
+            let context = LAContext()
+            context.localizedReason = "Netfluss needs to modify network settings"
+
+            var error: NSError?
+            if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+                do {
+                    let success = try await context.evaluatePolicy(
+                        .deviceOwnerAuthentication,
+                        localizedReason: "Netfluss needs to modify network settings"
+                    )
+                    if success {
+                        runSync("/bin/bash", ["-c", command])
+                        return
+                    }
+                } catch {
+                    // Authentication failed or was cancelled — fall through to AppleScript
+                }
+            }
+        }
+
+        // Fallback: AppleScript with administrator privileges
+        let script = "do shell script \"\(command)\" with administrator privileges"
+        runSync("/usr/bin/osascript", ["-e", script])
     }
 
     private nonisolated static func runSync(_ path: String, _ args: [String]) {
