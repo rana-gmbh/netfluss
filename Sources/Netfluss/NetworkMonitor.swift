@@ -35,8 +35,14 @@ final class NetworkMonitor: ObservableObject {
     @Published var currentDNSServers: [String] = []
     @Published var activeDNSPresetID: String? = nil
     @Published var dnsChanging = false
+    @Published var fritzBox: FritzBoxBandwidth?
+    @Published var fritzBoxMaxDown: UInt64 = 0
+    @Published var fritzBoxMaxUp: UInt64 = 0
+    @Published var fritzBoxError: String?
 
     private var timer: DispatchSourceTimer?
+    private var fritzBoxInFlight = false
+    private var fritzBoxLinkFetched = false
     private var lastSample: [String: InterfaceSample] = [:]
     private var lastUpdate: Date?
     private var currentInterval: Double?
@@ -151,6 +157,7 @@ final class NetworkMonitor: ObservableObject {
 
         updateTopApps()
         updateIPsIfNeeded()
+        updateFritzBox()
     }
 
     // MARK: - Top Apps
@@ -469,6 +476,42 @@ final class NetworkMonitor: ObservableObject {
         p.standardError = Pipe()
         try? p.run()
         p.waitUntilExit()
+    }
+
+    // MARK: - Fritz!Box
+
+    private func updateFritzBox() {
+        guard UserDefaults.standard.bool(forKey: "fritzBoxEnabled") else {
+            if fritzBox != nil { fritzBox = nil }
+            if fritzBoxError != nil { fritzBoxError = nil }
+            fritzBoxLinkFetched = false
+            return
+        }
+        guard !fritzBoxInFlight else { return }
+        fritzBoxInFlight = true
+
+        let host = UserDefaults.standard.string(forKey: "fritzBoxHost") ?? "fritz.box"
+        let needsLink = !fritzBoxLinkFetched
+
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                if needsLink {
+                    let link = try await FritzBoxMonitor.fetchLinkProperties(host: host)
+                    if self.fritzBoxMaxDown != link.maxDown { self.fritzBoxMaxDown = link.maxDown }
+                    if self.fritzBoxMaxUp != link.maxUp { self.fritzBoxMaxUp = link.maxUp }
+                    self.fritzBoxLinkFetched = true
+                }
+                let bandwidth = try await FritzBoxMonitor.fetchBandwidth(host: host)
+                self.fritzBox = bandwidth
+                if self.fritzBoxError != nil { self.fritzBoxError = nil }
+            } catch {
+                if self.fritzBox != nil { self.fritzBox = nil }
+                let msg = "Cannot reach Fritz!Box"
+                if self.fritzBoxError != msg { self.fritzBoxError = msg }
+            }
+            self.fritzBoxInFlight = false
+        }
     }
 
     private nonisolated static func runSyncOutput(_ path: String, _ args: [String]) -> String {

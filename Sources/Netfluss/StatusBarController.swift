@@ -19,6 +19,10 @@ import AppKit
 import Combine
 import SwiftUI
 
+extension Notification.Name {
+    static let closePopover = Notification.Name("com.local.netfluss.closePopover")
+}
+
 @MainActor
 final class StatusBarController: NSObject {
     private let statusItem: NSStatusItem
@@ -62,8 +66,17 @@ final class StatusBarController: NSObject {
             }
             .store(in: &cancellables)
 
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(closePopover),
+            name: .closePopover, object: nil
+        )
+
         applyPreferences()
         updateLabel()
+    }
+
+    @objc private func closePopover() {
+        popover.performClose(nil)
     }
 
     @objc private func togglePopover() {

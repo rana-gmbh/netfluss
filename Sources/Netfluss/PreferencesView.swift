@@ -116,6 +116,8 @@ struct PreferencesView: View {
     @AppStorage("externalIPv6") private var externalIPv6: Bool = false
     @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
     @AppStorage("useTouchID") private var useTouchID: Bool = true
+    @AppStorage("fritzBoxEnabled") private var fritzBoxEnabled: Bool = false
+    @AppStorage("fritzBoxHost") private var fritzBoxHost: String = "fritz.box"
     @State private var hiddenAdapters: Set<String> = []
     @State private var adapterNames: [String: String] = [:]
     @State private var adapterOrder: [String] = []
@@ -341,6 +343,19 @@ struct PreferencesView: View {
                             Spacer()
                             if !preset.isBuiltIn {
                                 Button {
+                                    AddDNSWindowController.shared.showEdit(preset: preset) { [self] updated in
+                                        if let idx = customDNSPresets.firstIndex(where: { $0.id == updated.id }) {
+                                            customDNSPresets[idx] = updated
+                                        }
+                                        saveCustomDNSPresets()
+                                    }
+                                } label: {
+                                    Image(systemName: "pencil")
+                                        .font(.system(size: 11))
+                                }
+                                .buttonStyle(.borderless)
+                                .help("Edit")
+                                Button {
                                     customDNSPresets.removeAll { $0.id == preset.id }
                                     saveCustomDNSPresets()
                                     dnsPresetOrder.removeAll { $0 == preset.id }
@@ -392,6 +407,47 @@ struct PreferencesView: View {
                             }
                         }
                     }
+                }
+            }
+
+            Section {
+                Toggle("Show Fritz!Box bandwidth in popover", isOn: $fritzBoxEnabled)
+                if fritzBoxEnabled {
+                    LabeledContent("Router address") {
+                        HStack(spacing: 6) {
+                            Text(fritzBoxHost)
+                                .font(.system(size: 12))
+                                .foregroundStyle(.primary)
+                            Button("Edit…") {
+                                EditFritzBoxHostController.shared.show(currentHost: fritzBoxHost) { newHost in
+                                    fritzBoxHost = newHost
+                                }
+                            }
+                        }
+                    }
+                    Text("Queries your Fritz!Box via TR-064 (no authentication needed for bandwidth data). The router must be reachable on port 49000.")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                    if let error = monitor.fritzBoxError {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.system(size: 11))
+                            Text(error)
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                }
+            } header: {
+                HStack(spacing: 4) {
+                    Text("Fritz!Box Bandwidth")
+                    Text("Experimental")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(.orange, in: Capsule())
                 }
             }
 
@@ -667,4 +723,5 @@ struct HiddenAppsSheet: View {
         .frame(width: 340)
     }
 }
+
 

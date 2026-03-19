@@ -24,6 +24,9 @@ final class PreferencesWindowController {
     private var window: NSWindow?
 
     func show(monitor: NetworkMonitor) {
+        // Close the popover synchronously before showing the preferences window.
+        NotificationCenter.default.post(name: .closePopover, object: nil)
+
         if let window {
             window.makeKeyAndOrderFront(nil)
             window.orderFrontRegardless()
@@ -46,7 +49,6 @@ final class PreferencesWindowController {
         window.center()
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
-        // LSUIElement apps need explicit activation for text fields in sheets to work.
         NSApp.activate(ignoringOtherApps: true)
 
         self.window = window
@@ -60,6 +62,14 @@ final class AddDNSWindowController {
     private var onSave: ((DNSPreset) -> Void)?
 
     func show(onSave: @escaping (DNSPreset) -> Void) {
+        showPanel(editing: nil, onSave: onSave)
+    }
+
+    func showEdit(preset: DNSPreset, onSave: @escaping (DNSPreset) -> Void) {
+        showPanel(editing: preset, onSave: onSave)
+    }
+
+    private func showPanel(editing preset: DNSPreset?, onSave: @escaping (DNSPreset) -> Void) {
         if let panel {
             panel.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
@@ -67,16 +77,17 @@ final class AddDNSWindowController {
         }
         self.onSave = onSave
 
-        let view = AddDNSPanelView { [weak self] preset in
-            onSave(preset)
+        let view = AddDNSPanelView(editing: preset) { [weak self] saved in
+            onSave(saved)
             self?.close()
         } onCancel: { [weak self] in
             self?.close()
         }
         let hosting = NSHostingController(rootView: view)
 
+        let isEdit = preset != nil
         let panel = NSPanel(contentViewController: hosting)
-        panel.title = "Add Custom DNS"
+        panel.title = isEdit ? "Edit Custom DNS" : "Add Custom DNS"
         panel.styleMask = [.titled, .closable, .nonactivatingPanel]
         panel.isFloatingPanel = true
         panel.becomesKeyOnlyIfNeeded = false
@@ -85,7 +96,6 @@ final class AddDNSWindowController {
         panel.center()
         panel.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
-        // Force panel to become key window so text fields receive input
         panel.makeKey()
 
         self.panel = panel
@@ -95,16 +105,113 @@ final class AddDNSWindowController {
         panel?.close()
         panel = nil
         onSave = nil
+        reactivatePreferencesWindow()
+    }
+}
+
+private func reactivatePreferencesWindow() {
+    // After a panel closes, re-activate the preferences window so it
+    // regains key/main status and toggles show the accent color.
+    if let window = NSApp.windows.first(where: { $0.title == "Preferences" && $0.isVisible }) {
+        NSApp.activate(ignoringOtherApps: true)
+        window.makeKeyAndOrderFront(nil)
+    }
+}
+
+@MainActor
+final class EditFritzBoxHostController {
+    static let shared = EditFritzBoxHostController()
+    private var panel: NSPanel?
+
+    func show(currentHost: String, onSave: @escaping (String) -> Void) {
+        if let panel {
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let view = EditFritzBoxHostPanelView(currentHost: currentHost) { [weak self] newHost in
+            onSave(newHost)
+            self?.close()
+        } onCancel: { [weak self] in
+            self?.close()
+        }
+        let hosting = NSHostingController(rootView: view)
+
+        let panel = NSPanel(contentViewController: hosting)
+        panel.title = "Fritz!Box Address"
+        panel.styleMask = [.titled, .closable, .nonactivatingPanel]
+        panel.isFloatingPanel = true
+        panel.becomesKeyOnlyIfNeeded = false
+        panel.setContentSize(NSSize(width: 300, height: 160))
+        panel.isReleasedWhenClosed = false
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKey()
+
+        self.panel = panel
+    }
+
+    private func close() {
+        panel?.close()
+        panel = nil
+        reactivatePreferencesWindow()
+    }
+}
+
+struct EditFritzBoxHostPanelView: View {
+    let currentHost: String
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    @State private var text: String = ""
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Fritz!Box Address")
+                .font(.headline)
+            TextField("fritz.box", text: $text)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { save() }
+            HStack(spacing: 12) {
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") { save() }
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(24)
+        .onAppear { text = currentHost }
+    }
+
+    private func save() {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        onSave(trimmed)
     }
 }
 
 struct AddDNSPanelView: View {
+    let editingPreset: DNSPreset?
     let onSave: (DNSPreset) -> Void
     let onCancel: () -> Void
 
     @State private var name: String = ""
     @State private var primary: String = ""
     @State private var secondary: String = ""
+
+    init(editing preset: DNSPreset? = nil,
+         onSave: @escaping (DNSPreset) -> Void,
+         onCancel: @escaping () -> Void) {
+        self.editingPreset = preset
+        self.onSave = onSave
+        self.onCancel = onCancel
+    }
+
+    private var isEditing: Bool { editingPreset != nil }
 
     private var isValid: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -113,7 +220,7 @@ struct AddDNSPanelView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Add Custom DNS")
+            Text(isEditing ? "Edit Custom DNS" : "Add Custom DNS")
                 .font(.headline)
             VStack(alignment: .leading, spacing: 8) {
                 TextField("Name (e.g. My DNS)", text: $name)
@@ -126,13 +233,20 @@ struct AddDNSPanelView: View {
             HStack(spacing: 12) {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
-                Button("Add") { save() }
+                Button(isEditing ? "Save" : "Add") { save() }
                     .keyboardShortcut(.defaultAction)
                     .buttonStyle(.borderedProminent)
                     .disabled(!isValid)
             }
         }
         .padding(24)
+        .onAppear {
+            if let preset = editingPreset {
+                name = preset.name
+                primary = preset.servers.first ?? ""
+                secondary = preset.servers.count > 1 ? preset.servers[1] : ""
+            }
+        }
     }
 
     private func save() {
@@ -142,7 +256,7 @@ struct AddDNSPanelView: View {
         var servers = [trimPrimary]
         if !trimSecondary.isEmpty { servers.append(trimSecondary) }
         onSave(DNSPreset(
-            id: UUID().uuidString,
+            id: editingPreset?.id ?? UUID().uuidString,
             name: trimName,
             servers: servers,
             isBuiltIn: false

@@ -50,7 +50,9 @@ final class AppState {
             "customDNSPresets": Data(),
             "hiddenDNSPresets": [],
             "dnsPresetOrder": [],
-            "useTouchID": true
+            "useTouchID": true,
+            "fritzBoxEnabled": false,
+            "fritzBoxHost": "fritz.box"
         ])
         let monitor = NetworkMonitor()
         self.monitor = monitor

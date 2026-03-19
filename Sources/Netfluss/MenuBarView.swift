@@ -29,6 +29,7 @@ struct MenuBarView: View {
     @AppStorage("totalsOnlyVisibleAdapters") private var totalsOnlyVisibleAdapters: Bool = false
     @AppStorage("connectionStatusMode") private var connectionStatusMode: String = "list"
     @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
+    @AppStorage("fritzBoxEnabled") private var fritzBoxEnabled: Bool = false
 
     // Height for one adapter card (padding + title row + spacing + rates row) + inter-card spacing.
     // Used to size the scroll area to show exactly 6 cards before scrolling kicks in.
@@ -93,6 +94,11 @@ struct MenuBarView: View {
                     internalIP: monitor.internalIP,
                     gatewayIP: monitor.gatewayIP
                 )
+            }
+
+            if fritzBoxEnabled {
+                Divider()
+                FritzBoxSection(useBits: useBits)
             }
 
             if showDNSSwitcher {
@@ -733,6 +739,139 @@ struct AppTrafficRow: View {
         }
         .padding(.vertical, 5)
         .padding(.horizontal, 8)
+    }
+}
+
+// MARK: - Fritz!Box Bandwidth Section
+
+struct FritzBoxSection: View {
+    let useBits: Bool
+
+    @EnvironmentObject private var monitor: NetworkMonitor
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Text("Fritz!Box")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text("Experimental")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 1)
+                    .background(.orange, in: Capsule())
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+
+            if let error = monitor.fritzBoxError {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.orange)
+                    Text(error)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else if let fb = monitor.fritzBox {
+                VStack(spacing: 4) {
+                    FritzBoxRateRow(
+                        icon: "arrow.down",
+                        label: "Download",
+                        rate: fb.rxRateBps,
+                        maxRate: monitor.fritzBoxMaxDown,
+                        color: theme.downloadColor,
+                        useBits: useBits
+                    )
+                    FritzBoxRateRow(
+                        icon: "arrow.up",
+                        label: "Upload",
+                        rate: fb.txRateBps,
+                        maxRate: monitor.fritzBoxMaxUp,
+                        color: theme.uploadColor,
+                        useBits: useBits
+                    )
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else {
+                Text("Connecting…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+}
+
+struct FritzBoxRateRow: View {
+    let icon: String
+    let label: String
+    let rate: Double
+    let maxRate: UInt64
+    let color: Color
+    let useBits: Bool
+
+    private var fraction: Double {
+        guard maxRate > 0 else { return 0 }
+        // maxRate from TR-064 is in bits/s, rate is in bytes/s
+        return min(1.0, (rate * 8.0) / Double(maxRate))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(color)
+                    .frame(width: 12)
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(RateFormatter.formatRate(rate, useBits: useBits))
+                    .font(.system(size: 11, weight: .medium))
+                    .monospacedDigit()
+                if maxRate > 0 {
+                    Text("/ \(formatMaxRate())")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            if maxRate > 0 {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(.quaternary)
+                            .frame(height: 3)
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(color.opacity(0.6))
+                            .frame(width: geo.size.width * fraction, height: 3)
+                    }
+                }
+                .frame(height: 3)
+            }
+        }
+    }
+
+    private func formatMaxRate() -> String {
+        // maxRate is in bits/s from TR-064
+        let bps = Double(maxRate)
+        if useBits {
+            if bps >= 1_000_000_000 { return String(format: "%.0f Gb/s", bps / 1_000_000_000) }
+            if bps >= 1_000_000 { return String(format: "%.0f Mb/s", bps / 1_000_000) }
+            return String(format: "%.0f Kb/s", bps / 1_000)
+        } else {
+            let bytesPerSec = bps / 8.0
+            if bytesPerSec >= 1_000_000_000 { return String(format: "%.0f GB/s", bytesPerSec / 1_000_000_000) }
+            if bytesPerSec >= 1_000_000 { return String(format: "%.0f MB/s", bytesPerSec / 1_000_000) }
+            return String(format: "%.0f KB/s", bytesPerSec / 1_000)
+        }
     }
 }
 

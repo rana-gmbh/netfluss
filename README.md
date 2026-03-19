@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/rana-gmbh/netfluss/total)](https://github.com/rana-gmbh/netfluss/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-A minimal macOS menubar app showing real-time upload and download rates across all active network adapters.
+A minimal macOS menubar app showing real-time upload and download rates across all active network adapters. Now with Fritz!Box total bandwidth monitoring.
 
 <p align="center">
   <img src="screenshot.png" width="420" alt="Netfluss screenshot">
@@ -37,6 +37,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
   - Add your own custom DNS presets
   - Shows the currently active DNS with a green checkmark
   - One-click switching with **Touch ID** authentication (falls back to admin password when Touch ID is unavailable)
+- **Fritz!Box Bandwidth** *(Experimental)* — shows total WAN download/upload rates from your Fritz!Box router via TR-064 API, with progress bars relative to your line speed (enable in Preferences)
 - **Top Apps** — optional section listing the top 5 processes by current network traffic, with a relative usage bar per app (enable in Preferences)
   - **App filtering** — hide noisy background processes (e.g. mDNSResponder) from the list via Preferences or hover to hide directly
 - **Footer** — quick access to Preferences, About, and Quit
@@ -58,7 +59,8 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Top Apps toggle
 - **Top Apps grace period** — keep apps visible for 3 s, 5 s, or 10 s after their traffic stops, preventing the list from constantly reshuffling
 - **App filtering** — hide specific apps from the Top Apps list; "Apps to Hide" shows all recently active processes for easy selection
-- **DNS Switcher** — toggle to show the DNS picker in the popover; includes built-in presets (System Default, Cloudflare, Google, Quad9, OpenDNS) plus custom presets; visibility toggles, drag-to-reorder, and delete for each preset
+- **DNS Switcher** — toggle to show the DNS picker in the popover; includes built-in presets (System Default, Cloudflare, Google, Quad9, OpenDNS) plus custom presets with edit support; visibility toggles, drag-to-reorder, and delete for each preset
+- **Fritz!Box Bandwidth** *(Experimental)* — toggle to show total WAN bandwidth from your Fritz!Box router; configurable router address (default: fritz.box); queries TR-064 API on port 49000 (no authentication required)
 - **Touch ID** — use Touch ID for DNS changes and Ethernet reconnects (enabled by default, configurable in DNS Switcher section)
 - **Resizable preferences window** — drag edges to resize for smaller screens (note: resize cursor may not be visible due to a macOS/SwiftUI limitation)
 - **Launch at login** toggle
@@ -76,7 +78,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.9.2.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.10.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 Netfluss is notarized and signed with a Developer ID — Gatekeeper will clear it automatically on first launch.
 
