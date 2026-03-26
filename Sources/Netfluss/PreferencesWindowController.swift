@@ -171,10 +171,14 @@ struct EditFritzBoxHostPanelView: View {
         VStack(spacing: 16) {
             Text("Fritz!Box Address")
                 .font(.headline)
-            TextField("fritz.box", text: $text)
+            TextField("Router IP (auto-detect)", text: $text)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { save() }
             HStack(spacing: 12) {
+                Button("Reset to Auto") {
+                    onSave("")
+                }
+                Spacer()
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                 Button("Save") { save() }
@@ -191,6 +195,175 @@ struct EditFritzBoxHostPanelView: View {
         let trimmed = text.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         onSave(trimmed)
+    }
+}
+
+// MARK: - Generic Router Host Editor
+
+@MainActor
+final class EditRouterHostController {
+    static let shared = EditRouterHostController()
+    private var panel: NSPanel?
+
+    func show(title: String, placeholder: String, currentHost: String, onSave: @escaping (String) -> Void) {
+        if let panel {
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let view = EditRouterHostPanelView(title: title, placeholder: placeholder, currentHost: currentHost) { [weak self] newHost in
+            onSave(newHost)
+            self?.close()
+        } onCancel: { [weak self] in
+            self?.close()
+        }
+        let hosting = NSHostingController(rootView: view)
+
+        let panel = NSPanel(contentViewController: hosting)
+        panel.title = title
+        panel.styleMask = [.titled, .closable, .nonactivatingPanel]
+        panel.isFloatingPanel = true
+        panel.becomesKeyOnlyIfNeeded = false
+        panel.setContentSize(NSSize(width: 300, height: 160))
+        panel.isReleasedWhenClosed = false
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKey()
+
+        self.panel = panel
+    }
+
+    private func close() {
+        panel?.close()
+        panel = nil
+        reactivatePreferencesWindow()
+    }
+}
+
+struct EditRouterHostPanelView: View {
+    let title: String
+    let placeholder: String
+    let currentHost: String
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    @State private var text: String = ""
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text(title)
+                .font(.headline)
+            TextField(placeholder, text: $text)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { save() }
+            HStack(spacing: 12) {
+                Button("Reset to Auto") {
+                    onSave("")
+                }
+                Spacer()
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Button("Save") { save() }
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(text.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(24)
+        .onAppear { text = currentHost }
+    }
+
+    private func save() {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        onSave(trimmed)
+    }
+}
+
+// MARK: - Router Credentials Editor
+
+@MainActor
+final class EditRouterCredentialsController {
+    static let shared = EditRouterCredentialsController()
+    private var panel: NSPanel?
+
+    func show(title: String, host: String, onSave: @escaping (String, String) -> Void) {
+        if let panel {
+            panel.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let view = EditRouterCredentialsPanelView(title: title, host: host) { [weak self] username, password in
+            onSave(username, password)
+            self?.close()
+        } onCancel: { [weak self] in
+            self?.close()
+        }
+        let hosting = NSHostingController(rootView: view)
+
+        let panel = NSPanel(contentViewController: hosting)
+        panel.title = title
+        panel.styleMask = [.titled, .closable, .nonactivatingPanel]
+        panel.isFloatingPanel = true
+        panel.becomesKeyOnlyIfNeeded = false
+        panel.setContentSize(NSSize(width: 320, height: 220))
+        panel.isReleasedWhenClosed = false
+        panel.center()
+        panel.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKey()
+
+        self.panel = panel
+    }
+
+    private func close() {
+        panel?.close()
+        panel = nil
+        reactivatePreferencesWindow()
+    }
+}
+
+struct EditRouterCredentialsPanelView: View {
+    let title: String
+    let host: String
+    let onSave: (String, String) -> Void
+    let onCancel: () -> Void
+
+    @State private var username: String = ""
+    @State private var password: String = ""
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text(title)
+                .font(.headline)
+            Text("for \(host)")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            TextField("Username", text: $username)
+                .textFieldStyle(.roundedBorder)
+            SecureField("Password", text: $password)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { save() }
+            HStack(spacing: 12) {
+                Button("Cancel", action: onCancel)
+                    .keyboardShortcut(.cancelAction)
+                Spacer()
+                Button("Save") { save() }
+                    .keyboardShortcut(.defaultAction)
+                    .buttonStyle(.borderedProminent)
+                    .disabled(username.trimmingCharacters(in: .whitespaces).isEmpty || password.isEmpty)
+            }
+        }
+        .padding(24)
+    }
+
+    private func save() {
+        let trimmedUser = username.trimmingCharacters(in: .whitespaces)
+        guard !trimmedUser.isEmpty, !password.isEmpty else { return }
+        onSave(trimmedUser, password)
     }
 }
 

@@ -117,7 +117,11 @@ struct PreferencesView: View {
     @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
     @AppStorage("useTouchID") private var useTouchID: Bool = true
     @AppStorage("fritzBoxEnabled") private var fritzBoxEnabled: Bool = false
-    @AppStorage("fritzBoxHost") private var fritzBoxHost: String = "fritz.box"
+    @AppStorage("fritzBoxHost") private var fritzBoxHost: String = ""
+    @AppStorage("unifiEnabled") private var unifiEnabled: Bool = false
+    @AppStorage("unifiHost") private var unifiHost: String = ""
+    @AppStorage("openWRTEnabled") private var openWRTEnabled: Bool = false
+    @AppStorage("openWRTHost") private var openWRTHost: String = ""
     @State private var hiddenAdapters: Set<String> = []
     @State private var adapterNames: [String: String] = [:]
     @State private var adapterOrder: [String] = []
@@ -415,9 +419,18 @@ struct PreferencesView: View {
                 if fritzBoxEnabled {
                     LabeledContent("Router address") {
                         HStack(spacing: 6) {
-                            Text(fritzBoxHost)
-                                .font(.system(size: 12))
-                                .foregroundStyle(.primary)
+                            if fritzBoxHost.isEmpty {
+                                Text(monitor.gatewayIP)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                                Text("(auto)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.tertiary)
+                            } else {
+                                Text(fritzBoxHost)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.primary)
+                            }
                             Button("Edit…") {
                                 EditFritzBoxHostController.shared.show(currentHost: fritzBoxHost) { newHost in
                                     fritzBoxHost = newHost
@@ -440,8 +453,152 @@ struct PreferencesView: View {
                     }
                 }
             } header: {
+                Text("Fritz!Box Bandwidth")
+            }
+
+            Section {
+                Toggle("Show UniFi bandwidth in popover", isOn: $unifiEnabled)
+                if unifiEnabled {
+                    LabeledContent("Router address") {
+                        HStack(spacing: 6) {
+                            if unifiHost.isEmpty {
+                                Text(monitor.gatewayIP)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                                Text("(auto)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.tertiary)
+                            } else {
+                                Text(unifiHost)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.primary)
+                            }
+                            Button("Edit…") {
+                                EditRouterHostController.shared.show(
+                                    title: "UniFi Address",
+                                    placeholder: "Router IP (auto-detect)",
+                                    currentHost: unifiHost
+                                ) { newHost in
+                                    unifiHost = newHost
+                                }
+                            }
+                        }
+                    }
+                    LabeledContent("Credentials") {
+                        HStack(spacing: 6) {
+                            let host = unifiHost.isEmpty ? monitor.gatewayIP : unifiHost
+                            if UniFiMonitor.loadCredentials(host: host) != nil {
+                                Text("Configured")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("Not set")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.orange)
+                            }
+                            Button("Edit…") {
+                                EditRouterCredentialsController.shared.show(
+                                    title: "UniFi Credentials",
+                                    host: host
+                                ) { username, password in
+                                    UniFiMonitor.saveCredentials(host: host, username: username, password: password)
+                                }
+                            }
+                        }
+                    }
+                    Text("Queries your UniFi gateway via its local API (HTTPS). Requires a local admin account on the UniFi controller.")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                    if let error = monitor.unifiError {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.system(size: 11))
+                            Text(error)
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                }
+            } header: {
                 HStack(spacing: 4) {
-                    Text("Fritz!Box Bandwidth")
+                    Text("UniFi Bandwidth")
+                    Text("Experimental")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(.orange, in: Capsule())
+                }
+            }
+
+            Section {
+                Toggle("Show OpenWRT bandwidth in popover", isOn: $openWRTEnabled)
+                if openWRTEnabled {
+                    LabeledContent("Router address") {
+                        HStack(spacing: 6) {
+                            if openWRTHost.isEmpty {
+                                Text(monitor.gatewayIP)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                                Text("(auto)")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.tertiary)
+                            } else {
+                                Text(openWRTHost)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.primary)
+                            }
+                            Button("Edit…") {
+                                EditRouterHostController.shared.show(
+                                    title: "OpenWRT Address",
+                                    placeholder: "Router IP (auto-detect)",
+                                    currentHost: openWRTHost
+                                ) { newHost in
+                                    openWRTHost = newHost
+                                }
+                            }
+                        }
+                    }
+                    LabeledContent("Credentials") {
+                        HStack(spacing: 6) {
+                            let host = openWRTHost.isEmpty ? monitor.gatewayIP : openWRTHost
+                            if OpenWRTMonitor.loadCredentials(host: host) != nil {
+                                Text("Configured")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("Not set")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.orange)
+                            }
+                            Button("Edit…") {
+                                EditRouterCredentialsController.shared.show(
+                                    title: "OpenWRT Credentials",
+                                    host: host
+                                ) { username, password in
+                                    OpenWRTMonitor.saveCredentials(host: host, username: username, password: password)
+                                }
+                            }
+                        }
+                    }
+                    Text("Queries your OpenWRT router via ubus JSON-RPC (HTTP). Requires the router's admin credentials.")
+                        .foregroundStyle(.secondary)
+                        .font(.caption)
+                    if let error = monitor.openWRTError {
+                        HStack(spacing: 4) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundStyle(.orange)
+                                .font(.system(size: 11))
+                            Text(error)
+                                .foregroundStyle(.secondary)
+                                .font(.caption)
+                        }
+                    }
+                }
+            } header: {
+                HStack(spacing: 4) {
+                    Text("OpenWRT Bandwidth")
                     Text("Experimental")
                         .font(.system(size: 9, weight: .semibold))
                         .foregroundStyle(.white)

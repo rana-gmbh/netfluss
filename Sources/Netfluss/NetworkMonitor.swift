@@ -39,10 +39,17 @@ final class NetworkMonitor: ObservableObject {
     @Published var fritzBoxMaxDown: UInt64 = 0
     @Published var fritzBoxMaxUp: UInt64 = 0
     @Published var fritzBoxError: String?
+    @Published var unifi: UniFiBandwidth?
+    @Published var unifiError: String?
+    @Published var openWRT: OpenWRTBandwidth?
+    @Published var openWRTError: String?
 
     private var timer: DispatchSourceTimer?
     private var fritzBoxInFlight = false
     private var fritzBoxLinkFetched = false
+    private var unifiInFlight = false
+    private var openWRTInFlight = false
+    private var openWRTLastSample: OpenWRTSample?
     private var lastSample: [String: InterfaceSample] = [:]
     private var lastUpdate: Date?
     private var currentInterval: Double?
@@ -158,6 +165,8 @@ final class NetworkMonitor: ObservableObject {
         updateTopApps()
         updateIPsIfNeeded()
         updateFritzBox()
+        updateUniFi()
+        updateOpenWRT()
     }
 
     // MARK: - Top Apps
@@ -490,7 +499,8 @@ final class NetworkMonitor: ObservableObject {
         guard !fritzBoxInFlight else { return }
         fritzBoxInFlight = true
 
-        let host = UserDefaults.standard.string(forKey: "fritzBoxHost") ?? "fritz.box"
+        let customHost = UserDefaults.standard.string(forKey: "fritzBoxHost") ?? ""
+        let host = customHost.isEmpty ? gatewayIP : customHost
         let needsLink = !fritzBoxLinkFetched
 
         Task { [weak self] in
@@ -511,6 +521,96 @@ final class NetworkMonitor: ObservableObject {
                 if self.fritzBoxError != msg { self.fritzBoxError = msg }
             }
             self.fritzBoxInFlight = false
+        }
+    }
+
+    // MARK: - UniFi
+
+    private func updateUniFi() {
+        guard UserDefaults.standard.bool(forKey: "unifiEnabled") else {
+            if unifi != nil { unifi = nil }
+            if unifiError != nil { unifiError = nil }
+            return
+        }
+        guard !unifiInFlight else { return }
+        unifiInFlight = true
+
+        let customHost = UserDefaults.standard.string(forKey: "unifiHost") ?? ""
+        let host = customHost.isEmpty ? gatewayIP : customHost
+
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                guard let creds = UniFiMonitor.loadCredentials(host: host) else {
+                    let msg = "No credentials configured"
+                    if self.unifiError != msg { self.unifiError = msg }
+                    if self.unifi != nil { self.unifi = nil }
+                    self.unifiInFlight = false
+                    return
+                }
+                let bandwidth = try await UniFiMonitor.fetchBandwidth(
+                    host: host, username: creds.username, password: creds.password
+                )
+                self.unifi = bandwidth
+                if self.unifiError != nil { self.unifiError = nil }
+            } catch {
+                if self.unifi != nil { self.unifi = nil }
+                let msg = "Cannot reach UniFi gateway"
+                if self.unifiError != msg { self.unifiError = msg }
+            }
+            self.unifiInFlight = false
+        }
+    }
+
+    // MARK: - OpenWRT
+
+    private func updateOpenWRT() {
+        guard UserDefaults.standard.bool(forKey: "openWRTEnabled") else {
+            if openWRT != nil { openWRT = nil }
+            if openWRTError != nil { openWRTError = nil }
+            openWRTLastSample = nil
+            return
+        }
+        guard !openWRTInFlight else { return }
+        openWRTInFlight = true
+
+        let customHost = UserDefaults.standard.string(forKey: "openWRTHost") ?? ""
+        let host = customHost.isEmpty ? gatewayIP : customHost
+
+        Task { [weak self] in
+            guard let self else { return }
+            do {
+                guard let creds = OpenWRTMonitor.loadCredentials(host: host) else {
+                    let msg = "No credentials configured"
+                    if self.openWRTError != msg { self.openWRTError = msg }
+                    if self.openWRT != nil { self.openWRT = nil }
+                    self.openWRTInFlight = false
+                    return
+                }
+                let sample = try await OpenWRTMonitor.fetchSample(
+                    host: host, username: creds.username, password: creds.password
+                )
+                // Compute rates from previous sample
+                if let prev = self.openWRTLastSample {
+                    let dt = sample.timestamp.timeIntervalSince(prev.timestamp)
+                    if dt > 0 {
+                        let rxRate = Double(sample.rxBytes &- prev.rxBytes) / dt
+                        let txRate = Double(sample.txBytes &- prev.txBytes) / dt
+                        self.openWRT = OpenWRTBandwidth(
+                            rxRateBps: rxRate,
+                            txRateBps: txRate,
+                            linkSpeedMbps: sample.linkSpeedMbps
+                        )
+                    }
+                }
+                self.openWRTLastSample = sample
+                if self.openWRTError != nil { self.openWRTError = nil }
+            } catch {
+                if self.openWRT != nil { self.openWRT = nil }
+                let msg = "Cannot reach OpenWRT router"
+                if self.openWRTError != msg { self.openWRTError = msg }
+            }
+            self.openWRTInFlight = false
         }
     }
 

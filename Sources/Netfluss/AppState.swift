@@ -52,7 +52,11 @@ final class AppState {
             "dnsPresetOrder": [],
             "useTouchID": true,
             "fritzBoxEnabled": false,
-            "fritzBoxHost": "fritz.box"
+            "fritzBoxHost": "",
+            "unifiEnabled": false,
+            "unifiHost": "",
+            "openWRTEnabled": false,
+            "openWRTHost": ""
         ])
         let monitor = NetworkMonitor()
         self.monitor = monitor

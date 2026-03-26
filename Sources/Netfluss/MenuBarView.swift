@@ -30,6 +30,8 @@ struct MenuBarView: View {
     @AppStorage("connectionStatusMode") private var connectionStatusMode: String = "list"
     @AppStorage("showDNSSwitcher") private var showDNSSwitcher: Bool = false
     @AppStorage("fritzBoxEnabled") private var fritzBoxEnabled: Bool = false
+    @AppStorage("unifiEnabled") private var unifiEnabled: Bool = false
+    @AppStorage("openWRTEnabled") private var openWRTEnabled: Bool = false
 
     // Height for one adapter card (padding + title row + spacing + rates row) + inter-card spacing.
     // Used to size the scroll area to show exactly 6 cards before scrolling kicks in.
@@ -99,6 +101,16 @@ struct MenuBarView: View {
             if fritzBoxEnabled {
                 Divider()
                 FritzBoxSection(useBits: useBits)
+            }
+
+            if unifiEnabled {
+                Divider()
+                UniFiSection(useBits: useBits)
+            }
+
+            if openWRTEnabled {
+                Divider()
+                OpenWRTSection(useBits: useBits)
             }
 
             if showDNSSwitcher {
@@ -752,17 +764,9 @@ struct FritzBoxSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Text("Fritz!Box")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.secondary)
-                Text("Experimental")
-                    .font(.system(size: 8, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 4)
-                    .padding(.vertical, 1)
-                    .background(.orange, in: Capsule())
-            }
+            Text("Fritz!Box")
+                .font(.system(size: 10, weight: .semibold))
+                .foregroundStyle(.secondary)
             .padding(.horizontal, 12)
             .padding(.top, 8)
 
@@ -871,6 +875,207 @@ struct FritzBoxRateRow: View {
             if bytesPerSec >= 1_000_000_000 { return String(format: "%.0f GB/s", bytesPerSec / 1_000_000_000) }
             if bytesPerSec >= 1_000_000 { return String(format: "%.0f MB/s", bytesPerSec / 1_000_000) }
             return String(format: "%.0f KB/s", bytesPerSec / 1_000)
+        }
+    }
+}
+
+// MARK: - UniFi Bandwidth Section
+
+struct UniFiSection: View {
+    let useBits: Bool
+
+    @EnvironmentObject private var monitor: NetworkMonitor
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Text("UniFi")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text("Experimental")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 1)
+                    .background(.orange, in: Capsule())
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+
+            if let error = monitor.unifiError {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.orange)
+                    Text(error)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else if let data = monitor.unifi {
+                VStack(spacing: 4) {
+                    RouterRateRow(
+                        icon: "arrow.down",
+                        label: "Download",
+                        rate: data.rxRateBps,
+                        maxRateMbps: data.maxDownstreamMbps,
+                        color: theme.downloadColor,
+                        useBits: useBits
+                    )
+                    RouterRateRow(
+                        icon: "arrow.up",
+                        label: "Upload",
+                        rate: data.txRateBps,
+                        maxRateMbps: data.maxUpstreamMbps,
+                        color: theme.uploadColor,
+                        useBits: useBits
+                    )
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else {
+                Text("Connecting…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+}
+
+// MARK: - OpenWRT Bandwidth Section
+
+struct OpenWRTSection: View {
+    let useBits: Bool
+
+    @EnvironmentObject private var monitor: NetworkMonitor
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Text("OpenWRT")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Text("Experimental")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 1)
+                    .background(.orange, in: Capsule())
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 8)
+
+            if let error = monitor.openWRTError {
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.orange)
+                    Text(error)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else if let data = monitor.openWRT {
+                VStack(spacing: 4) {
+                    RouterRateRow(
+                        icon: "arrow.down",
+                        label: "Download",
+                        rate: data.rxRateBps,
+                        maxRateMbps: data.linkSpeedMbps,
+                        color: theme.downloadColor,
+                        useBits: useBits
+                    )
+                    RouterRateRow(
+                        icon: "arrow.up",
+                        label: "Upload",
+                        rate: data.txRateBps,
+                        maxRateMbps: data.linkSpeedMbps,
+                        color: theme.uploadColor,
+                        useBits: useBits
+                    )
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 8)
+            } else {
+                Text("Gathering data…")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+}
+
+// MARK: - Shared Router Rate Row
+
+struct RouterRateRow: View {
+    let icon: String
+    let label: String
+    let rate: Double
+    let maxRateMbps: UInt64
+    let color: Color
+    let useBits: Bool
+
+    private var fraction: Double {
+        guard maxRateMbps > 0 else { return 0 }
+        // maxRateMbps is in Mbps, rate is in bytes/s → convert rate to Mbps
+        let rateMbps = (rate * 8.0) / 1_000_000.0
+        return min(1.0, rateMbps / Double(maxRateMbps))
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundStyle(color)
+                    .frame(width: 12)
+                Text(label)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(RateFormatter.formatRate(rate, useBits: useBits))
+                    .font(.system(size: 11, weight: .medium))
+                    .monospacedDigit()
+                if maxRateMbps > 0 {
+                    Text("/ \(formatMaxRate())")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            if maxRateMbps > 0 {
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(.quaternary)
+                            .frame(height: 3)
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(color.opacity(0.6))
+                            .frame(width: geo.size.width * fraction, height: 3)
+                    }
+                }
+                .frame(height: 3)
+            }
+        }
+    }
+
+    private func formatMaxRate() -> String {
+        // maxRateMbps is in Mbps
+        let mbps = Double(maxRateMbps)
+        if useBits {
+            if mbps >= 1_000 { return String(format: "%.0f Gb/s", mbps / 1_000) }
+            return String(format: "%.0f Mb/s", mbps)
+        } else {
+            let mbytesPerSec = mbps / 8.0
+            if mbytesPerSec >= 1_000 { return String(format: "%.0f GB/s", mbytesPerSec / 1_000) }
+            return String(format: "%.0f MB/s", mbytesPerSec)
         }
     }
 }
