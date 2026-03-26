@@ -20,7 +20,7 @@ import ServiceManagement
 
 private let colorOptions: [(id: String, label: String)] = [
     ("green", "Green"), ("blue", "Blue"), ("orange", "Orange"), ("yellow", "Yellow"),
-    ("teal", "Teal"), ("purple", "Purple"), ("pink", "Pink"), ("white", "White")
+    ("teal", "Teal"), ("purple", "Purple"), ("pink", "Pink"), ("white", "White"), ("black", "Black")
 ]
 
 private func swatchColor(_ name: String) -> Color {
@@ -33,6 +33,7 @@ private func swatchColor(_ name: String) -> Color {
     case "purple": return .purple
     case "pink":   return .pink
     case "white":  return Color(.white)
+    case "black":  return Color(.black)
     default:       return .primary
     }
 }

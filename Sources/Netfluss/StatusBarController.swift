@@ -173,6 +173,7 @@ final class StatusBarController: NSObject {
         case "purple": return .systemPurple
         case "pink":   return .systemPink
         case "white":  return .white
+        case "black":  return .black
         default:       return fallback
         }
     }
