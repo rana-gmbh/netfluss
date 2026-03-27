@@ -4,7 +4,7 @@
 [![Downloads](https://img.shields.io/github/downloads/rana-gmbh/netfluss/total)](https://github.com/rana-gmbh/netfluss/releases)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
-A minimal macOS menubar app showing real-time upload and download rates across all active network adapters. Now with Fritz!Box total bandwidth monitoring.
+A minimal macOS menubar app showing real-time upload and download rates across all active network adapters. Now with Fritz!Box, UniFi, and OpenWRT router bandwidth monitoring.
 
 <p align="center">
   <img src="screenshot.png" width="420" alt="Netfluss screenshot">
@@ -15,8 +15,10 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 ### Menubar
 - Live upload ↑ and download ↓ rates displayed in the menu bar
 - Monospaced digits for stable layout
-- Configurable colours for upload and download labels (Preferences → Appearance)
+- Configurable colours for upload and download labels including black (Preferences → Appearance)
 - Configurable font size (8–16 pt) and font style (Monospaced / System / Rounded)
+- **Pinned unit** — lock the display to KB/s, MB/s, or GB/s (bits or bytes) instead of auto-scaling
+- **Decimal places** — choose 0, 1, 2, or 3 fixed decimals, or auto
 - **Icon mode** — switch to a single network globe SF Symbol instead of rate text (Preferences → Appearance → Menu bar)
 - **Launch at login** — toggle in Preferences → Launch
 
@@ -38,6 +40,9 @@ A minimal macOS menubar app showing real-time upload and download rates across a
   - Shows the currently active DNS with a green checkmark
   - One-click switching with **Touch ID** authentication (falls back to admin password when Touch ID is unavailable)
 - **Fritz!Box Bandwidth** *(Experimental)* — shows total WAN download/upload rates from your Fritz!Box router via TR-064 API, with progress bars relative to your line speed (enable in Preferences)
+- **UniFi Bandwidth** *(Experimental)* — shows WAN download/upload rates from UniFi gateways (UDM, USG, UXG) via the UniFi OS REST API; credentials stored in macOS Keychain (enable in Preferences)
+- **OpenWRT Bandwidth** *(Experimental)* — shows WAN download/upload rates from OpenWRT routers via the ubus JSON-RPC API; credentials stored in macOS Keychain (enable in Preferences)
+- **Scrollable popover** — the popover is now scrollable and resizable for smaller screens, preventing overflow when many adapters or sections are active
 - **Top Apps** — optional section listing the top 5 processes by current network traffic, with a relative usage bar per app (enable in Preferences)
   - **App filtering** — hide noisy background processes (e.g. mDNSResponder) from the list via Preferences or hover to hide directly
 - **Footer** — quick access to Preferences, About, and Quit
@@ -52,15 +57,19 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 - Option to exclude hidden adapters from the total bandwidth shown in the header and menu bar
 - Display rates in bits or bytes
 - **Themes** — System (default), Dracula, Nord, Solarized; changes popover colours and menu bar label accent colours
-- Upload / Download label colours (8 swatches, System theme only)
+- Upload / Download label colours (9 swatches including black, System theme only)
 - **Menu bar display** — Rates (live ↑/↓ numbers, default) or Icon (network globe symbol)
 - Menu bar font size (8–16 pt stepper) and font style (Monospaced / System / Rounded)
+- **Pinned unit** — lock menu bar rates to KB/s, MB/s, or GB/s instead of auto-scaling
+- **Decimal places** — choose 0, 1, 2, or 3 fixed decimals for menu bar rates
 - **Connection status mode** — choose between the classic IP list or the new connection flow view
 - Top Apps toggle
 - **Top Apps grace period** — keep apps visible for 3 s, 5 s, or 10 s after their traffic stops, preventing the list from constantly reshuffling
 - **App filtering** — hide specific apps from the Top Apps list; "Apps to Hide" shows all recently active processes for easy selection
 - **DNS Switcher** — toggle to show the DNS picker in the popover; includes built-in presets (System Default, Cloudflare, Google, Quad9, OpenDNS) plus custom presets with edit support; visibility toggles, drag-to-reorder, and delete for each preset
-- **Fritz!Box Bandwidth** *(Experimental)* — toggle to show total WAN bandwidth from your Fritz!Box router; configurable router address (default: fritz.box); queries TR-064 API on port 49000 (no authentication required)
+- **Fritz!Box Bandwidth** *(Experimental)* — toggle to show total WAN bandwidth from your Fritz!Box router; configurable router address (auto-detected from gateway, fallback: fritz.box); queries TR-064 API on port 49000 (no authentication required)
+- **UniFi Bandwidth** *(Experimental)* — toggle to show WAN bandwidth from UniFi gateways; configurable host; credentials stored securely in macOS Keychain; supports UniFi OS (UDM) and legacy controller
+- **OpenWRT Bandwidth** *(Experimental)* — toggle to show WAN bandwidth from OpenWRT routers; configurable host; credentials stored securely in macOS Keychain; uses ubus JSON-RPC API with automatic session management
 - **Touch ID** — use Touch ID for DNS changes and Ethernet reconnects (enabled by default, configurable in DNS Switcher section)
 - **Resizable preferences window** — drag edges to resize for smaller screens (note: resize cursor may not be visible due to a macOS/SwiftUI limitation)
 - **Launch at login** toggle
@@ -78,7 +87,7 @@ A minimal macOS menubar app showing real-time upload and download rates across a
 
 ## Install
 
-Download `Netfluss-1.10.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
+Download `Netfluss-1.11.zip` from the [latest release](https://github.com/rana-gmbh/netfluss/releases/latest), unzip, and move `Netfluss.app` to `/Applications`.
 
 Netfluss is notarized and signed with a Developer ID — Gatekeeper will clear it automatically on first launch.
 
