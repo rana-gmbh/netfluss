@@ -131,31 +131,90 @@ struct StatisticsAppDelta: Sendable {
     let uploadBytes: UInt64
 }
 
-enum StatisticsRange: String, CaseIterable, Identifiable, Sendable {
-    case lastHour = "1H"
-    case last24Hours = "24H"
-    case last7Days = "7D"
-    case last30Days = "30D"
-    case lastYear = "1Y"
+struct StatisticsRange: Equatable, Identifiable, Sendable {
+    enum Granularity: Equatable, Sendable {
+        case minute
+        case hour
+        case day
+    }
 
-    var id: String { rawValue }
+    let id: String
+    let title: String
+    let start: Date
+    let end: Date
+    let granularity: Granularity
 
-    var title: String {
-        switch self {
-        case .lastHour: return "Last Hour"
-        case .last24Hours: return "Last 24 Hours"
-        case .last7Days: return "Last 7 Days"
-        case .last30Days: return "Last 30 Days"
-        case .lastYear: return "Last Year"
+    var bucketTitle: String {
+        switch granularity {
+        case .minute: return "Minute Traffic"
+        case .hour: return "Hourly Traffic"
+        case .day: return "Daily Traffic"
         }
     }
 
-    var bucketTitle: String {
-        switch self {
-        case .lastHour: return "Minute Traffic"
-        case .last24Hours: return "Hourly Traffic"
-        case .last7Days, .last30Days: return "Daily Traffic"
-        case .lastYear: return "Monthly Traffic"
+    static let presetIDs = ["today", "yesterday", "thisWeek", "thisMonth", "thisYear"]
+
+    static func today(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let start = calendar.startOfDay(for: now)
+        return StatisticsRange(id: "today", title: "Today", start: start, end: now, granularity: .hour)
+    }
+
+    static func yesterday(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let todayStart = calendar.startOfDay(for: now)
+        let yesterdayStart = calendar.date(byAdding: .day, value: -1, to: todayStart) ?? todayStart
+        return StatisticsRange(id: "yesterday", title: "Yesterday", start: yesterdayStart, end: todayStart, granularity: .hour)
+    }
+
+    static func thisWeek(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let weekInterval = calendar.dateInterval(of: .weekOfYear, for: now)
+        let start = weekInterval?.start ?? calendar.startOfDay(for: now)
+        return StatisticsRange(id: "thisWeek", title: "This Week", start: start, end: now, granularity: .day)
+    }
+
+    static func thisMonth(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let monthInterval = calendar.dateInterval(of: .month, for: now)
+        let start = monthInterval?.start ?? calendar.startOfDay(for: now)
+        return StatisticsRange(id: "thisMonth", title: "This Month", start: start, end: now, granularity: .day)
+    }
+
+    static func thisYear(now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let yearInterval = calendar.dateInterval(of: .year, for: now)
+        let start = yearInterval?.start ?? calendar.startOfDay(for: now)
+        return StatisticsRange(id: "thisYear", title: "This Year", start: start, end: now, granularity: .day)
+    }
+
+    private static let shortDateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        return f
+    }()
+
+    static func custom(start: Date, end: Date, calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange {
+        let span = end.timeIntervalSince(start)
+        let granularity: Granularity = span <= 2 * 86400 ? .hour : .day
+        let title = "\(shortDateFormatter.string(from: start)) – \(shortDateFormatter.string(from: end))"
+        return StatisticsRange(id: "custom", title: title, start: start, end: end, granularity: granularity)
+    }
+
+    static func preset(for id: String, now: Date = Date(), calendar: Calendar = .autoupdatingCurrent) -> StatisticsRange? {
+        switch id {
+        case "today": return today(now: now, calendar: calendar)
+        case "yesterday": return yesterday(now: now, calendar: calendar)
+        case "thisWeek": return thisWeek(now: now, calendar: calendar)
+        case "thisMonth": return thisMonth(now: now, calendar: calendar)
+        case "thisYear": return thisYear(now: now, calendar: calendar)
+        default: return nil
+        }
+    }
+
+    static func presetTitle(for id: String) -> String {
+        switch id {
+        case "today": return "Today"
+        case "yesterday": return "Yesterday"
+        case "thisWeek": return "This Week"
+        case "thisMonth": return "This Month"
+        case "thisYear": return "This Year"
+        default: return id
         }
     }
 }

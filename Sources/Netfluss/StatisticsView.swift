@@ -24,7 +24,14 @@ struct StatisticsView: View {
     @AppStorage("collectStatistics") private var collectStatistics: Bool = false
     @AppStorage("collectAppStatistics") private var collectAppStatistics: Bool = true
 
-    @State private var range: StatisticsRange = .last24Hours
+    @State private var selectedPresetID: String? = "today"
+    @State private var customStart: Date = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date())
+    @State private var customEnd: Date = {
+        let cal = Calendar.current
+        let endOfDay = cal.date(bySettingHour: 23, minute: 59, second: 59, of: Date())
+        return endOfDay ?? Date()
+    }()
+    @State private var showingCustomPicker = false
     private let refreshTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
     private let byteFormatter: ByteCountFormatter = {
@@ -46,10 +53,11 @@ struct StatisticsView: View {
         .background(AppTheme.system.backgroundColor ?? Color(NSColor.windowBackgroundColor))
         .frame(minWidth: 860, minHeight: 620)
         .onAppear {
-            statisticsManager.loadReport(for: range)
-        }
-        .onChange(of: range) { newValue in
-            statisticsManager.loadReport(for: newValue)
+            if let id = selectedPresetID {
+                statisticsManager.loadReport(forPreset: id)
+            } else {
+                statisticsManager.loadReport(customStart: customStart, customEnd: customEnd)
+            }
         }
         .onChange(of: collectStatistics) { _ in
             statisticsManager.refreshCurrentReport()
@@ -102,13 +110,52 @@ struct StatisticsView: View {
                 .buttonStyle(.borderless)
                 .foregroundStyle(.secondary)
 
-                Picker("Range", selection: $range) {
-                    ForEach(StatisticsRange.allCases) { range in
-                        Text(range.rawValue).tag(range)
+                Menu {
+                    Section("Quick Filters") {
+                        ForEach(StatisticsRange.presetIDs, id: \.self) { presetID in
+                            Button {
+                                selectedPresetID = presetID
+                                statisticsManager.loadReport(forPreset: presetID)
+                            } label: {
+                                if selectedPresetID == presetID {
+                                    Label(StatisticsRange.presetTitle(for: presetID), systemImage: "checkmark")
+                                } else {
+                                    Text(StatisticsRange.presetTitle(for: presetID))
+                                }
+                            }
+                        }
                     }
+                    Section {
+                        Button {
+                            showingCustomPicker = true
+                        } label: {
+                            if selectedPresetID == nil {
+                                Label("Custom Range…", systemImage: "checkmark")
+                            } else {
+                                Text("Custom Range…")
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text(activeRangeLabel)
+                            .font(.system(size: 13, weight: .semibold))
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 7)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color(NSColor.controlBackgroundColor))
+                    )
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 336)
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .popover(isPresented: $showingCustomPicker, arrowEdge: .bottom) {
+                    customRangePopover
+                }
             }
         }
         .padding(.horizontal, 24)
@@ -202,7 +249,7 @@ struct StatisticsView: View {
         if collectStatistics {
             return "Keep NetFluss running for a while and this view will fill in with adapter and app history."
         }
-        return "Enable statistics in Preferences to start collecting 24-hour, 7-day, 30-day, and yearly network history."
+        return "Enable statistics in Preferences to start collecting daily, weekly, monthly, and yearly network history."
     }
 
     private var sampleDataBanner: some View {
@@ -301,7 +348,8 @@ struct StatisticsView: View {
                     points: report.timeline,
                     keyPath: \.downloadBytes,
                     color: statisticsDownloadColor,
-                    systemImage: "arrow.down"
+                    systemImage: "arrow.down",
+                    range: report.range
                 )
 
                 Rectangle()
@@ -314,7 +362,8 @@ struct StatisticsView: View {
                     points: report.timeline,
                     keyPath: \.uploadBytes,
                     color: statisticsUploadColor,
-                    systemImage: "arrow.up"
+                    systemImage: "arrow.up",
+                    range: report.range
                 )
             }
         }
@@ -331,7 +380,8 @@ struct StatisticsView: View {
         points: [StatisticsTimelinePoint],
         keyPath: KeyPath<StatisticsTimelinePoint, UInt64>,
         color: Color,
-        systemImage: String
+        systemImage: String,
+        range: StatisticsRange
     ) -> some View {
         let peakBytes = max(points.map { $0[keyPath: keyPath] }.max() ?? 0, 1)
         let averageBytes = points.isEmpty ? 0 : points.reduce(0) { $0 + $1[keyPath: keyPath] } / UInt64(points.count)
@@ -548,6 +598,79 @@ struct StatisticsView: View {
         )
     }
 
+    private var activeRangeLabel: String {
+        if let id = selectedPresetID {
+            return StatisticsRange.presetTitle(for: id)
+        }
+        return customRangeLabel
+    }
+
+    private var customRangeLabel: String {
+        StatisticsRange.custom(start: customStart, end: customEnd).title
+    }
+
+    private var customRangePopover: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                Image(systemName: "calendar")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.accentColor)
+                Text("Custom Range")
+                    .font(.system(size: 15, weight: .semibold))
+                Spacer()
+            }
+
+            VStack(spacing: 12) {
+                HStack(spacing: 0) {
+                    Text("From")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 40, alignment: .leading)
+                    DatePicker("", selection: $customStart, in: ...customEnd, displayedComponents: [.date, .hourAndMinute])
+                        .datePickerStyle(.field)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                }
+
+                HStack(spacing: 0) {
+                    Text("To")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 40, alignment: .leading)
+                    DatePicker("", selection: $customEnd, in: customStart...Date(), displayedComponents: [.date, .hourAndMinute])
+                        .datePickerStyle(.field)
+                        .labelsHidden()
+                        .frame(maxWidth: .infinity)
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color(NSColor.controlBackgroundColor))
+            )
+
+            HStack(spacing: 10) {
+                Button("Cancel") {
+                    showingCustomPicker = false
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+
+                Spacer()
+
+                Button("Apply") {
+                    selectedPresetID = nil
+                    showingCustomPicker = false
+                    statisticsManager.loadReport(customStart: customStart, customEnd: customEnd)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+            }
+        }
+        .padding(20)
+        .frame(width: 340)
+    }
+
     private func formattedBytes(_ bytes: UInt64) -> String {
         byteFormatter.string(fromByteCount: Int64(bytes))
     }
@@ -595,29 +718,30 @@ struct StatisticsView: View {
     }
 
     private func axisDateFormat(for range: StatisticsRange) -> Date.FormatStyle {
-        switch range {
-        case .lastHour:
+        switch range.granularity {
+        case .minute:
             return .dateTime.hour().minute()
-        case .last24Hours:
+        case .hour:
             return .dateTime.hour()
-        case .last7Days, .last30Days:
+        case .day:
+            let span = range.end.timeIntervalSince(range.start)
+            if span > 90 * 86400 {
+                return .dateTime.month(.abbreviated)
+            }
             return .dateTime.month(.abbreviated).day()
-        case .lastYear:
-            return .dateTime.month(.abbreviated)
         }
     }
 
     private func xAxisTickCount(for range: StatisticsRange) -> Int {
-        switch range {
-        case .lastHour:
+        switch range.granularity {
+        case .minute:
             return 6
-        case .last24Hours:
+        case .hour:
             return 6
-        case .last7Days:
-            return 7
-        case .last30Days:
-            return 5
-        case .lastYear:
+        case .day:
+            let days = max(Int(range.end.timeIntervalSince(range.start) / 86400), 1)
+            if days <= 7 { return days }
+            if days <= 31 { return 5 }
             return 6
         }
     }

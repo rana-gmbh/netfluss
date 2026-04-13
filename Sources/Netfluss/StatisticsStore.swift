@@ -135,27 +135,19 @@ actor StatisticsStore {
         let appSource: [String: [String: StatisticsTrafficAmounts]]
         let relevantKeys: [String]
 
-        switch range {
-        case .lastHour:
+        switch range.granularity {
+        case .minute:
             adapterSource = archive.adapterMinute
             appSource = archive.appMinute
-            relevantKeys = Self.minuteKeys(endingAt: now, count: 60, calendar: calendar)
-        case .last24Hours:
+            relevantKeys = Self.minuteKeys(from: range.start, to: range.end, calendar: calendar)
+        case .hour:
             adapterSource = archive.adapterHourly
             appSource = archive.appHourly
-            relevantKeys = Self.hourKeys(endingAt: now, count: 24, calendar: calendar)
-        case .last7Days:
+            relevantKeys = Self.hourKeys(from: range.start, to: range.end, calendar: calendar)
+        case .day:
             adapterSource = archive.adapterDaily
             appSource = archive.appDaily
-            relevantKeys = Self.dayKeys(endingAt: now, count: 7, calendar: calendar)
-        case .last30Days:
-            adapterSource = archive.adapterDaily
-            appSource = archive.appDaily
-            relevantKeys = Self.dayKeys(endingAt: now, count: 30, calendar: calendar)
-        case .lastYear:
-            adapterSource = archive.adapterDaily
-            appSource = archive.appDaily
-            relevantKeys = Self.dayKeys(endingAt: now, count: 365, calendar: calendar)
+            relevantKeys = Self.dayKeys(from: range.start, to: range.end, calendar: calendar)
         }
 
         let adapterTotals = aggregate(items: adapterSource, keys: relevantKeys)
@@ -210,8 +202,8 @@ actor StatisticsStore {
         source: [String: [String: StatisticsTrafficAmounts]],
         keys: [String]
     ) -> [StatisticsTimelinePoint] {
-        switch range {
-        case .lastYear:
+        // For daily granularity spanning more than 90 days, roll up into monthly buckets
+        if range.granularity == .day && range.end.timeIntervalSince(range.start) > 90 * 86400 {
             var monthlyTotals: [String: StatisticsTrafficAmounts] = [:]
             for key in keys {
                 guard let bucketDate = Self.date(fromDayKey: key, calendar: calendar),
@@ -235,30 +227,28 @@ actor StatisticsStore {
                     uploadBytes: totals.uploadBytes
                 )
             }
-        case .lastHour, .last24Hours, .last7Days, .last30Days:
-            return keys.compactMap { key in
-                let date: Date?
-                switch range {
-                case .lastHour:
-                    date = Self.date(fromMinuteKey: key, calendar: calendar)
-                case .last24Hours:
-                    date = Self.date(fromHourKey: key, calendar: calendar)
-                case .last7Days, .last30Days:
-                    date = Self.date(fromDayKey: key, calendar: calendar)
-                case .lastYear:
-                    date = nil
-                }
-                guard let date, let bucket = source[key] else { return nil }
-                let totals = bucket.values.reduce(into: StatisticsTrafficAmounts()) { partial, amounts in
-                    partial.merge(amounts)
-                }
-                return StatisticsTimelinePoint(
-                    id: key,
-                    date: date,
-                    downloadBytes: totals.downloadBytes,
-                    uploadBytes: totals.uploadBytes
-                )
+        }
+
+        return keys.compactMap { key in
+            let date: Date?
+            switch range.granularity {
+            case .minute:
+                date = Self.date(fromMinuteKey: key, calendar: calendar)
+            case .hour:
+                date = Self.date(fromHourKey: key, calendar: calendar)
+            case .day:
+                date = Self.date(fromDayKey: key, calendar: calendar)
             }
+            guard let date, let bucket = source[key] else { return nil }
+            let totals = bucket.values.reduce(into: StatisticsTrafficAmounts()) { partial, amounts in
+                partial.merge(amounts)
+            }
+            return StatisticsTimelinePoint(
+                id: key,
+                date: date,
+                downloadBytes: totals.downloadBytes,
+                uploadBytes: totals.uploadBytes
+            )
         }
     }
 
@@ -446,28 +436,48 @@ actor StatisticsStore {
         return try decoder.decode(StatisticsArchive.self, from: data)
     }
 
-    private static func hourKeys(endingAt date: Date, count: Int, calendar: Calendar) -> [String] {
-        let end = calendar.dateInterval(of: .hour, for: date)?.start ?? date
-        return (0..<count).compactMap { offset in
-            let bucketDate = calendar.date(byAdding: .hour, value: -(count - 1 - offset), to: end)
-            return bucketDate.map { hourKey(for: $0, calendar: calendar) }
+    private static func hourKeys(from start: Date, to end: Date, calendar: Calendar) -> [String] {
+        let startHour = calendar.dateInterval(of: .hour, for: start)?.start ?? start
+        let endHour = calendar.dateInterval(of: .hour, for: end)?.start ?? end
+        var keys: [String] = []
+        var current = startHour
+        // Use < so ranges ending on an exact hour boundary (e.g. Yesterday
+        // ending at midnight) don't bleed into the next period's first bucket.
+        // For ranges ending mid-hour (e.g. Today at 15:30), endHour is 15:00
+        // which is still included because the current hour has data.
+        let inclusive = end != endHour
+        while inclusive ? current <= endHour : current < endHour {
+            keys.append(hourKey(for: current, calendar: calendar))
+            guard let next = calendar.date(byAdding: .hour, value: 1, to: current) else { break }
+            current = next
         }
+        return keys
     }
 
-    private static func minuteKeys(endingAt date: Date, count: Int, calendar: Calendar) -> [String] {
-        let end = calendar.dateInterval(of: .minute, for: date)?.start ?? date
-        return (0..<count).compactMap { offset in
-            let bucketDate = calendar.date(byAdding: .minute, value: -(count - 1 - offset), to: end)
-            return bucketDate.map { minuteKey(for: $0, calendar: calendar) }
+    private static func minuteKeys(from start: Date, to end: Date, calendar: Calendar) -> [String] {
+        let startMinute = calendar.dateInterval(of: .minute, for: start)?.start ?? start
+        let endMinute = calendar.dateInterval(of: .minute, for: end)?.start ?? end
+        var keys: [String] = []
+        var current = startMinute
+        while current <= endMinute {
+            keys.append(minuteKey(for: current, calendar: calendar))
+            guard let next = calendar.date(byAdding: .minute, value: 1, to: current) else { break }
+            current = next
         }
+        return keys
     }
 
-    private static func dayKeys(endingAt date: Date, count: Int, calendar: Calendar) -> [String] {
-        let end = calendar.startOfDay(for: date)
-        return (0..<count).compactMap { offset in
-            let bucketDate = calendar.date(byAdding: .day, value: -(count - 1 - offset), to: end)
-            return bucketDate.map { dayKey(for: $0, calendar: calendar) }
+    private static func dayKeys(from start: Date, to end: Date, calendar: Calendar) -> [String] {
+        let startDay = calendar.startOfDay(for: start)
+        let endDay = calendar.startOfDay(for: end)
+        var keys: [String] = []
+        var current = startDay
+        while current <= endDay {
+            keys.append(dayKey(for: current, calendar: calendar))
+            guard let next = calendar.date(byAdding: .day, value: 1, to: current) else { break }
+            current = next
         }
+        return keys
     }
 
     private static func hourKey(for date: Date, calendar: Calendar) -> String {
