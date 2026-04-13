@@ -12,7 +12,7 @@ Latest release: **NetFluss 2.1**
 
 ![NetFluss statistics](Screenshots/statistics.webp)
 
-- Dedicated statistics window with `1H`, `24H`, `7D`, `30D`, and `1Y` ranges
+- Dedicated statistics window with calendar-anchored ranges (Today, Yesterday, This Week, This Month, This Year) and custom date range picker
 - Download and upload timelines, top adapters, and top apps
 - Improved app attribution for Safari/WebKit traffic and more reliable adapter accounting for LAN/NAS transfers
 - Optional app statistics collection with energy-conscious background sampling
@@ -70,7 +70,7 @@ Latest release: **NetFluss 2.1**
 - Top adapter ranking with automatic `Other` grouping when many interfaces are active
 - Top 10 apps for download and upload over each selected range
 - More reliable app history sampling for Safari/WebKit traffic
-- Minute-level detail for the `1H` view
+- Calendar-anchored presets and custom date range with automatic granularity selection
 - Default-off collection mode to avoid unnecessary energy use
 
 ### Speed Test

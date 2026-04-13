@@ -39,7 +39,9 @@ final class StatisticsManager: ObservableObject {
     private let appSamplingQueue = DispatchQueue(label: "com.local.netfluss.statistics.apps", qos: .utility)
     private var appSamplingTimer: DispatchSourceTimer?
     private var appSamplingInFlight = false
-    private var currentRange: StatisticsRange = .last24Hours
+    private var currentPresetID: String? = "today"
+    private var currentCustomStart: Date?
+    private var currentCustomEnd: Date?
 
     init(monitor: NetworkMonitor) {
         self.monitor = monitor
@@ -78,8 +80,33 @@ final class StatisticsManager: ObservableObject {
         }
     }
 
-    func loadReport(for range: StatisticsRange) {
-        currentRange = range
+    func loadReport(forPreset presetID: String) {
+        currentPresetID = presetID
+        currentCustomStart = nil
+        currentCustomEnd = nil
+        let range = StatisticsRange.preset(for: presetID) ?? .today()
+        loadRange(range)
+    }
+
+    func loadReport(customStart: Date, customEnd: Date) {
+        currentPresetID = nil
+        currentCustomStart = customStart
+        currentCustomEnd = customEnd
+        let range = StatisticsRange.custom(start: customStart, end: customEnd)
+        loadRange(range)
+    }
+
+    func refreshCurrentReport() {
+        if let presetID = currentPresetID {
+            let range = StatisticsRange.preset(for: presetID) ?? .today()
+            loadRange(range)
+        } else if let start = currentCustomStart, let end = currentCustomEnd {
+            let range = StatisticsRange.custom(start: start, end: end)
+            loadRange(range)
+        }
+    }
+
+    private func loadRange(_ range: StatisticsRange) {
         isLoading = true
 
         let customAdapterNames = Self.loadAdapterNames()
@@ -100,20 +127,16 @@ final class StatisticsManager: ObservableObject {
         }
     }
 
-    func refreshCurrentReport() {
-        loadReport(for: currentRange)
-    }
-
     func enableSampleData() {
         sampleStore = StatisticsStore(archive: StatisticsDemoData.makeArchive(now: Date()))
         isShowingSampleData = true
-        loadReport(for: currentRange)
+        refreshCurrentReport()
     }
 
     func disableSampleData() {
         sampleStore = nil
         isShowingSampleData = false
-        loadReport(for: currentRange)
+        refreshCurrentReport()
     }
 
     func flushSynchronously() {
