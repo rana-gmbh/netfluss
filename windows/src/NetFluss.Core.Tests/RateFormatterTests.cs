@@ -32,9 +32,11 @@ public class RateFormatterTests
     public void FormatRate_PinnedUnit(double bytesPerSecond, bool useBits, string unit, int decimals, string expected)
         => Assert.Equal(expected, RateFormatter.FormatRate(bytesPerSecond, useBits, unit, decimals));
 
+    // The literals must be doubles: the runtime widens int to double when binding a
+    // test parameter, but it will not box an int into a Nullable<double>.
     [Theory]
-    [InlineData(1200, "1.2 Gb/s")]
-    [InlineData(866, "866 Mb/s")]
+    [InlineData(1200.0, "1.2 Gb/s")]
+    [InlineData(866.0, "866 Mb/s")]
     [InlineData(null, "—")]
     public void FormatMbps(double? value, string expected)
         => Assert.Equal(expected, RateFormatter.FormatMbps(value));
