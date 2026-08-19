@@ -329,7 +329,7 @@
   <data name="Custom date range" xml:space="preserve">
     <value>Eigener Zeitraum</value>
   </data>
-  <data name="Custom Date Range" xml:space="preserve">
+  <data name="Custom Date Range~2" xml:space="preserve">
     <value>Eigener Zeitraum</value>
   </data>
   <data name="From" xml:space="preserve">
@@ -743,7 +743,7 @@
   <data name="Add Note" xml:space="preserve">
     <value>Notiz hinzufügen</value>
   </data>
-  <data name="Add note" xml:space="preserve">
+  <data name="Add note~2" xml:space="preserve">
     <value>Notiz hinzufügen</value>
   </data>
   <data name="M-Lab Consent" xml:space="preserve">
@@ -1018,7 +1018,7 @@ Es wird kein Netzwerkverkehr gesendet — nur lokale Zähler von Ihrem Mac werde
   <data name="Rename" xml:space="preserve">
     <value>Umbenennen</value>
   </data>
-  <data name="Custom color" xml:space="preserve">
+  <data name="Custom color~2" xml:space="preserve">
     <value>Eigene Farbe</value>
   </data>
   <data name="Dashboard (basic)" xml:space="preserve">

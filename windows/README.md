@@ -56,6 +56,22 @@ platform-specific concept — "Menu bar icon style" needs a Windows word, and th
 where those decisions get tracked. CI runs the script with `--check` and fails if the
 generated files are stale.
 
+**Case-folded resource names.** .NET treats two resource names differing only in
+capitalization as the same name; macOS `.strings` keys are case-sensitive, and NetFluss has
+three pairs that differ only in case — a title-case heading beside the sentence-case control
+that opens it (`Custom Date Range` / `Custom date range`). resgen's response is to drop one
+and emit `MSB3568`, so the build stays green while a string vanishes from every language. It
+is invisible in English, where the key doubles as the value, and only shows up as English
+text leaking into German and Chinese.
+
+The generator resolves it: the first key of each colliding group keeps its exact name and the
+rest are stored as `key~2`, `key~3`, …, which `Localization.L` probes for when an exact lookup
+misses. Call sites still pass the macOS key verbatim. `COLLISION_LIMIT` in the script and
+`CollisionLimit` in `Localization.cs` must move together, and `LocalizationCaseCollisionTests`
+fails if they don't. `MSB3568` is promoted to an error in `Directory.Build.props` so a future
+collision breaks the build instead of warning — note it only fires on a full resgen, so
+reproduce with `dotnet clean` first.
+
 ## Verifying without a Windows machine
 
 CI on `windows-latest` is the verification loop. Every push touching `windows/**` builds,

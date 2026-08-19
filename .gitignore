@@ -25,6 +25,9 @@ windows/**/bin/
 windows/**/obj/
 windows/artifacts/
 
+# strings2resx.py leaves this behind when it is imported rather than run.
+__pycache__/
+
 # The `*.app` rule above is for built macOS bundles, but git matches it
 # case-insensitively on APFS, so it also swallows the whole NetFluss.App project
 # directory. Re-include it explicitly — the parent directory must be un-excluded

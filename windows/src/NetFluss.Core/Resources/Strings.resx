@@ -329,7 +329,7 @@
   <data name="Custom date range" xml:space="preserve">
     <value>Custom date range</value>
   </data>
-  <data name="Custom Date Range" xml:space="preserve">
+  <data name="Custom Date Range~2" xml:space="preserve">
     <value>Custom Date Range</value>
   </data>
   <data name="From" xml:space="preserve">
@@ -743,7 +743,7 @@
   <data name="Add Note" xml:space="preserve">
     <value>Add Note</value>
   </data>
-  <data name="Add note" xml:space="preserve">
+  <data name="Add note~2" xml:space="preserve">
     <value>Add note</value>
   </data>
   <data name="M-Lab Consent" xml:space="preserve">
@@ -1018,7 +1018,7 @@ No network traffic is sent — only local counters from your machine are recorde
   <data name="Rename" xml:space="preserve">
     <value>Rename</value>
   </data>
-  <data name="Custom color" xml:space="preserve">
+  <data name="Custom color~2" xml:space="preserve">
     <value>Custom color</value>
   </data>
   <data name="Dashboard (basic)" xml:space="preserve">

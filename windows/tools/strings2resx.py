@@ -6,7 +6,7 @@ across en/de/zh-Hans/zh-Hant already exist and are reviewed, and forking them wo
 guarantee the two apps drift apart. This script is run at build time (and by CI, which
 fails if the checked-in .resx files are stale).
 
-Two things are translated on the way across:
+Three things are translated on the way across:
 
   * Format specifiers. Cocoa writes %@ / %d / %.0f; .NET writes {0} / {1}. Replacement is
     positional and in source order, which is safe here because none of the NetFluss
@@ -15,6 +15,10 @@ Two things are translated on the way across:
   * Platform vocabulary. A string such as "System Default follows the language selected in
     macOS." is wrong on Windows. Rather than silently shipping it, every string matching a
     platform term is written to a review report and, where an override exists, rewritten.
+
+  * Case collisions. .NET resource names fold case; macOS .strings keys do not. Keys that
+    differ only in capitalization are stored under a "~N" suffixed name and reassembled at
+    lookup time by Localization.L — see COLLISION_SUFFIX below.
 
 Usage:
     python3 strings2resx.py [--check]
@@ -45,6 +49,25 @@ LANGUAGES = {
 
 ENTRY_RE = re.compile(r'^\s*"((?:[^"\\]|\\.)*)"\s*=\s*"((?:[^"\\]|\\.)*)"\s*;\s*$')
 SPECIFIER_RE = re.compile(r"%(?:\d+\$)?(?:[-+ #0]*\d*(?:\.\d+)?)?(?:@|ll[du]|l[du]|[dfsu@])")
+
+# .NET resource names fold case. ResourceWriter hashes them case-insensitively so that
+# ResourceSet can offer ignoreCase lookups, and resgen responds to two names differing
+# only in capitalization by *dropping the later one with a warning* (MSB3568) rather than
+# failing — a green build that is silently missing a string in every language.
+#
+# macOS .strings keys are case-sensitive, and NetFluss legitimately uses three such pairs:
+# a title-case heading and a sentence-case control label sitting next to each other
+# ("Custom Date Range" the popover title vs "Custom date range" the button). Both are live
+# on the Mac and their German and Chinese values must stay reachable, so the collision is
+# resolved here rather than by deleting a key upstream.
+#
+# Within a group of keys that fold together, the first in English source order keeps its
+# exact name and every later one gets "~2", "~3", … appended. Localization.L in
+# NetFluss.Core reverses this by probing key, key~2 … key~N when an exact lookup misses,
+# so C# call sites keep passing the macOS key verbatim. Both halves of that contract are
+# pinned by LocalizationCaseCollisionTests — change one and the tests fail.
+COLLISION_SUFFIX = "~"
+COLLISION_LIMIT = 9
 
 # Terms that cannot survive the crossing unchanged. Anything matched here lands in the
 # review report; entries with a replacement are rewritten automatically.
@@ -154,6 +177,45 @@ def parse_strings(path: pathlib.Path) -> dict[str, str]:
     return entries
 
 
+def resolve_case_collisions(keys: list[str]) -> dict[str, str]:
+    """Map each converted key to the .resx resource name it is stored under.
+
+    Identity for everything except keys that fold together with an earlier one; see the
+    COLLISION_SUFFIX comment for why those cannot both keep their own name.
+    """
+    groups: dict[str, list[str]] = {}
+    for key in keys:
+        groups.setdefault(key.casefold(), []).append(key)
+
+    names: dict[str, str] = {}
+    taken = {key.casefold() for key in keys}
+
+    for members in groups.values():
+        # First in English source order wins the bare name, so the common case keeps a
+        # resource name that is readable and diffable against the .strings catalogue.
+        names[members[0]] = members[0]
+
+        for ordinal, key in enumerate(members[1:], start=2):
+            if ordinal > COLLISION_LIMIT:
+                raise SystemExit(
+                    f"error: {len(members)} keys fold to {members[0]!r}, more than the "
+                    f"{COLLISION_LIMIT} that Localization.L probes for. Raise "
+                    f"COLLISION_LIMIT here and CollisionLimit in Localization.cs together."
+                )
+
+            name = f"{key}{COLLISION_SUFFIX}{ordinal}"
+            if name.casefold() in taken:
+                raise SystemExit(
+                    f"error: disambiguating {key!r} produces {name!r}, which collides with "
+                    f"a real key. Rename the offending key in the .strings catalogues."
+                )
+
+            taken.add(name.casefold())
+            names[key] = name
+
+    return names
+
+
 def apply_platform_overrides(value: str) -> tuple[str, bool]:
     replaced = value
     for term, substitute in PLATFORM_OVERRIDES.items():
@@ -189,13 +251,32 @@ def main() -> int:
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    english = parse_strings(SOURCE_DIR / "en.lproj" / "Localizable.strings")
+    sources = {
+        language: parse_strings(SOURCE_DIR / f"{language}.lproj" / "Localizable.strings")
+        for language in LANGUAGES
+    }
+    english = sources["en"]
+
+    # One name map shared by every language, derived from the English catalogue. Computing
+    # it per language would let a German file that happens to list a colliding pair in the
+    # opposite order pick the opposite winner, and the German lookup would then miss.
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for entries in sources.values():
+        for key in entries:
+            converted_key = convert_specifiers(key)
+            if converted_key not in seen:
+                seen.add(converted_key)
+                ordered.append(converted_key)
+
+    names = resolve_case_collisions(ordered)
+    collisions = {key: name for key, name in names.items() if key != name}
+
     review: list[str] = []
     generated: dict[pathlib.Path, str] = {}
 
     for language, suffix in LANGUAGES.items():
-        source = SOURCE_DIR / f"{language}.lproj" / "Localizable.strings"
-        entries = parse_strings(source)
+        entries = sources[language]
 
         missing = sorted(set(english) - set(entries))
         extra = sorted(set(entries) - set(english))
@@ -207,11 +288,22 @@ def main() -> int:
         converted: dict[str, str] = {}
         for key, value in entries.items():
             value, was_overridden = apply_platform_overrides(value)
-            converted[convert_specifiers(key)] = convert_specifiers(value)
+            converted[names[convert_specifiers(key)]] = convert_specifiers(value)
 
             if any(term in value for term in PLATFORM_TERMS) or was_overridden:
                 status = "auto-rewritten" if was_overridden else "needs review"
                 review.append(f"| `{language}` | `{key.replace(chr(124), chr(92) + chr(124))}` | {status} | {value.replace(chr(124), chr(92) + chr(124))} |")
+
+        # Defence in depth: whatever the map said, never hand resgen a file it would have
+        # to silently drop entries from.
+        folded: dict[str, str] = {}
+        for name in converted:
+            clash = folded.setdefault(name.casefold(), name)
+            if clash != name:
+                raise SystemExit(
+                    f"error: {language} would emit {name!r} and {clash!r}, which .NET "
+                    f"treats as the same resource name."
+                )
 
         generated[OUTPUT_DIR / f"Strings{suffix}.resx"] = render_resx(converted)
 
@@ -240,13 +332,16 @@ def main() -> int:
             path.write_text(content, encoding="utf-8")
 
     if args.check and stale:
-        names = ", ".join(str(p.relative_to(REPO_ROOT)) for p in stale)
-        print(f"error: generated resources are stale: {names}", file=sys.stderr)
+        stale_names = ", ".join(str(p.relative_to(REPO_ROOT)) for p in stale)
+        print(f"error: generated resources are stale: {stale_names}", file=sys.stderr)
         print("run: python3 windows/tools/strings2resx.py", file=sys.stderr)
         return 1
 
     print(f"{'checked' if args.check else 'wrote'} {len(generated) - 1} .resx file(s) "
-          f"from {len(english)} English keys; {len(review)} platform review row(s)")
+          f"from {len(english)} English keys; {len(review)} platform review row(s); "
+          f"{len(collisions)} case collision(s) disambiguated")
+    for key, name in sorted(collisions.items()):
+        print(f"  case collision: {key!r} stored as {name!r}")
     return 0
 
 

@@ -30,6 +30,23 @@ public static class Localization
 
     private static CultureInfo? _override;
 
+    /// <summary>
+    /// .NET folds resource names, so two macOS keys differing only in capitalization
+    /// cannot both be stored under their own name — resgen drops the later one with a
+    /// warning. NetFluss has three such pairs, each a title-case heading beside a
+    /// sentence-case control label, and both halves must stay reachable in German and
+    /// Chinese.
+    ///
+    /// <para><c>strings2resx.py</c> therefore keeps the first of each colliding group
+    /// under its exact name and appends "~2", "~3", … to the rest. Probing those suffixes
+    /// on a miss reverses it, which keeps the promise above: call sites pass the macOS key
+    /// verbatim and never learn that any of this happened.</para>
+    /// </summary>
+    private const char CollisionSuffix = '~';
+
+    /// <summary>Must stay equal to <c>COLLISION_LIMIT</c> in <c>strings2resx.py</c>.</summary>
+    private const int CollisionLimit = 9;
+
     public static AppLanguage Current { get; private set; } = AppLanguage.System;
 
     public static void Use(AppLanguage language)
@@ -40,7 +57,30 @@ public static class Localization
 
     /// <summary>Localized string for <paramref name="key"/>, or the key when untranslated.</summary>
     public static string L(string key)
-        => Resources.GetString(key, _override ?? CultureInfo.CurrentUICulture) ?? key;
+    {
+        var culture = _override ?? CultureInfo.CurrentUICulture;
+
+        // The overwhelming majority of keys are stored under their own name and resolve here.
+        var value = Resources.GetString(key, culture);
+        if (value is not null)
+        {
+            return value;
+        }
+
+        // Only a key that lost a case collision reaches this loop, and only a genuinely
+        // absent key runs it to completion — which already means a bug, so the extra
+        // lookups cost nothing that matters.
+        for (var ordinal = 2; ordinal <= CollisionLimit; ordinal++)
+        {
+            value = Resources.GetString($"{key}{CollisionSuffix}{ordinal}", culture);
+            if (value is not null)
+            {
+                return value;
+            }
+        }
+
+        return key;
+    }
 
     /// <summary>Localized string with composite formatting, e.g. <c>L("Collecting since {0}", date)</c>.</summary>
     public static string L(string key, params object?[] args)

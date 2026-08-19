@@ -5,6 +5,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsNotAsErrors>NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <!--
+      TreatWarningsAsErrors only governs the compilers; warnings raised by MSBuild tasks
+      pass straight through it. MSB3568 is GenerateResource reporting that two resource
+      names folded together and it dropped one — a string silently missing from every
+      language while the build stays green. It is the one MSBuild warning that has already
+      bitten this project, so it is an error. Note it only fires on a full resgen: an
+      incremental build skips the task and reports nothing.
+    -->
+    <MSBuildWarningsAsErrors>$(MSBuildWarningsAsErrors);MSB3568</MSBuildWarningsAsErrors>
     <InvariantGlobalization>false</InvariantGlobalization>
     <Company>Rana GmbH</Company>
     <Product>NetFluss</Product>
