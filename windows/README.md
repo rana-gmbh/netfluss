@@ -64,3 +64,19 @@ at 16/20/24/32 px (100%/125%/150%/200% scaling) over light and dark taskbar swat
 magnification with a 1:1 inset. That artifact is how the Phase 0 question gets answered:
 *is a 16 px tray icon legible enough to be the default, or does the taskbar-overlay window
 have to be first-class?*
+
+### Phase 0 verdict
+
+From the first green run's contact sheet:
+
+- **The tray meter is viable as the default.** Two-line is clean at 24 px (150%) and 32 px
+  (200%), good at 20 px (125%), and cramped but functional at 16 px (100%). Most current
+  Windows laptops ship at 125–150%, so the common case is comfortable.
+- **16 px is the weak spot**, which is precisely the case the opt-in taskbar-overlay window
+  exists to serve. It stays a Phase 2+ item, not a Phase 0 blocker.
+- **`DownloadOnly` should be offered at 16 px** — a single line gets the full icon height
+  and is markedly sharper than two half-height rows.
+- **Arrows off by default is correct.** `↓4.7M` visibly degrades against `4.7M` at 16–20 px;
+  the glyph eats width the digits need, and the row colour already carries the meaning.
+- **The upload green needs darkening on light taskbars.** At `#2ea043` on `#f3f3f3` it reads
+  noticeably weaker than the download blue. Worth a contrast pass in Phase 1.
