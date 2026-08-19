@@ -77,4 +77,7 @@ public sealed record TrayMeterOptions
     /// Set to 0 to draw the configured colours untouched.
     /// </summary>
     public double MinimumContrastRatio { get; init; } = Contrast.MinimumReadableRatio;
+
+    /// <summary>Glyph drawn by <see cref="TrayMeterLayout.Icon"/>; see <c>TrayGlyphLibrary</c>.</summary>
+    public string IconGlyph { get; init; } = "netfluss";
 }

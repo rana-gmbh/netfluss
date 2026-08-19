@@ -4,7 +4,8 @@ Native Windows port of NetFluss, tracking the macOS app's feature set.
 Design and rationale live in [../docs/WINDOWS-PORT-PLAN.md](../docs/WINDOWS-PORT-PLAN.md).
 
 **Status: Phase 1, in progress.** Live rates in the notification area, a minimal popover,
-Preferences, and the verification harness. No service and no VPN yet.
+Preferences, three selectable meter surfaces, and the verification harness. No service and
+no VPN yet.
 
 ## Build
 
@@ -25,7 +26,7 @@ requirement — `NetFluss.sln` opens in VS 2022 17.11+ but the CLI is sufficient
 | `NetFluss.Native` | `net10.0-windows` | Win32 interop. Today: the IP Helper interface table. |
 | `NetFluss.Tray` | `net10.0-windows` | Notification-area meter rendering. No WPF, so it runs headless. |
 | `NetFluss.TrayPreview` | `net10.0-windows` | Renders the tray contact sheet. CI runs this and uploads the PNG. |
-| `NetFluss.App` | `net10.0-windows` | WPF shell — tray host, timer, popover. |
+| `NetFluss.App` | `net10.0-windows` | WPF shell — meter surfaces, tray host, timer, popover, Preferences. |
 | `*.Tests` | | xUnit. `Native.Tests` needs a real Windows host; `Tray.Tests` asserts on rendered pixels. |
 
 ## Three things that are easy to get wrong
@@ -54,6 +55,54 @@ every ~34 seconds on a saturated gigabit link. `NetFluss.Native` calls `GetIfTab
 64-bit `InOctets`/`OutOctets` instead. `MIB_IF_ROW2` is hand-marshalled, and a wrong stride
 does not throw — it yields a believable first row and garbage after it. `InterfaceTableTests`
 walks every row and asserts each one is plausible, which is what catches that.
+
+## Where the meter goes
+
+macOS has one answer — a variable-width `NSStatusItem` — and Windows has none that is both
+roomy and guaranteed, so NetFluss ships three surfaces and lets the user pick.
+
+**The tray icon cannot be made bigger.** The shell draws it at `SM_CXSMICON` for the system
+DPI (16 px at 100%, 20/24/32 at 125/150/200%), `Shell_NotifyIcon` hands over an `HICON` and
+the shell scales anything larger down. There is no API to request a bigger cell, no way to
+make it non-square, and no user setting. The size is not really what macOS has over us
+either: `NSStatusItem.length` is *variable width*, which is what makes a full
+`↓ 4.72 MB/s ↑ 834 KB/s` line possible. Windows had that in DeskBand and removed it in
+Windows 11 with no replacement — which is what killed NetSpeedMonitor.
+
+| Surface | Room | Risk |
+|---|---|---|
+| **Taskbar overlay** (default) | Full rate line, real hinted text | Best-effort: undocumented geometry |
+| **Notification area** | 16–32 px square | None — it cannot break |
+| **Floating widget** (optional extra) | Anything | None — it owns its window |
+
+**The overlay** finds `Shell_TrayWnd` and `TrayNotifyWnd` and places a
+`WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE` topmost window just before the notification area.
+Those class names have been stable since Windows 95 and nothing promises to keep them, so
+`TaskbarAnchor` returns null rather than guessing whenever the lookup fails, and null is not
+an error — it is the signal to fall back. It re-anchors on `TaskbarCreated` (Explorer
+restart), `WM_DISPLAYCHANGE`, `WM_DPICHANGED` and a one-second poll, because the shell sends
+no notification for auto-hide sliding or for a tray icon appearing and shifting the free
+space along. It hides itself while a fullscreen app is running, since a topmost meter over
+someone's game is a defect report.
+
+**Falling back is automatic.** Losing the anchor brings the tray icon straight back, and
+Preferences says so rather than leaving a setting that appears to do nothing.
+
+**A DPI trap worth knowing about.** Window geometry is physical pixels; WPF lays its content
+out in device-independent units. Passing a width computed in DIPs straight to `SetWindowPos`
+gives a window half the size it needs at 200% scaling, which clips the left-hand rate clean
+off the readout — the meter still looks plausible, just wrong. `TaskbarAnchor.Locate` takes
+DIPs and scales by the taskbar's own DPI for exactly this reason.
+
+## Tray glyphs
+
+`TrayGlyphLibrary` ports the macOS `MenuBarIconLibrary` choice list. The glyphs are **drawn
+geometry, not image files**: SF Symbols cannot ship off Apple platforms, and a raster
+substitute is crisp only at the sizes it was authored for. The tray asks for 16, 20, 24 or
+32 px depending on the display, plus whatever a future scaling factor invents, so every size
+is authored. `TrayGlyphLibraryTests` asserts each glyph draws ink at every size, covers less
+than 90% of the box, and — after "NetFluss" and "Arrows" were briefly the same method — that
+no two of them render identically.
 
 ## Preferences and settings
 

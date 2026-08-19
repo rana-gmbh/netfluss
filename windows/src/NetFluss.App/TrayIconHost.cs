@@ -63,6 +63,20 @@ public sealed class TrayIconHost : IDisposable
     public TrayMeterOptions Options { get; set; }
 
     /// <summary>
+    /// Whether the notification-area icon is shown at all.
+    ///
+    /// <para>Hidden while the taskbar overlay is carrying the meter, so the rates are not
+    /// duplicated in two places. It comes straight back if the overlay loses its anchor —
+    /// the tray icon is the surface that cannot break, and it is what the fallback falls
+    /// back to.</para>
+    /// </summary>
+    public bool IsVisible
+    {
+        get => _icon.Visibility == Visibility.Visible;
+        set => _icon.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
     /// Repaints even when the rate text has not changed. <see cref="Update"/> skips a tick
     /// whose label matches the last one, which is the right call on an idle machine but
     /// would swallow a colour or layout change made in Preferences — the user would toggle

@@ -175,6 +175,9 @@ public partial class PreferencesWindow : Window
         Brush("SwitchKnobBrush", light ? "#5A5A5A" : "#CFCFCF");
         Brush("SwitchKnobOnBrush", light ? "#FFFFFF" : "#000000");
 
+        // Informational, not an error: the overlay failing to anchor is a supported outcome.
+        Brush("NoticeBrush", light ? "#FFF4CE" : "#433519");
+
         Resources["AccentBrush"] = new SolidColorBrush(SystemParameters.WindowGlassColor.A == 0
             ? (Color)ColorConverter.ConvertFromString("#0078D4")
             : SystemParameters.WindowGlassColor);
@@ -183,6 +186,31 @@ public partial class PreferencesWindow : Window
     private void PopulateChoices()
     {
         _loading = true;
+
+        SurfaceBox.ItemsSource = new[]
+        {
+            new Choice<MeterSurface>(MeterSurface.TaskbarOverlay, "On the taskbar"),
+            new Choice<MeterSurface>(MeterSurface.Tray, "Notification area"),
+        };
+
+        ReadoutStyleBox.ItemsSource = new[]
+        {
+            new Choice<ReadoutStyle>(ReadoutStyle.Unified, "One line"),
+            new Choice<ReadoutStyle>(ReadoutStyle.Stacked, "Two lines"),
+            new Choice<ReadoutStyle>(ReadoutStyle.Total, "Combined total"),
+        };
+
+        ReadoutSizeBox.ItemsSource = new[]
+        {
+            new Choice<double>(9, "Small"),
+            new Choice<double>(11, "Default"),
+            new Choice<double>(13, "Large"),
+            new Choice<double>(16, "Largest"),
+        };
+
+        GlyphBox.ItemsSource = TrayGlyphLibrary.Options
+            .Select(option => new Choice<string>(option.Id, option.Label))
+            .ToArray();
 
         MeterStyleBox.ItemsSource = new[]
         {
@@ -244,8 +272,13 @@ public partial class PreferencesWindow : Window
         _loading = true;
         var settings = _store.Settings;
 
+        Select(SurfaceBox, settings.MeterSurface);
+        Select(ReadoutStyleBox, settings.ReadoutStyle);
+        Select(ReadoutSizeBox, settings.ReadoutFontSize);
+        Select(GlyphBox, TrayGlyphLibrary.Normalize(settings.TrayIconGlyph));
         Select(MeterStyleBox, settings.MeterStyle);
         Select(UnitsBox, settings.UseBits);
+        WidgetToggle.IsChecked = settings.ShowFloatingWidget;
         Select(IntervalBox, settings.RefreshIntervalSeconds);
         Select(LanguageBox, settings.Language);
         Select(ThemeBox, settings.ThemeId);
@@ -269,6 +302,11 @@ public partial class PreferencesWindow : Window
 
         _loading = false;
 
+        SurfaceBox.SelectionChanged += OnChanged;
+        ReadoutStyleBox.SelectionChanged += OnChanged;
+        ReadoutSizeBox.SelectionChanged += OnChanged;
+        WidgetToggle.Click += OnChanged;
+        GlyphBox.SelectionChanged += OnChanged;
         MeterStyleBox.SelectionChanged += OnChanged;
         UnitsBox.SelectionChanged += OnChanged;
         IntervalBox.SelectionChanged += OnChanged;
@@ -292,6 +330,11 @@ public partial class PreferencesWindow : Window
         // One batch, so a single change writes the file once and the app re-applies once.
         _store.Batch(settings =>
         {
+            settings.MeterSurface = Value(SurfaceBox, settings.MeterSurface);
+            settings.ReadoutStyle = Value(ReadoutStyleBox, settings.ReadoutStyle);
+            settings.ReadoutFontSize = Value(ReadoutSizeBox, settings.ReadoutFontSize);
+            settings.ShowFloatingWidget = WidgetToggle.IsChecked == true;
+            settings.TrayIconGlyph = Value(GlyphBox, settings.TrayIconGlyph);
             settings.MeterStyle = Value(MeterStyleBox, settings.MeterStyle);
             settings.UseBits = Value(UnitsBox, settings.UseBits);
             settings.RefreshIntervalSeconds = Value(IntervalBox, settings.RefreshIntervalSeconds);
@@ -359,6 +402,47 @@ public partial class PreferencesWindow : Window
         PreviewCaption.Text = shellLight
             ? "Your taskbar is light. Shown at each display scaling."
             : "Your taskbar is dark. Shown at each display scaling.";
+
+        UpdatePlacementCaptions();
+
+        // The glyph only appears in Icon mode, so grey the row out rather than letting a
+        // user change a setting and see nothing happen.
+        var iconMode = settings.MeterStyle == MeterStyle.Icon;
+        GlyphBox.IsEnabled = iconMode;
+        GlyphPreview.Opacity = iconMode ? 1.0 : 0.4;
+        GlyphTitle.Opacity = iconMode ? 1.0 : 0.6;
+
+        using var glyph = _renderer.RenderBitmap(PreviewTotals, new TrayMeterOptions
+        {
+            Size = 32,
+            Layout = TrayMeterLayout.Icon,
+            IconGlyph = TrayGlyphLibrary.Normalize(settings.TrayIconGlyph),
+            DownloadColor = settings.ResolveDownloadColor(downloadInk),
+            UploadColor = settings.ResolveUploadColor(uploadInk),
+            TaskbarBackground = taskbar,
+            MinimumContrastRatio = settings.EnforceContrast ? Contrast.MinimumReadableRatio : 0,
+        });
+
+        GlyphPreview.Source = ToImageSource(glyph);
+    }
+
+    /// <summary>
+    /// Explains the placement choice, including when it has quietly not been honoured.
+    ///
+    /// <para>The taskbar overlay sits on geometry Windows does not promise, so it can fail
+    /// on a machine where nothing is wrong with the app. Saying so is the difference between
+    /// a documented limitation and a setting that appears broken.</para>
+    /// </summary>
+    private void UpdatePlacementCaptions()
+    {
+        var overlayChosen = _store.Settings.MeterSurface == MeterSurface.TaskbarOverlay;
+        var fellBack = overlayChosen && NetFlussApplication.OverlayFellBackToTray;
+
+        SurfaceCaption.Text = overlayChosen
+            ? "Beside the clock, with room for full units. Windows offers no supported way to do this, so it is best effort — NetFluss falls back to the notification area if the taskbar moves out from under it."
+            : "A 16–32 px icon, depending on your display scaling. Cramped, and it never breaks.";
+
+        FallbackNotice.Visibility = fellBack ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private static void UpdateSwatch(System.Windows.Controls.Border swatch, ThemeColor color, ThemeColor taskbar, bool enforce)

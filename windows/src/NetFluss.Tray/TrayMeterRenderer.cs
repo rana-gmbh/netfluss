@@ -312,36 +312,14 @@ public sealed class TrayMeterRenderer
         }
     }
 
-    /// <summary>Static up/down chevrons for <see cref="TrayMeterLayout.Icon"/>.</summary>
+    /// <summary>Delegates to the glyph library, so Icon mode offers the macOS choice list.</summary>
     private static void DrawGlyph(Graphics g, int size, TrayMeterOptions options)
-    {
-        var thickness = Math.Max(1f, size / 10f);
-        var inset = size * 0.18f;
-        var mid = size / 2f;
-
-        using var download = new Pen(ToGdi(options.DownloadColor, options), thickness) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-        using var upload = new Pen(ToGdi(options.UploadColor, options), thickness) { StartCap = LineCap.Round, EndCap = LineCap.Round };
-
-        var left = inset;
-        var right = mid - (thickness / 2f);
-        g.DrawLine(download, left + ((right - left) / 2f), inset, left + ((right - left) / 2f), size - inset);
-        g.DrawLines(download,
-        [
-            new PointF(left, size - inset - ((right - left) / 2f)),
-            new PointF(left + ((right - left) / 2f), size - inset),
-            new PointF(right, size - inset - ((right - left) / 2f)),
-        ]);
-
-        var left2 = mid + (thickness / 2f);
-        var right2 = size - inset;
-        g.DrawLine(upload, left2 + ((right2 - left2) / 2f), inset, left2 + ((right2 - left2) / 2f), size - inset);
-        g.DrawLines(upload,
-        [
-            new PointF(left2, inset + ((right2 - left2) / 2f)),
-            new PointF(left2 + ((right2 - left2) / 2f), inset),
-            new PointF(right2, inset + ((right2 - left2) / 2f)),
-        ]);
-    }
+        => TrayGlyphLibrary.Draw(
+            g,
+            options.IconGlyph,
+            size,
+            ToGdi(options.DownloadColor, options),
+            ToGdi(options.UploadColor, options));
 
     /// <summary>
     /// Converts to GDI, first lifting the colour to the configured contrast floor against

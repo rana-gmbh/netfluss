@@ -125,6 +125,81 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="28,0,28,24">
             <StackPanel>
 
+                <!-- ============================ Placement ============================ -->
+                <TextBlock Text="Where to show it" Style="{StaticResource SectionHeader}" />
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Meter location" Style="{StaticResource RowTitle}" />
+                            <TextBlock x:Name="SurfaceCaption" Style="{StaticResource RowSubtitle}" />
+                        </StackPanel>
+                        <ComboBox x:Name="SurfaceBox" Grid.Column="1" />
+                    </Grid>
+                </Border>
+
+                <!-- Only shown when the overlay asked for the taskbar and could not have it. -->
+                <Border x:Name="FallbackNotice"
+                        Style="{StaticResource Card}"
+                        Visibility="Collapsed"
+                        Background="{DynamicResource NoticeBrush}">
+                    <StackPanel>
+                        <TextBlock Text="Showing in the notification area instead"
+                                   Style="{StaticResource RowTitle}" />
+                        <TextBlock Style="{StaticResource RowSubtitle}"
+                                   Text="NetFluss could not find room on the taskbar, so the meter fell back to the notification area. It will move back on its own if the taskbar becomes available." />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Taskbar and widget layout" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="One line has room for full units; stacked matches the notification area." />
+                        </StackPanel>
+                        <ComboBox x:Name="ReadoutStyleBox" Grid.Column="1" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Text size" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="Applies to the taskbar meter and the floating widget." />
+                        </StackPanel>
+                        <ComboBox x:Name="ReadoutSizeBox" Grid.Column="1" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Floating widget" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="An always-on-top panel you can drag anywhere. Works alongside the other placements, and depends on nothing that a Windows update can move." />
+                        </StackPanel>
+                        <CheckBox x:Name="WidgetToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                    </Grid>
+                </Border>
+
                 <!-- ============================ Meter ============================ -->
                 <TextBlock Text="Notification area" Style="{StaticResource SectionHeader}" />
 
@@ -189,6 +264,27 @@
                                        Text="A single line gets the full icon height, which is sharper at 100% scaling." />
                         </StackPanel>
                         <ComboBox x:Name="MeterStyleBox" Grid.Column="1" />
+                    </Grid>
+                </Border>
+
+                <!-- Only meaningful for the Icon meter style; disabled otherwise. -->
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock x:Name="GlyphTitle" Text="Icon" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="Used when the meter style is set to Icon only. Drawn to fit whatever size your display asks for." />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Image x:Name="GlyphPreview" Width="24" Height="24" Margin="0,0,10,0"
+                                   VerticalAlignment="Center"
+                                   RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                            <ComboBox x:Name="GlyphBox" MinWidth="150" />
+                        </StackPanel>
                     </Grid>
                 </Border>
 

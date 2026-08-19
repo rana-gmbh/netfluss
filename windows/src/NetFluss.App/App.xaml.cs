@@ -28,7 +28,16 @@ public partial class NetFlussApplication : Application
     private TrayIconHost? _tray;
     private PopoverWindow? _popover;
     private PreferencesWindow? _preferences;
+    private TaskbarOverlayWindow? _overlay;
+    private FloatingWidgetWindow? _widget;
     private DateTime _popoverHiddenAt = DateTime.MinValue;
+
+    /// <summary>
+    /// Set when the overlay was asked for but could not anchor to the taskbar, so the tray
+    /// meter is standing in for it. Preferences reads this to explain itself rather than
+    /// leaving the user staring at a setting that appears to do nothing.
+    /// </summary>
+    internal static bool OverlayFellBackToTray { get; private set; }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -48,8 +57,28 @@ public partial class NetFlussApplication : Application
         // for the tray and the settings file to disagree about what is configured.
         _store.Changed += (_, _) => ApplySettings();
 
+        // Surfaces repaint on the same tick that drives the tray meter.
+        _monitor.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(NetworkMonitorService.Totals))
+            {
+                PushTotals();
+            }
+        };
+
         ApplySettings();
         _monitor.Start();
+    }
+
+    private void PushTotals()
+    {
+        if (_store is null || _monitor is null)
+        {
+            return;
+        }
+
+        _overlay?.Update(_monitor.Totals, _store.Settings.UseBits);
+        _widget?.Update(_monitor.Totals, _store.Settings.UseBits);
     }
 
     private TrayMeterOptions BuildMeterOptions()
@@ -67,6 +96,7 @@ public partial class NetFlussApplication : Application
             ShowArrows = settings.ShowArrows,
             TaskbarBackground = SystemTheme.TaskbarBackground(),
             MinimumContrastRatio = settings.EnforceContrast ? Contrast.MinimumReadableRatio : 0,
+            IconGlyph = settings.TrayIconGlyph,
         };
     }
 
@@ -77,12 +107,83 @@ public partial class NetFlussApplication : Application
             return;
         }
 
-        _monitor.Interval = TimeSpan.FromSeconds(_store.Settings.RefreshIntervalSeconds);
-        _monitor.ExcludeTunnelAdapters = _store.Settings.ExcludeTunnelAdapters;
-        _monitor.TotalsFromVisibleAdaptersOnly = _store.Settings.TotalsFromVisibleAdaptersOnly;
+        var settings = _store.Settings;
+
+        _monitor.Interval = TimeSpan.FromSeconds(settings.RefreshIntervalSeconds);
+        _monitor.ExcludeTunnelAdapters = settings.ExcludeTunnelAdapters;
+        _monitor.TotalsFromVisibleAdaptersOnly = settings.TotalsFromVisibleAdaptersOnly;
+
+        var (downloadInk, uploadInk) = SystemTheme.DefaultInk();
+        var download = settings.ResolveDownloadColor(downloadInk);
+        var upload = settings.ResolveUploadColor(uploadInk);
+
+        ApplyOverlay(settings, download, upload);
+        ApplyWidget(settings, download, upload);
 
         _tray.Options = BuildMeterOptions();
         _tray.Redraw();
+
+        // The tray icon is hidden while the overlay is carrying the meter, but only while it
+        // is genuinely anchored — otherwise the fallback would have nothing to fall back to.
+        _tray.IsVisible = settings.MeterSurface == MeterSurface.Tray
+                          || _overlay is not { IsAnchored: true };
+
+        PushTotals();
+    }
+
+    private void ApplyOverlay(AppSettings settings, ThemeColor download, ThemeColor upload)
+    {
+        if (settings.MeterSurface != MeterSurface.TaskbarOverlay)
+        {
+            _overlay?.Stop();
+            _overlay?.Close();
+            _overlay = null;
+            OverlayFellBackToTray = false;
+            return;
+        }
+
+        if (_overlay is null)
+        {
+            _overlay = new TaskbarOverlayWindow(_monitor!);
+            _overlay.Clicked += (_, _) => TogglePopover();
+            _overlay.ContextMenuRequested += (_, _) => ShowPreferences();
+
+            // The overlay reports rather than decides. Losing the anchor brings the tray
+            // meter back immediately, so there is never a moment with no meter at all.
+            _overlay.AnchorLost += (_, _) =>
+            {
+                OverlayFellBackToTray = true;
+                if (_tray is not null)
+                {
+                    _tray.IsVisible = true;
+                }
+            };
+
+            _overlay.Start();
+        }
+
+        _overlay.ApplySettings(settings, download, upload);
+        OverlayFellBackToTray = !_overlay.IsAnchored;
+    }
+
+    private void ApplyWidget(AppSettings settings, ThemeColor download, ThemeColor upload)
+    {
+        if (!settings.ShowFloatingWidget)
+        {
+            _widget?.Close();
+            _widget = null;
+            return;
+        }
+
+        if (_widget is null)
+        {
+            _widget = new FloatingWidgetWindow(settings);
+            _widget.ContextMenuRequested += (_, _) => ShowPreferences();
+            _widget.Show();
+            _widget.Place();
+        }
+
+        _widget.ApplySettings(settings, download, upload, darkSurface: !SystemTheme.IsAppLight());
     }
 
     private void ShowPreferences()
@@ -133,6 +234,9 @@ public partial class NetFlussApplication : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _overlay?.Stop();
+        _overlay?.Close();
+        _widget?.Close();
         _tray?.Dispose();
         _monitor?.Dispose();
         base.OnExit(e);

@@ -31,6 +31,40 @@ public enum MeterStyle
 }
 
 /// <summary>
+/// Which surface carries the live meter.
+///
+/// <para>macOS has one answer — a variable-width <c>NSStatusItem</c> — and Windows has
+/// none that is both roomy and guaranteed. The notification area is permanent but capped
+/// at a 16–32 px square; the taskbar overlay has the room but sits on undocumented
+/// geometry. So the choice is the user's, and the app degrades rather than disappears.</para>
+/// </summary>
+public enum MeterSurface
+{
+    /// <summary>
+    /// A window positioned over the taskbar beside the tray. Room for the full
+    /// "↓ 4.72 MB/s ↑ 834 KB/s" line, and the closest thing to the macOS menu bar.
+    /// Falls back to <see cref="Tray"/> on its own if the taskbar cannot be located.
+    /// </summary>
+    TaskbarOverlay,
+
+    /// <summary>The notification-area icon. Cramped, and it never breaks.</summary>
+    Tray,
+}
+
+/// <summary>How the roomier surfaces lay the rates out. Ports the macOS menu bar styles.</summary>
+public enum ReadoutStyle
+{
+    /// <summary>One line: "↓ 4.72 MB/s   ↑ 834 KB/s". The macOS <c>unified</c> style.</summary>
+    Unified,
+
+    /// <summary>Two half-height lines, upload above download. The macOS <c>rates</c> stack.</summary>
+    Stacked,
+
+    /// <summary>Combined throughput only, for the narrowest placements.</summary>
+    Total,
+}
+
+/// <summary>
 /// Everything Preferences can change, and the single source of truth for it.
 ///
 /// <para><b>Why a JSON file and not the registry.</b> The macOS app keeps ordered lists in
@@ -60,6 +94,13 @@ public sealed class AppSettings : INotifyPropertyChanged
     private bool _launchAtLogin;
     private bool _excludeTunnelAdapters;
     private bool _totalsFromVisibleAdaptersOnly;
+    private MeterSurface _meterSurface = MeterSurface.TaskbarOverlay;
+    private ReadoutStyle _readoutStyle = ReadoutStyle.Unified;
+    private double _readoutFontSize = 11;
+    private bool _showFloatingWidget;
+    private double? _floatingWidgetLeft;
+    private double? _floatingWidgetTop;
+    private string _trayIconGlyph = "netfluss";
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -161,6 +202,67 @@ public sealed class AppSettings : INotifyPropertyChanged
     {
         get => _totalsFromVisibleAdaptersOnly;
         set => Set(ref _totalsFromVisibleAdaptersOnly, value);
+    }
+
+    /// <summary>
+    /// Which surface shows the meter. Defaults to the overlay because it is the only one
+    /// with room for a real rate line; <c>App</c> falls back to the tray by itself if the
+    /// taskbar cannot be anchored to, so this preference never leaves the user with nothing.
+    /// </summary>
+    public MeterSurface MeterSurface
+    {
+        get => _meterSurface;
+        set => Set(ref _meterSurface, value);
+    }
+
+    /// <summary>Layout used by the overlay and the floating widget, not by the tray.</summary>
+    public ReadoutStyle ReadoutStyle
+    {
+        get => _readoutStyle;
+        set => Set(ref _readoutStyle, value);
+    }
+
+    /// <summary>Point size for the roomy surfaces. macOS clamps to 8–16 and so does this.</summary>
+    public double ReadoutFontSize
+    {
+        get => _readoutFontSize;
+        set => Set(ref _readoutFontSize, Math.Clamp(value, 8, 16));
+    }
+
+    /// <summary>
+    /// The always-on-top desktop panel. Independent of <see cref="MeterSurface"/> — it is an
+    /// addition, not an alternative, and the macOS "Pin" feature it ports behaves the same way.
+    /// </summary>
+    public bool ShowFloatingWidget
+    {
+        get => _showFloatingWidget;
+        set => Set(ref _showFloatingWidget, value);
+    }
+
+    /// <summary>
+    /// Last position of the floating widget, or null until it has been placed once.
+    ///
+    /// <para>Nullable rather than NaN: System.Text.Json refuses to write NaN at all, so the
+    /// sentinel turned every settings save into an ArgumentException that Save could not
+    /// catch. Absence is what is actually being modelled here anyway.</para>
+    /// </summary>
+    public double? FloatingWidgetLeft
+    {
+        get => _floatingWidgetLeft;
+        set => Set(ref _floatingWidgetLeft, value);
+    }
+
+    public double? FloatingWidgetTop
+    {
+        get => _floatingWidgetTop;
+        set => Set(ref _floatingWidgetTop, value);
+    }
+
+    /// <summary>Id from the tray glyph library, used by <see cref="MeterStyle.Icon"/>.</summary>
+    public string TrayIconGlyph
+    {
+        get => _trayIconGlyph;
+        set => Set(ref _trayIconGlyph, value);
     }
 
     /// <summary>BSD-equivalent interface ids in user order, mirroring macOS "adapterOrder".</summary>

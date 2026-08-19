@@ -158,7 +158,17 @@ internal static class Program
         rows.Add(new Row("TwoLine · arrows · dark", BaseOptions(true) with { Layout = TrayMeterLayout.TwoLine, ShowArrows = true }, 4_720_000, 96_000, true));
         rows.Add(new Row("DownloadOnly · dark", BaseOptions(true) with { Layout = TrayMeterLayout.DownloadOnly }, 4_720_000, 96_000, true));
         rows.Add(new Row("TwoLine · bits · dark", BaseOptions(true) with { Layout = TrayMeterLayout.TwoLine, UseBits = true }, 4_720_000, 96_000, true));
-        rows.Add(new Row("Icon · dark", BaseOptions(true) with { Layout = TrayMeterLayout.Icon }, 0, 0, true));
+        // One row per glyph: these are drawn geometry rather than raster assets, so the only
+        // way to know they hold up at 16 px is to render them at 16 px and look.
+        foreach (var glyph in TrayGlyphLibrary.Options)
+        {
+            rows.Add(new Row(
+                $"Icon · {glyph.Label} · dark",
+                BaseOptions(true) with { Layout = TrayMeterLayout.Icon, IconGlyph = glyph.Id },
+                0,
+                0,
+                true));
+        }
 
         return (columns, rows);
     }

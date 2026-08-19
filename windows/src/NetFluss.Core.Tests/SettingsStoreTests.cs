@@ -154,6 +154,75 @@ public class SettingsStoreTests : IDisposable
         Assert.Equal(expected, settings.RefreshIntervalSeconds);
     }
 
+    /// <summary>
+    /// Every default must be serialisable, checked by writing rather than by inspection.
+    ///
+    /// <para>Regression: the floating widget's "not placed yet" position was
+    /// <c>double.NaN</c>, which System.Text.Json refuses to write at all. Since the store
+    /// saves on every property change, that turned the very first settings change into an
+    /// ArgumentException that <c>Save</c> does not catch — the app would have thrown the
+    /// first time anyone touched Preferences.</para>
+    /// </summary>
+    [Fact]
+    public void DefaultSettings_CanBeWritten()
+    {
+        var store = new SettingsStore(Path_);
+
+        // Touch one property to trigger a real save through the normal path.
+        store.Settings.UseBits = true;
+
+        Assert.True(File.Exists(Path_), "saving the default settings produced no file");
+        Assert.DoesNotContain("NaN", File.ReadAllText(Path_), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void UnplacedWidget_RoundTripsAsAbsent()
+    {
+        var store = new SettingsStore(Path_);
+        store.Settings.ShowFloatingWidget = true;
+
+        var reloaded = new SettingsStore(Path_).Settings;
+
+        Assert.Null(reloaded.FloatingWidgetLeft);
+        Assert.Null(reloaded.FloatingWidgetTop);
+    }
+
+    [Fact]
+    public void PlacedWidget_RemembersItsPosition()
+    {
+        var store = new SettingsStore(Path_);
+        store.Batch(settings =>
+        {
+            settings.FloatingWidgetLeft = 1234.5;
+            settings.FloatingWidgetTop = 678.5;
+        });
+
+        var reloaded = new SettingsStore(Path_).Settings;
+
+        Assert.Equal(1234.5, reloaded.FloatingWidgetLeft);
+        Assert.Equal(678.5, reloaded.FloatingWidgetTop);
+    }
+
+    [Fact]
+    public void NewSurfaceDefaults_MatchTheChosenBehaviour()
+    {
+        var settings = new AppSettings();
+
+        // The overlay is the default placement; the tray is what it falls back to.
+        Assert.Equal(MeterSurface.TaskbarOverlay, settings.MeterSurface);
+        Assert.Equal(ReadoutStyle.Unified, settings.ReadoutStyle);
+        Assert.Equal(11, settings.ReadoutFontSize);
+        Assert.False(settings.ShowFloatingWidget);
+        Assert.Equal("netfluss", settings.TrayIconGlyph);
+    }
+
+    [Theory]
+    [InlineData(2, 8)]
+    [InlineData(11, 11)]
+    [InlineData(40, 16)]
+    public void ReadoutFontSize_IsClampedToTheMacOsRange(double set, double expected)
+        => Assert.Equal(expected, new AppSettings { ReadoutFontSize = set }.ReadoutFontSize);
+
     [Fact]
     public void AccentResolution_FallsBackForSystem()
     {
