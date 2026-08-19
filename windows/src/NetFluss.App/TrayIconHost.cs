@@ -62,6 +62,19 @@ public sealed class TrayIconHost : IDisposable
 
     public TrayMeterOptions Options { get; set; }
 
+    /// <summary>
+    /// Repaints even when the rate text has not changed. <see cref="Update"/> skips a tick
+    /// whose label matches the last one, which is the right call on an idle machine but
+    /// would swallow a colour or layout change made in Preferences — the user would toggle
+    /// a setting and see nothing happen until traffic moved.
+    /// </summary>
+    public void Redraw()
+    {
+        _lastRenderedText = string.Empty;
+        _lastRenderedSize = 0;
+        Update(_monitor.Totals);
+    }
+
     public void Update(RateTotals totals)
     {
         var size = Dpi.TrayIconSize();

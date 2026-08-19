@@ -3,8 +3,8 @@
 Native Windows port of NetFluss, tracking the macOS app's feature set.
 Design and rationale live in [../docs/WINDOWS-PORT-PLAN.md](../docs/WINDOWS-PORT-PLAN.md).
 
-**Status: Phase 0 (spike).** Live rates in the notification area, a minimal popover, and
-the verification harness. No service, no VPN, no Preferences yet.
+**Status: Phase 1, in progress.** Live rates in the notification area, a minimal popover,
+Preferences, and the verification harness. No service and no VPN yet.
 
 ## Build
 
@@ -54,6 +54,33 @@ every ~34 seconds on a saturated gigabit link. `NetFluss.Native` calls `GetIfTab
 64-bit `InOctets`/`OutOctets` instead. `MIB_IF_ROW2` is hand-marshalled, and a wrong stride
 does not throw — it yields a believable first row and garbage after it. `InterfaceTableTests`
 walks every row and asserts each one is plausible, which is what catches that.
+
+## Preferences and settings
+
+`PreferencesWindow` follows Windows 11 Settings rather than the macOS tabbed `Form`: one
+scrolling column of grouped cards, control on the right, changes applied and persisted
+immediately with no OK button. It is hand-styled — the port plan names WPF-UI for the wider
+Phase 1 UI, but Preferences needs four control types and a card, and a package that ships its
+own theming would have to be reconciled with the NetFluss themes anyway.
+
+The **preview strip** renders the real `TrayMeterRenderer` output at 16/20/24/32 px on the
+user's actual taskbar colour. A 16 px icon is the whole difficulty of this port, so the
+meter-style choice is shown rather than described.
+
+Settings live in a JSON document at `%LOCALAPPDATA%\NetFluss\settings.json`, not the
+registry: the macOS app keeps ordered lists in `UserDefaults` (adapter order, hidden
+adapters, custom presets) and the registry has no ordered-collection story worth using. It is
+written via write-then-replace, and a corrupt or unreadable file falls back to defaults — a
+tray app has no window in which to report a load failure.
+
+Two pieces of state are deliberately **not** in that file:
+
+- **Start with Windows** lives in `HKCU\...\CurrentVersion\Run`, because writing it is what
+  actually makes the app start and a user can remove it from Task Manager's Startup tab. The
+  toggle always reads the registry back rather than trusting what was last written.
+- **Light or dark** comes from `SystemUsesLightTheme` / `AppsUseLightTheme`. Windows exposes
+  the shell and app themes independently, and the tray meter follows the *shell* one because
+  that is what it is composited over.
 
 ## Localization
 

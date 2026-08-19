@@ -23,34 +23,85 @@ public partial class NetFlussApplication : Application
     /// </summary>
     private static readonly TimeSpan ReopenSuppressionWindow = TimeSpan.FromMilliseconds(250);
 
+    private SettingsStore? _store;
     private NetworkMonitorService? _monitor;
     private TrayIconHost? _tray;
     private PopoverWindow? _popover;
+    private PreferencesWindow? _preferences;
     private DateTime _popoverHiddenAt = DateTime.MinValue;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
-        _monitor = new NetworkMonitorService(TimeSpan.FromSeconds(1));
+        _store = new SettingsStore(SettingsStore.DefaultPath);
+        NetFluss.Core.Localization.Use(_store.Settings.Language);
 
-        _tray = new TrayIconHost(_monitor, new TrayMeterOptions
-        {
-            Size = Dpi.TrayIconSize(),
-            Layout = TrayMeterLayout.TwoLine,
-            DownloadColor = AppTheme.System.DownloadColor,
-            UploadColor = AppTheme.System.UploadColor,
-        });
+        _monitor = new NetworkMonitorService(TimeSpan.FromSeconds(_store.Settings.RefreshIntervalSeconds));
+        _tray = new TrayIconHost(_monitor, BuildMeterOptions());
 
         _tray.LeftClicked += (_, _) => TogglePopover();
         _tray.QuitRequested += (_, _) => Shutdown();
-        _tray.PreferencesRequested += (_, _) => MessageBox.Show(
-            "Preferences arrive in Phase 1 of the Windows port.",
-            "NetFluss",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        _tray.PreferencesRequested += (_, _) => ShowPreferences();
 
+        // Preferences writes, then everything re-reads. One direction, so there is no way
+        // for the tray and the settings file to disagree about what is configured.
+        _store.Changed += (_, _) => ApplySettings();
+
+        ApplySettings();
         _monitor.Start();
+    }
+
+    private TrayMeterOptions BuildMeterOptions()
+    {
+        var settings = _store!.Settings;
+        var (downloadInk, uploadInk) = SystemTheme.DefaultInk();
+
+        return new TrayMeterOptions
+        {
+            Size = Dpi.TrayIconSize(),
+            Layout = PreferencesWindow.ToLayout(settings.MeterStyle),
+            DownloadColor = settings.ResolveDownloadColor(downloadInk),
+            UploadColor = settings.ResolveUploadColor(uploadInk),
+            UseBits = settings.UseBits,
+            ShowArrows = settings.ShowArrows,
+            TaskbarBackground = SystemTheme.TaskbarBackground(),
+            MinimumContrastRatio = settings.EnforceContrast ? Contrast.MinimumReadableRatio : 0,
+        };
+    }
+
+    private void ApplySettings()
+    {
+        if (_store is null || _monitor is null || _tray is null)
+        {
+            return;
+        }
+
+        _monitor.Interval = TimeSpan.FromSeconds(_store.Settings.RefreshIntervalSeconds);
+        _monitor.ExcludeTunnelAdapters = _store.Settings.ExcludeTunnelAdapters;
+        _monitor.TotalsFromVisibleAdaptersOnly = _store.Settings.TotalsFromVisibleAdaptersOnly;
+
+        _tray.Options = BuildMeterOptions();
+        _tray.Redraw();
+    }
+
+    private void ShowPreferences()
+    {
+        if (_store is null)
+        {
+            return;
+        }
+
+        if (_preferences is { IsLoaded: true })
+        {
+            _preferences.Activate();
+            return;
+        }
+
+        _preferences = new PreferencesWindow(_store);
+        _preferences.Closed += (_, _) => _preferences = null;
+        _preferences.Show();
+        _preferences.Activate();
     }
 
     private void TogglePopover()
