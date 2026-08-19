@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Rendering tests. Windows-only because GDI+ text measurement is, but unlike
+    NetFluss.Native.Tests these need no live network state — they assert on pixels.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>NetFluss.Tray.Tests</RootNamespace>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetFluss.Core/NetFluss.Core.csproj" />
+    <ProjectReference Include="../NetFluss.Tray/NetFluss.Tray.csproj" />
+  </ItemGroup>
+
+</Project>

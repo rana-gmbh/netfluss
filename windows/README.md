@@ -26,14 +26,28 @@ requirement — `NetFluss.sln` opens in VS 2022 17.11+ but the CLI is sufficient
 | `NetFluss.Tray` | `net10.0-windows` | Notification-area meter rendering. No WPF, so it runs headless. |
 | `NetFluss.TrayPreview` | `net10.0-windows` | Renders the tray contact sheet. CI runs this and uploads the PNG. |
 | `NetFluss.App` | `net10.0-windows` | WPF shell — tray host, timer, popover. |
-| `*.Tests` | | xUnit. `Native.Tests` needs a real Windows host. |
+| `*.Tests` | | xUnit. `Native.Tests` needs a real Windows host; `Tray.Tests` asserts on rendered pixels. |
 
-## Two things that are easy to get wrong
+## Three things that are easy to get wrong
 
 **GDI handles.** `Bitmap.GetHicon()` returns an unmanaged icon nothing will free. The meter
 repaints every second, so a leak here exhausts the 10,000-handle process limit within hours
 and the app silently stops drawing. `TrayIconHost` assigns the new icon *then* destroys the
 previous handle — never the current one, which the shell is still painting from.
+
+**Small-icon legibility.** The macOS menu bar gives the meter a ~22 px strip as wide as it
+likes. A Windows tray icon is a 16 px *square* at 100% DPI, and fitting "834K" across it
+forces Segoe UI to ~6 px — below where TrueType hinting can hold a stem at one clean pixel.
+`PixelFont` draws the digits from hand-built 3×5 and 4×7 grids as solid rectangles with
+anti-aliasing off, integer-scaled only, so nothing is ever resampled. It is used exactly
+where Segoe runs out of pixels (16 and 20 px) and nowhere else — at 24 and 32 px real
+letterforms win, and an earlier revision that scored the two on ink height picked a doubled
+3×5 face at 200%: taller, and visibly cruder.
+
+The style is resolved **once per icon**, not per row. Two rows in different typefaces look
+like a rendering fault, and sizing to whichever label Segoe measured widest clipped "118M"
+to ".18M" at 16 px — the two fonts disagree about whether "118M" or "2.4M" is wider, because
+the bitmap decimal point is one column and Segoe's is not. `EveryRow_FitsTheIcon` covers that.
 
 **64-bit counters.** `System.Net.NetworkInformation` exposes 32-bit octet counters that wrap
 every ~34 seconds on a saturated gigabit link. `NetFluss.Native` calls `GetIfTable2` for the
@@ -96,3 +110,20 @@ From the first green run's contact sheet:
   the glyph eats width the digits need, and the row colour already carries the meaning.
 - **The upload green needs darkening on light taskbars.** At `#2ea043` on `#f3f3f3` it reads
   noticeably weaker than the download blue. Worth a contrast pass in Phase 1.
+
+### What Phase 1 did about it
+
+Both of the open items above are closed; the verdict above is kept as the record of what the
+spike found.
+
+- **16 px is no longer the weak spot.** `PixelFont` replaced the sub-hinting Segoe rows with
+  a bitmap face, so two-line at 100% is now sharp rather than "cramped but functional".
+  `BitmapFontRows_AreFullyOpaque` asserts it the only way that cannot flatter itself: every
+  pixel the bitmap path draws is fully opaque, so no edge got softened.
+- **The contrast gap was measured and closed.** The download blue scored 4.08:1 on the light
+  taskbar against the upload green's 3.04:1 — the two rows disagreed about how important
+  they were. `Contrast.EnsureRatio` now lifts both to WCAG AA (4.5:1) against whichever
+  taskbar they are drawn on, stepping toward black or white so the hue survives.
+  `ContrastTests` pins the original measurements and the correction.
+- **`DownloadOnly` is still worth offering**, but no longer because two-line is illegible —
+  it is now a preference for density, not a workaround.

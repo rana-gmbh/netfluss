@@ -64,4 +64,17 @@ public sealed record TrayMeterOptions
     /// already distinguishes the two rows.
     /// </summary>
     public bool ShowArrows { get; init; }
+
+    /// <summary>
+    /// What the icon will be composited over. Windows hands the tray no template-image
+    /// treatment, so the meter has to know whether it is drawing onto the light or dark
+    /// taskbar to keep both rows equally readable. Defaults to the Windows 11 dark taskbar.
+    /// </summary>
+    public ThemeColor TaskbarBackground { get; init; } = ThemeColor.FromHex("202020");
+
+    /// <summary>
+    /// Contrast floor applied to both rate colours against <see cref="TaskbarBackground"/>.
+    /// Set to 0 to draw the configured colours untouched.
+    /// </summary>
+    public double MinimumContrastRatio { get; init; } = Contrast.MinimumReadableRatio;
 }

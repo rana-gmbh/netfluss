@@ -111,12 +111,30 @@ internal static class Program
                 using var background1X = new SolidBrush(row.Dark ? DarkTaskbar : LightTaskbar);
                 g.FillRectangle(background1X, cellX, cellY + scaled + 2, size, size);
                 g.DrawImage(icon, cellX, cellY + scaled + 2, size, size);
+
+                // Which path the renderer took, so the sheet says what it did instead of
+                // leaving it to be guessed from a 6× blow-up.
+                if (row.Options.Layout != TrayMeterLayout.Icon)
+                {
+                    string[] labels = options.Layout == TrayMeterLayout.TwoLine
+                        ? [Label(row.Rx, '↓', options), Label(row.Tx, '↑', options)]
+                        : [Label(row.Rx, '↓', options)];
+
+                    var plan = renderer.PlanRow(labels, size, options.Layout, options);
+                    g.DrawString(plan.ToString(), labelFont, labelBrush, cellX + size + 6, cellY + scaled + 2);
+                }
             }
         }
 
         sheet.Save(outputPath, ImageFormat.Png);
         Console.WriteLine($"Wrote {outputPath} ({width}x{height})");
         return 0;
+    }
+
+    private static string Label(double rate, char arrow, TrayMeterOptions options)
+    {
+        var text = RateFormatter.FormatCompact(rate, options.UseBits);
+        return options.ShowArrows ? string.Concat(arrow, text) : text;
     }
 
     private static (List<string> Columns, List<Row> Rows) BuildRows()
@@ -152,6 +170,12 @@ internal static class Program
         // colours below are the Windows equivalents of .systemBlue / .systemGreen.
         DownloadColor = dark ? ThemeColor.FromHex("4cc2ff") : AppTheme.System.DownloadColor,
         UploadColor = dark ? ThemeColor.FromHex("6ccb5f") : AppTheme.System.UploadColor,
+
+        // Same swatch the cell is painted on, so the sheet shows the contrast correction
+        // the app will actually apply rather than the raw configured colour.
+        TaskbarBackground = dark
+            ? ThemeColor.FromHex("202020")
+            : ThemeColor.FromHex("F3F3F3"),
     };
 
     private sealed record Row(string Label, TrayMeterOptions Options, double Rx, double Tx, bool Dark);
