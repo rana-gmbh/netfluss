@@ -28,7 +28,7 @@ namespace NetFluss.Tray;
 /// </summary>
 public enum TrayMeterLayout
 {
-    /// <summary>Download over upload, stacked. The default; closest to the macOS menu bar.</summary>
+    /// <summary>Upload over download, stacked. The default; closest to the macOS menu bar.</summary>
     TwoLine,
 
     /// <summary>One line, download only — legible at 100% DPI where TwoLine is cramped.</summary>

@@ -125,8 +125,9 @@ public sealed class TrayMeterRenderer
         // two typefaces stacked in a 16 px box look like a rendering fault.
         var style = ResolveStyle(g, [download, upload], bounds, options);
 
-        DrawRow(g, bounds, download, options.DownloadColor, style, options);
-        DrawRow(g, bounds with { Y = lineHeight }, upload, options.UploadColor, style, options);
+        // Upload on top, download below.
+        DrawRow(g, bounds, upload, options.UploadColor, style, options);
+        DrawRow(g, bounds with { Y = lineHeight }, download, options.DownloadColor, style, options);
     }
 
     private void DrawSingleLine(Graphics g, int size, double rate, ThemeColor color, char arrow, TrayMeterOptions options)

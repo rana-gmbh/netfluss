@@ -115,12 +115,13 @@ public sealed class TrayIconHost : IDisposable
         UpdateTooltip(totals, options);
     }
 
+    /// <summary>Upload above download, matching the order of the rows in the icon itself.</summary>
     private void UpdateTooltip(RateTotals totals, TrayMeterOptions options)
         => _icon.ToolTipText = string.Concat(
-            "NetFluss\n↓ ",
-            RateFormatter.FormatRate(totals.RxRateBps, options.UseBits),
-            "\n↑ ",
-            RateFormatter.FormatRate(totals.TxRateBps, options.UseBits));
+            "NetFluss\n↑ ",
+            RateFormatter.FormatRate(totals.TxRateBps, options.UseBits),
+            "\n↓ ",
+            RateFormatter.FormatRate(totals.RxRateBps, options.UseBits));
 
     private ContextMenu BuildContextMenu()
     {
