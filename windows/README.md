@@ -14,18 +14,18 @@ dotnet test windows/NetFluss.sln -c Release
 dotnet run --project windows/src/NetFluss.App
 ```
 
-Requires the .NET 9 SDK on Windows 10 1809 or later. There is no Visual Studio
+Requires the .NET 10 SDK (LTS) on Windows 10 1809 or later. There is no Visual Studio
 requirement — `NetFluss.sln` opens in VS 2022 17.11+ but the CLI is sufficient.
 
 ## Projects
 
 | Project | Target | Role |
 |---|---|---|
-| `NetFluss.Core` | `net9.0` | Models, formatters, themes, localization. Platform-neutral **on purpose** so it builds and unit-tests off Windows. |
-| `NetFluss.Native` | `net9.0-windows` | Win32 interop. Today: the IP Helper interface table. |
-| `NetFluss.Tray` | `net9.0-windows` | Notification-area meter rendering. No WPF, so it runs headless. |
-| `NetFluss.TrayPreview` | `net9.0-windows` | Renders the tray contact sheet. CI runs this and uploads the PNG. |
-| `NetFluss.App` | `net9.0-windows` | WPF shell — tray host, timer, popover. |
+| `NetFluss.Core` | `net10.0` | Models, formatters, themes, localization. Platform-neutral **on purpose** so it builds and unit-tests off Windows. |
+| `NetFluss.Native` | `net10.0-windows` | Win32 interop. Today: the IP Helper interface table. |
+| `NetFluss.Tray` | `net10.0-windows` | Notification-area meter rendering. No WPF, so it runs headless. |
+| `NetFluss.TrayPreview` | `net10.0-windows` | Renders the tray contact sheet. CI runs this and uploads the PNG. |
+| `NetFluss.App` | `net10.0-windows` | WPF shell — tray host, timer, popover. |
 | `*.Tests` | | xUnit. `Native.Tests` needs a real Windows host. |
 
 ## Two things that are easy to get wrong
