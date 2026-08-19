@@ -1,0 +1,10 @@
+<Application x:Class="NetFluss.App.NetFlussApplication"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnExplicitShutdown">
+    <!--
+        No StartupUri: NetFluss is a notification-area app with no main window, the
+        Windows equivalent of the macOS LSUIElement flag.
+    -->
+    <Application.Resources />
+</Application>

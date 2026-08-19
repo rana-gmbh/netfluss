@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Platform-neutral layer: models, formatters, themes, localization, settings.
+    Deliberately targets plain net9.0 (not net9.0-windows) so it builds and is
+    unit-testable on macOS/Linux CI as well as Windows.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>NetFluss.Core</RootNamespace>
+  </PropertyGroup>
+
+</Project>

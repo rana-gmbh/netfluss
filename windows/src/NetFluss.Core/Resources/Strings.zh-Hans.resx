@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="System Default" xml:space="preserve">
+    <value>系统默认</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="System Default follows the language selected in macOS." xml:space="preserve">
+    <value>系统默认会跟随 Windows 中选择的语言。</value>
+  </data>
+  <data name="Preferences" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Preferences…" xml:space="preserve">
+    <value>设置…</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>通用</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="Units" xml:space="preserve">
+    <value>单位</value>
+  </data>
+  <data name="Launch" xml:space="preserve">
+    <value>启动</value>
+  </data>
+  <data name="Launch at login" xml:space="preserve">
+    <value>登录时启动</value>
+  </data>
+  <data name="Refresh interval" xml:space="preserve">
+    <value>刷新间隔</value>
+  </data>
+  <data name="Check GitHub for updates automatically" xml:space="preserve">
+    <value>自动在 GitHub 检查更新</value>
+  </data>
+  <data name="When enabled, NetFluss checks once per day in the background. The manual Check for Updates button in About stays available." xml:space="preserve">
+    <value>启用后，NetFluss 每天在后台检查一次更新。“关于”中的手动检查更新按钮仍然可用。</value>
+  </data>
+  <data name="Display rates in bits per second" xml:space="preserve">
+    <value>以 bit/s 显示速率</value>
+  </data>
+  <data name="Adapters" xml:space="preserve">
+    <value>适配器</value>
+  </data>
+  <data name="Adapter Visibility" xml:space="preserve">
+    <value>适配器可见性</value>
+  </data>
+  <data name="Show inactive adapters" xml:space="preserve">
+    <value>显示非活动适配器</value>
+  </data>
+  <data name="Show other adapters (VPN, virtual)" xml:space="preserve">
+    <value>显示其他适配器（VPN、虚拟）</value>
+  </data>
+  <data name="Hide adapters after inactivity" xml:space="preserve">
+    <value>无流量后隐藏适配器</value>
+  </data>
+  <data name="Hide after" xml:space="preserve">
+    <value>隐藏延迟</value>
+  </data>
+  <data name="No adapters match current filters." xml:space="preserve">
+    <value>没有适配器符合当前筛选条件。</value>
+  </data>
+  <data name="Only include visible adapters in totals" xml:space="preserve">
+    <value>总计仅包含可见适配器</value>
+  </data>
+  <data name="Exclude VPN/tunnel adapters from totals" xml:space="preserve">
+    <value>总计排除 VPN/隧道适配器</value>
+  </data>
+  <data name="When enabled, the Download/Upload summary and menu bar use only adapters that are visible here." xml:space="preserve">
+    <value>启用后，下载/上传汇总和菜单栏只使用这里可见的适配器。</value>
+  </data>
+  <data name="Tunnel adapters such as utun, tun, tap, ipsec, and ppp are excluded from totals but remain visible in the adapter list." xml:space="preserve">
+    <value>utun、tun、tap、ipsec、ppp 等隧道适配器会从总计中排除，但仍显示在适配器列表中。</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>统计</value>
+  </data>
+  <data name="Collect historical statistics" xml:space="preserve">
+    <value>收集历史统计</value>
+  </data>
+  <data name="Disabled by default to avoid extra background work and energy use. When enabled, NetFluss keeps hourly and daily rollups for adapters and optional app traffic analysis." xml:space="preserve">
+    <value>默认关闭，以避免额外后台工作和耗电。启用后，NetFluss 会保存适配器的小时和每日汇总，并可选择分析 App 流量。</value>
+  </data>
+  <data name="Collect app statistics" xml:space="preserve">
+    <value>收集 App 统计</value>
+  </data>
+  <data name="App statistics are on by default and may increase energy consumption because NetFluss periodically samples per-app network usage in the background." xml:space="preserve">
+    <value>App 统计默认开启，可能会增加耗电，因为 NetFluss 会在后台定期采样每个 App 的网络使用量。</value>
+  </data>
+  <data name="Appearance" xml:space="preserve">
+    <value>外观</value>
+  </data>
+  <data name="Upload arrow ↑" xml:space="preserve">
+    <value>上传箭头 ↑</value>
+  </data>
+  <data name="Download arrow ↓" xml:space="preserve">
+    <value>下载箭头 ↓</value>
+  </data>
+  <data name="Upload number ↑" xml:space="preserve">
+    <value>上传数字 ↑</value>
+  </data>
+  <data name="Download number ↓" xml:space="preserve">
+    <value>下载数字 ↓</value>
+  </data>
+  <data name="Menu bar icon style" xml:space="preserve">
+    <value>菜单栏样式</value>
+  </data>
+  <data name="Menu bar icon" xml:space="preserve">
+    <value>菜单栏图标</value>
+  </data>
+  <data name="Menu bar size" xml:space="preserve">
+    <value>菜单栏大小</value>
+  </data>
+  <data name="Menu bar font" xml:space="preserve">
+    <value>菜单栏字体</value>
+  </data>
+  <data name="Menu bar unit" xml:space="preserve">
+    <value>菜单栏单位</value>
+  </data>
+  <data name="Decimals" xml:space="preserve">
+    <value>小数位</value>
+  </data>
+  <data name="Standard" xml:space="preserve">
+    <value>标准</value>
+  </data>
+  <data name="Unified pill" xml:space="preserve">
+    <value>统一胶囊</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>仪表盘</value>
+  </data>
+  <data name="Icon" xml:space="preserve">
+    <value>图标</value>
+  </data>
+  <data name="Monospaced" xml:space="preserve">
+    <value>等宽</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>系统</value>
+  </data>
+  <data name="Rounded" xml:space="preserve">
+    <value>圆角</value>
+  </data>
+  <data name="Auto" xml:space="preserve">
+    <value>自动</value>
+  </data>
+  <data name="IP addresses" xml:space="preserve">
+    <value>IP 地址</value>
+  </data>
+  <data name="IP display" xml:space="preserve">
+    <value>IP 显示</value>
+  </data>
+  <data name="External IP" xml:space="preserve">
+    <value>外部 IP</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>列表</value>
+  </data>
+  <data name="Flow" xml:space="preserve">
+    <value>流向</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="Dashboard uses router-wide traffic when Fritz!Box, UniFi, OpenWRT, or OPNsense bandwidth is enabled and available." xml:space="preserve">
+    <value>当 Fritz!Box、UniFi、OpenWRT 或 OPNsense 带宽功能已启用且可用时，仪表盘会使用路由器整体流量。</value>
+  </data>
+  <data name="Top Apps" xml:space="preserve">
+    <value>热门 App</value>
+  </data>
+  <data name="Show top apps by network usage" xml:space="preserve">
+    <value>按网络使用量显示热门 App</value>
+  </data>
+  <data name="Shows the top 5 processes ranked by current network traffic." xml:space="preserve">
+    <value>按当前网络流量显示前 5 个进程。</value>
+  </data>
+  <data name="Keep apps visible after traffic stops" xml:space="preserve">
+    <value>流量停止后仍保持 App 可见</value>
+  </data>
+  <data name="Visible for" xml:space="preserve">
+    <value>保持可见</value>
+  </data>
+  <data name="DNS" xml:space="preserve">
+    <value>DNS</value>
+  </data>
+  <data name="DNS Switcher" xml:space="preserve">
+    <value>DNS 切换器</value>
+  </data>
+  <data name="Show DNS switcher in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 DNS 切换器</value>
+  </data>
+  <data name="DNS changes and Ethernet reconnects install a privileged helper the first time. macOS may ask for administrator approval and, on some systems, additional approval in System Settings." xml:space="preserve">
+    <value>首次更改 DNS 或重新连接以太网时会安装特权辅助工具。Windows 可能会要求管理员批准，在某些系统上还需要在系统设置中额外批准。</value>
+  </data>
+  <data name="Add Custom DNS…" xml:space="preserve">
+    <value>添加自定义 DNS…</value>
+  </data>
+  <data name="Router" xml:space="preserve">
+    <value>路由器</value>
+  </data>
+  <data name="Fritz!Box Bandwidth" xml:space="preserve">
+    <value>Fritz!Box 带宽</value>
+  </data>
+  <data name="UniFi Bandwidth" xml:space="preserve">
+    <value>UniFi 带宽</value>
+  </data>
+  <data name="OpenWRT Bandwidth" xml:space="preserve">
+    <value>OpenWRT 带宽</value>
+  </data>
+  <data name="OPNsense Bandwidth" xml:space="preserve">
+    <value>OPNsense 带宽</value>
+  </data>
+  <data name="Show Fritz!Box bandwidth in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 Fritz!Box 带宽</value>
+  </data>
+  <data name="Show UniFi bandwidth in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 UniFi 带宽</value>
+  </data>
+  <data name="Show OpenWRT bandwidth in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 OpenWRT 带宽</value>
+  </data>
+  <data name="Show OPNsense bandwidth in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 OPNsense 带宽</value>
+  </data>
+  <data name="Router address" xml:space="preserve">
+    <value>路由器地址</value>
+  </data>
+  <data name="Credentials" xml:space="preserve">
+    <value>凭据</value>
+  </data>
+  <data name="API Credentials" xml:space="preserve">
+    <value>API 凭据</value>
+  </data>
+  <data name="Configured" xml:space="preserve">
+    <value>已配置</value>
+  </data>
+  <data name="Not set" xml:space="preserve">
+    <value>未设置</value>
+  </data>
+  <data name="Edit…" xml:space="preserve">
+    <value>编辑…</value>
+  </data>
+  <data name="(auto)" xml:space="preserve">
+    <value>（自动）</value>
+  </data>
+  <data name="Connecting…" xml:space="preserve">
+    <value>正在连接…</value>
+  </data>
+  <data name="Gathering data…" xml:space="preserve">
+    <value>正在收集数据…</value>
+  </data>
+  <data name="Automatic (DHCP)" xml:space="preserve">
+    <value>自动（DHCP）</value>
+  </data>
+  <data name="Bandwidth Statistics" xml:space="preserve">
+    <value>带宽统计</value>
+  </data>
+  <data name="Speed Test…" xml:space="preserve">
+    <value>测速…</value>
+  </data>
+  <data name="About NetFluss" xml:space="preserve">
+    <value>关于 NetFluss</value>
+  </data>
+  <data name="Try FileFluss" xml:space="preserve">
+    <value>试用 FileFluss</value>
+  </data>
+  <data name="Support NetFluss project" xml:space="preserve">
+    <value>支持 NetFluss 项目</value>
+  </data>
+  <data name="Quit NetFluss" xml:space="preserve">
+    <value>退出 NetFluss</value>
+  </data>
+  <data name="Speed Test" xml:space="preserve">
+    <value>测速</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
+  <data name="Range" xml:space="preserve">
+    <value>范围</value>
+  </data>
+  <data name="Custom date range" xml:space="preserve">
+    <value>自定义日期范围</value>
+  </data>
+  <data name="Custom Date Range" xml:space="preserve">
+    <value>自定义日期范围</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>从</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>到</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>更改</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>清除</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>稍后</value>
+  </data>
+  <data name="Open Release Page" xml:space="preserve">
+    <value>打开发布页面</value>
+  </data>
+  <data name="0" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="10 s" xml:space="preserve">
+    <value>10 秒</value>
+  </data>
+  <data name="2" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="3" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="3 s" xml:space="preserve">
+    <value>3 秒</value>
+  </data>
+  <data name="5 s" xml:space="preserve">
+    <value>5 秒</value>
+  </data>
+  <data name="A newer version is available on GitHub. Open the latest release page to download it." xml:space="preserve">
+    <value>GitHub 上有新版本。打开最新发布页面即可下载。</value>
+  </data>
+  <data name="Add a short note so you can remember exactly where you took this measurement later." xml:space="preserve">
+    <value>添加一条简短备注，方便以后记住这次测量的具体地点。</value>
+  </data>
+  <data name="App statistics are disabled" xml:space="preserve">
+    <value>App 统计已关闭</value>
+  </data>
+  <data name="Apps that used bandwidth in the last 60 seconds:" xml:space="preserve">
+    <value>最近 60 秒使用过带宽的 App：</value>
+  </data>
+  <data name="BSSID" xml:space="preserve">
+    <value>BSSID</value>
+  </data>
+  <data name="Buy me a coffee ↗" xml:space="preserve">
+    <value>请我喝杯咖啡 ↗</value>
+  </data>
+  <data name="Check Again" xml:space="preserve">
+    <value>再次检查</value>
+  </data>
+  <data name="Check for Updates" xml:space="preserve">
+    <value>检查更新</value>
+  </data>
+  <data name="Checking for updates…" xml:space="preserve">
+    <value>正在检查更新…</value>
+  </data>
+  <data name="Cloudflare measures against nearby Cloudflare edge locations, so results can differ from broader Internet-path tests." xml:space="preserve">
+    <value>Cloudflare 会连接附近的 Cloudflare 边缘节点测速，因此结果可能与更广泛的互联网路径测试不同。</value>
+  </data>
+  <data name="Connection successful" xml:space="preserve">
+    <value>连接成功</value>
+  </data>
+  <data name="Continue with M-Lab" xml:space="preserve">
+    <value>继续使用 M-Lab</value>
+  </data>
+  <data name="Could not check for updates" xml:space="preserve">
+    <value>无法检查更新</value>
+  </data>
+  <data name="Custom Color" xml:space="preserve">
+    <value>自定义颜色</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Download and upload history for the selected range." xml:space="preserve">
+    <value>所选范围内的下载和上传历史。</value>
+  </data>
+  <data name="Fritz!Box" xml:space="preserve">
+    <value>Fritz!Box</value>
+  </data>
+  <data name="Fritz!Box Address" xml:space="preserve">
+    <value>Fritz!Box 地址</value>
+  </data>
+  <data name="GNU General Public License v3.0 ↗" xml:space="preserve">
+    <value>GNU 通用公共许可证 v3.0 ↗</value>
+  </data>
+  <data name="Generate these in OPNsense: System → User Management → API" xml:space="preserve">
+    <value>在 OPNsense 中生成：System → User Management → API</value>
+  </data>
+  <data name="Hidden apps:" xml:space="preserve">
+    <value>已隐藏 App：</value>
+  </data>
+  <data name="Hide Apps" xml:space="preserve">
+    <value>隐藏 App</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>历史</value>
+  </data>
+  <data name="IPv4" xml:space="preserve">
+    <value>IPv4</value>
+  </data>
+  <data name="IPv6" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="If you want to support this project," xml:space="preserve">
+    <value>如果你想支持这个项目，</value>
+  </data>
+  <data name="Latency" xml:space="preserve">
+    <value>延迟</value>
+  </data>
+  <data name="M-Lab keeps results public, so NetFluss stores your consent once before the first test." xml:space="preserve">
+    <value>M-Lab 会公开测试结果，因此 NetFluss 会在首次测试前保存你的同意。</value>
+  </data>
+  <data name="M-Lab publishes measurement data publicly, including your public IP address. NetFluss needs your consent before running the first M-Lab speed test." xml:space="preserve">
+    <value>M-Lab 会公开发布测量数据，包括你的公网 IP 地址。NetFluss 在首次运行 M-Lab 测速前需要你的同意。</value>
+  </data>
+  <data name="Made by Rana GmbH" xml:space="preserve">
+    <value>由 Rana GmbH 制作</value>
+  </data>
+  <data name="NetFluss" xml:space="preserve">
+    <value>NetFluss</value>
+  </data>
+  <data name="No active adapters" xml:space="preserve">
+    <value>没有活动适配器</value>
+  </data>
+  <data name="No adapter history yet." xml:space="preserve">
+    <value>还没有适配器历史。</value>
+  </data>
+  <data name="No recent apps detected yet. Keep Top Apps enabled and check back shortly." xml:space="preserve">
+    <value>还没有检测到最近使用的 App。请保持热门 App 开启，稍后再检查。</value>
+  </data>
+  <data name="No speed tests yet" xml:space="preserve">
+    <value>还没有测速记录</value>
+  </data>
+  <data name="Note" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="OPNsense" xml:space="preserve">
+    <value>OPNsense</value>
+  </data>
+  <data name="OPNsense API Credentials" xml:space="preserve">
+    <value>OPNsense API 凭据</value>
+  </data>
+  <data name="Open Preferences" xml:space="preserve">
+    <value>打开设置</value>
+  </data>
+  <data name="OpenWRT" xml:space="preserve">
+    <value>OpenWRT</value>
+  </data>
+  <data name="Provider" xml:space="preserve">
+    <value>提供方</value>
+  </data>
+  <data name="Queries your Fritz!Box via TR-064 (no authentication needed for bandwidth data). Auto uses the current default gateway. Set a fixed address if your Fritz!Box is reachable at a different IP. Port 49000 must be reachable." xml:space="preserve">
+    <value>通过 TR-064 查询 Fritz!Box（带宽数据无需认证）。自动模式使用当前默认网关。如果 Fritz!Box 位于其他 IP，请设置固定地址。端口 49000 必须可访问。</value>
+  </data>
+  <data name="Queries your OPNsense router via REST API over HTTPS or HTTP. Auto uses the current default gateway. Requires API key and secret configured in OPNsense." xml:space="preserve">
+    <value>通过 HTTPS 或 HTTP 使用 REST API 查询 OPNsense 路由器。自动模式使用当前默认网关。需要在 OPNsense 中配置 API 密钥和密钥密码。</value>
+  </data>
+  <data name="Queries your OpenWRT router via ubus JSON-RPC over HTTPS or HTTP. Auto uses the current default gateway, which may be the wrong router on dual-router setups. Set a fixed OpenWRT IP or URL if needed. Requires the router&apos;s admin credentials and the uhttpd-mod-ubus package." xml:space="preserve">
+    <value>通过 HTTPS 或 HTTP 使用 ubus JSON-RPC 查询 OpenWRT 路由器。自动模式使用当前默认网关，在双路由设置中可能不是正确的路由器。需要时请设置固定 OpenWRT IP 或 URL。需要路由器管理员凭据和 uhttpd-mod-ubus 软件包。</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS). Requires a local admin account on the UniFi controller." xml:space="preserve">
+    <value>通过本地 API（HTTPS）查询 UniFi 网关。需要 UniFi 控制器上的本地管理员账户。</value>
+  </data>
+  <data name="Recent results saved on this Mac. Add notes to remember the exact place." xml:space="preserve">
+    <value>保存在这台 Mac 上的最近结果。添加备注以记住具体地点。</value>
+  </data>
+  <data name="Release Notes ↗" xml:space="preserve">
+    <value>发布说明 ↗</value>
+  </data>
+  <data name="Release Page ↗" xml:space="preserve">
+    <value>发布页面 ↗</value>
+  </data>
+  <data name="Released under the" xml:space="preserve">
+    <value>遵循</value>
+  </data>
+  <data name="Reset to Auto" xml:space="preserve">
+    <value>重置为自动</value>
+  </data>
+  <data name="Run a speed test when you want and NetFluss will keep the recent results here." xml:space="preserve">
+    <value>需要时运行测速，NetFluss 会在这里保存最近结果。</value>
+  </data>
+  <data name="Sample history loaded" xml:space="preserve">
+    <value>已加载示例历史</value>
+  </data>
+  <data name="Speed Test History" xml:space="preserve">
+    <value>测速历史</value>
+  </data>
+  <data name="Speed Test Note" xml:space="preserve">
+    <value>测速备注</value>
+  </data>
+  <data name="This is generated demo traffic so you can review the charts, adapter ranking, and top-app lists across all ranges." xml:space="preserve">
+    <value>这是生成的演示流量，方便你查看所有范围内的图表、适配器排名和热门 App 列表。</value>
+  </data>
+  <data name="Top adapters by transferred data for the selected range." xml:space="preserve">
+    <value>所选范围内按传输数据排名的热门适配器。</value>
+  </data>
+  <data name="Try Again" xml:space="preserve">
+    <value>重试</value>
+  </data>
+  <data name="Turn them on in Preferences if you want top download and upload apps in this view." xml:space="preserve">
+    <value>如果想在此视图中查看热门下载和上传 App，请在设置中开启。</value>
+  </data>
+  <data name="UniFi" xml:space="preserve">
+    <value>UniFi</value>
+  </data>
+  <data name="Update Available" xml:space="preserve">
+    <value>有可用更新</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>上传</value>
+  </data>
+  <data name="When" xml:space="preserve">
+    <value>时间</value>
+  </data>
+  <data name="You&apos;re up to date" xml:space="preserve">
+    <value>已是最新版本</value>
+  </data>
+  <data name="please consider to " xml:space="preserve">
+    <value>请考虑</value>
+  </data>
+  <data name="www.ranagmbh.de" xml:space="preserve">
+    <value>www.ranagmbh.de</value>
+  </data>
+  <data name="Loading statistics…" xml:space="preserve">
+    <value>正在加载统计数据…</value>
+  </data>
+  <data name="Live Data" xml:space="preserve">
+    <value>实时数据</value>
+  </data>
+  <data name="Load Sample Data" xml:space="preserve">
+    <value>加载示例数据</value>
+  </data>
+  <data name="Top Downloads" xml:space="preserve">
+    <value>下载排行</value>
+  </data>
+  <data name="Top Uploads" xml:space="preserve">
+    <value>上传排行</value>
+  </data>
+  <data name="Top 10 apps by received data." xml:space="preserve">
+    <value>按接收数据排序的前 10 个应用。</value>
+  </data>
+  <data name="Top 10 apps by sent data." xml:space="preserve">
+    <value>按发送数据排序的前 10 个应用。</value>
+  </data>
+  <data name="App statistics collection is currently off." xml:space="preserve">
+    <value>应用统计收集当前已关闭。</value>
+  </data>
+  <data name="No app history yet." xml:space="preserve">
+    <value>还没有应用历史记录。</value>
+  </data>
+  <data name="Not enough statistics yet" xml:space="preserve">
+    <value>统计数据还不够</value>
+  </data>
+  <data name="Statistics collection is off" xml:space="preserve">
+    <value>统计收集已关闭</value>
+  </data>
+  <data name="Previewing generated sample statistics for the last year. Live collection continues with your current preferences." xml:space="preserve">
+    <value>正在预览过去一年的生成示例统计数据。实时收集会继续使用当前偏好设置。</value>
+  </data>
+  <data name="Adapter statistics are collected continuously while NetFluss runs. App statistics are sampled every {0}." xml:space="preserve">
+    <value>NetFluss 运行时会持续收集适配器统计数据。应用统计数据每 {0} 采样一次。</value>
+  </data>
+  <data name="Adapter statistics are being collected. App statistics are currently disabled." xml:space="preserve">
+    <value>正在收集适配器统计数据。应用统计当前已禁用。</value>
+  </data>
+  <data name="Statistics collection is disabled in Preferences." xml:space="preserve">
+    <value>统计收集已在偏好设置中禁用。</value>
+  </data>
+  <data name="Keep NetFluss running for a while and this view will fill in with adapter and app history." xml:space="preserve">
+    <value>让 NetFluss 运行一段时间，此视图会显示适配器和应用历史记录。</value>
+  </data>
+  <data name="Enable statistics in Preferences to start collecting preset and custom date range network history." xml:space="preserve">
+    <value>在偏好设置中启用统计，以开始收集预设和自定义日期范围的网络历史。</value>
+  </data>
+  <data name="Collecting since {0}" xml:space="preserve">
+    <value>自 {0} 起收集</value>
+  </data>
+  <data name="Last adapter update {0}" xml:space="preserve">
+    <value>上次适配器更新 {0}</value>
+  </data>
+  <data name="Last app update {0}" xml:space="preserve">
+    <value>上次应用更新 {0}</value>
+  </data>
+  <data name="Peak" xml:space="preserve">
+    <value>峰值</value>
+  </data>
+  <data name="Avg" xml:space="preserve">
+    <value>平均</value>
+  </data>
+  <data name="Last Hour" xml:space="preserve">
+    <value>最近 1 小时</value>
+  </data>
+  <data name="Last 24 Hours" xml:space="preserve">
+    <value>最近 24 小时</value>
+  </data>
+  <data name="Last 7 Days" xml:space="preserve">
+    <value>最近 7 天</value>
+  </data>
+  <data name="Last 30 Days" xml:space="preserve">
+    <value>最近 30 天</value>
+  </data>
+  <data name="Last Year" xml:space="preserve">
+    <value>最近 1 年</value>
+  </data>
+  <data name="Minute Traffic" xml:space="preserve">
+    <value>分钟流量</value>
+  </data>
+  <data name="Hourly Traffic" xml:space="preserve">
+    <value>小时流量</value>
+  </data>
+  <data name="Daily Traffic" xml:space="preserve">
+    <value>每日流量</value>
+  </data>
+  <data name="Monthly Traffic" xml:space="preserve">
+    <value>每月流量</value>
+  </data>
+  <data name="Data Usage" xml:space="preserve">
+    <value>数据用量</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>今天</value>
+  </data>
+  <data name="This Month" xml:space="preserve">
+    <value>本月</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>总计</value>
+  </data>
+  <data name="Display usage summary on popover" xml:space="preserve">
+    <value>在弹出窗口中显示用量摘要</value>
+  </data>
+  <data name="Shows today&apos;s and this month&apos;s upload, download, and total data in the popover. Requires historical statistics collection." xml:space="preserve">
+    <value>在弹出窗口中显示今天和本月的上传、下载和总数据量。需要开启历史统计收集。</value>
+  </data>
+  <data name="Run Test" xml:space="preserve">
+    <value>运行测试</value>
+  </data>
+  <data name="Run Again" xml:space="preserve">
+    <value>再次运行</value>
+  </data>
+  <data name="Connection Details" xml:space="preserve">
+    <value>连接详情</value>
+  </data>
+  <data name="Server" xml:space="preserve">
+    <value>服务器</value>
+  </data>
+  <data name="Waiting for a server selection" xml:space="preserve">
+    <value>正在等待选择服务器</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>已开始</value>
+  </data>
+  <data name="Started {0}" xml:space="preserve">
+    <value>已开始 {0}</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>未开始</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>已完成</value>
+  </data>
+  <data name="Finished {0}" xml:space="preserve">
+    <value>已完成 {0}</value>
+  </data>
+  <data name="In progress" xml:space="preserve">
+    <value>进行中</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>备注</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="Final Result" xml:space="preserve">
+    <value>最终结果</value>
+  </data>
+  <data name="Jitter" xml:space="preserve">
+    <value>抖动</value>
+  </data>
+  <data name="Remember This Test" xml:space="preserve">
+    <value>记住此测试</value>
+  </data>
+  <data name="Edit Note" xml:space="preserve">
+    <value>编辑备注</value>
+  </data>
+  <data name="Add Note" xml:space="preserve">
+    <value>添加备注</value>
+  </data>
+  <data name="Add note" xml:space="preserve">
+    <value>添加备注</value>
+  </data>
+  <data name="M-Lab Consent" xml:space="preserve">
+    <value>M-Lab 同意</value>
+  </data>
+  <data name="Review M-Lab privacy policy" xml:space="preserve">
+    <value>查看 M-Lab 隐私政策</value>
+  </data>
+  <data name="M-Lab (Recommended)" xml:space="preserve">
+    <value>M-Lab（推荐）</value>
+  </data>
+  <data name="Public measurement servers with a more Internet-path-oriented result." xml:space="preserve">
+    <value>使用公共测量服务器，结果更偏向真实互联网路径。</value>
+  </data>
+  <data name="Nearby Cloudflare edge locations for a fast CDN-oriented result." xml:space="preserve">
+    <value>使用附近的 Cloudflare 边缘节点，结果更偏向快速 CDN 路径。</value>
+  </data>
+  <data name="M-Lab chooses a nearby public measurement server and runs a full ndt7 download and upload test." xml:space="preserve">
+    <value>M-Lab 会选择附近的公共测量服务器，并运行完整的 ndt7 下载和上传测试。</value>
+  </data>
+  <data name="Cloudflare measures against its nearest edge, which can be faster than broader Internet-path tests." xml:space="preserve">
+    <value>Cloudflare 会连接最近的边缘节点进行测量，可能快于更广泛的互联网路径测试。</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>就绪</value>
+  </data>
+  <data name="Consent required" xml:space="preserve">
+    <value>需要同意</value>
+  </data>
+  <data name="Preparing" xml:space="preserve">
+    <value>准备中</value>
+  </data>
+  <data name="Finding server" xml:space="preserve">
+    <value>正在查找服务器</value>
+  </data>
+  <data name="Measuring latency" xml:space="preserve">
+    <value>正在测量延迟</value>
+  </data>
+  <data name="Testing download" xml:space="preserve">
+    <value>正在测试下载</value>
+  </data>
+  <data name="Testing upload" xml:space="preserve">
+    <value>正在测试上传</value>
+  </data>
+  <data name="Finalizing" xml:space="preserve">
+    <value>正在完成</value>
+  </data>
+  <data name="Complete" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>已取消</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>失败</value>
+  </data>
+  <data name="Choose a provider and run a speed test when you want." xml:space="preserve">
+    <value>选择提供商，并在需要时运行速度测试。</value>
+  </data>
+  <data name="Speed test stopped." xml:space="preserve">
+    <value>速度测试已停止。</value>
+  </data>
+  <data name="M-Lab publishes measurement data publicly, so NetFluss asks for consent before the first test." xml:space="preserve">
+    <value>M-Lab 会公开发布测量数据，因此 NetFluss 会在首次测试前请求同意。</value>
+  </data>
+  <data name="Preparing the M-Lab test..." xml:space="preserve">
+    <value>正在准备 M-Lab 测试...</value>
+  </data>
+  <data name="Preparing the Cloudflare test..." xml:space="preserve">
+    <value>正在准备 Cloudflare 测试...</value>
+  </data>
+  <data name="M-Lab speed test complete." xml:space="preserve">
+    <value>M-Lab 速度测试完成。</value>
+  </data>
+  <data name="Cloudflare speed test complete." xml:space="preserve">
+    <value>Cloudflare 速度测试完成。</value>
+  </data>
+  <data name="Wi-Fi" xml:space="preserve">
+    <value>Wi-Fi</value>
+  </data>
+  <data name="Wi-Fi Networks" xml:space="preserve">
+    <value>Wi-Fi 网络</value>
+  </data>
+  <data name="Wi-Fi Switcher" xml:space="preserve">
+    <value>Wi-Fi 切换器</value>
+  </data>
+  <data name="No Wi-Fi adapter found." xml:space="preserve">
+    <value>未找到 Wi-Fi 适配器。</value>
+  </data>
+  <data name="Location access is required to list nearby Wi-Fi networks. macOS uses the same restriction in System Settings → Wi-Fi." xml:space="preserve">
+    <value>需要位置权限才能列出附近的 Wi-Fi 网络。Windows 在「系统设置 → Wi-Fi」中使用相同的限制。</value>
+  </data>
+  <data name="Open Location Settings…" xml:space="preserve">
+    <value>打开位置设置…</value>
+  </data>
+  <data name="Waiting for Location permission…" xml:space="preserve">
+    <value>正在等待位置权限…</value>
+  </data>
+  <data name="Scanning for networks…" xml:space="preserve">
+    <value>正在扫描网络…</value>
+  </data>
+  <data name="Not available" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="Pin to top" xml:space="preserve">
+    <value>置顶</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>取消置顶</value>
+  </data>
+  <data name="ESSID" xml:space="preserve">
+    <value>ESSID</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>安全性</value>
+  </data>
+  <data name="Band" xml:space="preserve">
+    <value>频段</value>
+  </data>
+  <data name="Channel" xml:space="preserve">
+    <value>信道</value>
+  </data>
+  <data name="RSSI" xml:space="preserve">
+    <value>RSSI</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>状态</value>
+  </data>
+  <data name="Not in range" xml:space="preserve">
+    <value>不在范围内</value>
+  </data>
+  <data name="Pinned" xml:space="preserve">
+    <value>已置顶</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="Connect to {0}" xml:space="preserve">
+    <value>连接到 {0}</value>
+  </data>
+  <data name="Enter the password for this {0} network." xml:space="preserve">
+    <value>请输入此 {0} 网络的密码。</value>
+  </data>
+  <data name="Enter the network password." xml:space="preserve">
+    <value>请输入网络密码。</value>
+  </data>
+  <data name="Join" xml:space="preserve">
+    <value>加入</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>密码</value>
+  </data>
+  <data name="Network is not in range right now." xml:space="preserve">
+    <value>此网络当前不在范围内。</value>
+  </data>
+  <data name="Network is no longer in range." xml:space="preserve">
+    <value>此网络已不在范围内。</value>
+  </data>
+  <data name="Show Wi-Fi networks in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 Wi-Fi 网络</value>
+  </data>
+  <data name="Lists nearby Wi-Fi networks from the system&apos;s cached scan. Tap a row to join — saved networks reconnect immediately, new secured networks prompt for a password." xml:space="preserve">
+    <value>列出来自系统缓存扫描的附近 Wi-Fi 网络。点按一行即可加入 — 已保存的网络会立即重新连接，新的安全网络会提示输入密码。</value>
+  </data>
+  <data name="Only show the strongest networks" xml:space="preserve">
+    <value>仅显示信号最强的网络</value>
+  </data>
+  <data name="Maximum networks shown" xml:space="preserve">
+    <value>最多显示的网络数量</value>
+  </data>
+  <data name="Pinned networks and the currently-connected network always appear regardless of this limit." xml:space="preserve">
+    <value>已置顶的网络和当前连接的网络始终显示，不受此限制影响。</value>
+  </data>
+  <data name="System access" xml:space="preserve">
+    <value>系统访问</value>
+  </data>
+  <data name="Grant Location Access…" xml:space="preserve">
+    <value>授予位置访问权限…</value>
+  </data>
+  <data name="Refresh Wi-Fi Scan" xml:space="preserve">
+    <value>刷新 Wi-Fi 扫描</value>
+  </data>
+  <data name="Granted" xml:space="preserve">
+    <value>已授予</value>
+  </data>
+  <data name="Not requested yet" xml:space="preserve">
+    <value>尚未请求</value>
+  </data>
+  <data name="Denied — open System Settings to allow" xml:space="preserve">
+    <value>已拒绝 — 打开系统设置以允许</value>
+  </data>
+  <data name="Required to list nearby Wi-Fi networks. macOS uses the same gate for its own Wi-Fi menu." xml:space="preserve">
+    <value>列出附近 Wi-Fi 网络所必需的权限。Windows 在其自身的 Wi-Fi 菜单中使用相同的权限关卡。</value>
+  </data>
+  <data name="Install Privileged Helper…" xml:space="preserve">
+    <value>安装特权辅助工具…</value>
+  </data>
+  <data name="Installing…" xml:space="preserve">
+    <value>正在安装…</value>
+  </data>
+  <data name="Used to change DNS servers and to persist new Wi-Fi credentials into macOS&apos;s Known Networks. macOS may show a &quot;Background Items Added&quot; approval prompt the first time." xml:space="preserve">
+    <value>用于更改 DNS 服务器并将新的 Wi-Fi 凭据保存到 Windows 的已知网络中。首次使用时，Windows 可能会显示「已添加后台项目」的批准提示。</value>
+  </data>
+  <data name="Already installed" xml:space="preserve">
+    <value>已安装</value>
+  </data>
+  <data name="Registered" xml:space="preserve">
+    <value>已注册</value>
+  </data>
+  <data name="Popover sections" xml:space="preserve">
+    <value>弹出窗口分区</value>
+  </data>
+  <data name="Drag to reorder sections in the popover. Toggling a row mirrors the corresponding pref in DNS, Wi-Fi, Router, or Top Apps panels." xml:space="preserve">
+    <value>拖动以重新排列弹出窗口中的分区。切换某一行会同步对应的 DNS、Wi-Fi、路由器或热门 App 面板中的设置。</value>
+  </data>
+  <data name="Download / Upload" xml:space="preserve">
+    <value>下载 / 上传</value>
+  </data>
+  <data name="Network adapters" xml:space="preserve">
+    <value>网络适配器</value>
+  </data>
+  <data name="Network flow" xml:space="preserve">
+    <value>网络流向</value>
+  </data>
+  <data name="Copy Network Diagnostics…" xml:space="preserve">
+    <value>复制网络诊断信息…</value>
+  </data>
+  <data name="Record network diagnostics?" xml:space="preserve">
+    <value>记录网络诊断信息？</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>开始</value>
+  </data>
+  <data name="Diagnostics copied to clipboard" xml:space="preserve">
+    <value>已将诊断信息复制到剪贴板</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>好</value>
+  </data>
+  <data name="NetFluss will record per-interface byte counters for {0} seconds. After you click Start, begin a large download (for example a Speed Test) and let it run until the capture finishes. The diagnostics will then be copied to your clipboard so you can paste them into a GitHub issue.&#10;&#10;No network traffic is sent — only local counters from your machine are recorded." xml:space="preserve">
+    <value>NetFluss 将记录每个网络接口的字节计数器 {0} 秒。点击「开始」后，请启动一个较大的下载（例如速度测试）并让它持续运行至记录结束。诊断信息随后会复制到剪贴板，您可以将其粘贴到 GitHub Issue 中。
+
+不会发送任何网络流量 — 仅记录您机器上的本地计数器。</value>
+  </data>
+  <data name="{0} snapshots were captured. Paste them into the GitHub issue (issue #31) so the developer can identify which interface accumulates download bytes on your Mac." xml:space="preserve">
+    <value>已捕获 {0} 个快照。请将其粘贴到 GitHub Issue (#31)，以便开发者识别您 Mac 上哪个接口在累积下载字节。</value>
+  </data>
+  <data name="Wi-Fi Details" xml:space="preserve">
+    <value>Wi-Fi 详情</value>
+  </data>
+  <data name="Reconnect" xml:space="preserve">
+    <value>重新连接</value>
+  </data>
+  <data name="Reconnect automatically" xml:space="preserve">
+    <value>自动重新连接</value>
+  </data>
+  <data name="Connect when NetFluss starts" xml:space="preserve">
+    <value>NetFluss 启动时连接</value>
+  </data>
+  <data name="Use custom DNS while connected" xml:space="preserve">
+    <value>连接时使用自定义 DNS</value>
+  </data>
+  <data name="Choose a DNS preset" xml:space="preserve">
+    <value>选择 DNS 预设</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="Custom color" xml:space="preserve">
+    <value>自定义颜色</value>
+  </data>
+  <data name="Dashboard (basic)" xml:space="preserve">
+    <value>仪表盘（基本）</value>
+  </data>
+  <data name="Clear custom date range" xml:space="preserve">
+    <value>清除自定义日期范围</value>
+  </data>
+  <data name="Apps to Hide…" xml:space="preserve">
+    <value>要隐藏的应用…</value>
+  </data>
+  <data name="Apps to Hide ({0})…" xml:space="preserve">
+    <value>要隐藏的应用 ({0})…</value>
+  </data>
+  <data name="VPN" xml:space="preserve">
+    <value>VPN</value>
+  </data>
+  <data name="Show VPN in popover" xml:space="preserve">
+    <value>在弹出窗口中显示 VPN</value>
+  </data>
+  <data name="Import OpenVPN profile…" xml:space="preserve">
+    <value>导入 OpenVPN 配置文件…</value>
+  </data>
+  <data name="Import WireGuard profile…" xml:space="preserve">
+    <value>导入 WireGuard 配置文件…</value>
+  </data>
+  <data name="Import a single config file, or a folder or .zip of them (e.g. a provider&apos;s router profiles). Each config becomes a selectable server." xml:space="preserve">
+    <value>导入单个配置文件，或包含多个配置文件的文件夹或 .zip（例如提供商的路由器配置）。每个配置都会成为一个可选服务器。</value>
+  </data>
+  <data name="Add system VPN…" xml:space="preserve">
+    <value>添加系统 VPN…</value>
+  </data>
+  <data name="Add IKEv2 VPN…" xml:space="preserve">
+    <value>添加 IKEv2 VPN…</value>
+  </data>
+  <data name="Install configuration profile (.mobileconfig)…" xml:space="preserve">
+    <value>安装配置描述文件 (.mobileconfig)…</value>
+  </data>
+  <data name="Refresh system VPNs" xml:space="preserve">
+    <value>刷新系统 VPN</value>
+  </data>
+  <data name="System VPN (IKEv2 / IPsec / L2TP)" xml:space="preserve">
+    <value>系统 VPN (IKEv2 / IPsec / L2TP)</value>
+  </data>
+  <data name="No system VPNs found. Configure one in System Settings → VPN, or install a provider configuration profile below." xml:space="preserve">
+    <value>未找到系统 VPN。请在“系统设置 → VPN”中配置一个，或在下方安装提供商的配置描述文件。</value>
+  </data>
+  <data name="Profiles" xml:space="preserve">
+    <value>配置文件</value>
+  </data>
+  <data name="No VPN profiles. Add one in Preferences → VPN." xml:space="preserve">
+    <value>没有 VPN 配置文件。请在“设置 → VPN”中添加一个。</value>
+  </data>
+  <data name="Not connected" xml:space="preserve">
+    <value>未连接</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>已连接</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>连接</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>断开</value>
+  </data>
+  <data name="Disconnecting…" xml:space="preserve">
+    <value>正在断开…</value>
+  </data>
+  <data name="Reconnecting…" xml:space="preserve">
+    <value>正在重新连接…</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名称</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>用户名</value>
+  </data>
+  <data name="Save credentials" xml:space="preserve">
+    <value>保存凭据</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>已保存</value>
+  </data>
+  <data name="Move up" xml:space="preserve">
+    <value>上移</value>
+  </data>
+  <data name="Move down" xml:space="preserve">
+    <value>下移</value>
+  </data>
+  <data name="Add IKEv2 VPN" xml:space="preserve">
+    <value>添加 IKEv2 VPN</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>添加</value>
+  </data>
+  <data name="Creates an IKEv2 profile NetFluss connects directly (username/password). The password is stored in your Keychain. If the server uses a private CA, trust its certificate in Keychain Access first." xml:space="preserve">
+    <value>创建一个 NetFluss 直接连接的 IKEv2 配置文件（用户名/密码）。密码存储在你的钥匙串中。如果服务器使用私有 CA，请先在“钥匙串访问”中信任其证书。</value>
+  </data>
+  <data name="VPN Diagnostics" xml:space="preserve">
+    <value>VPN 诊断</value>
+  </data>
+  <data name="Copy VPN diagnostics" xml:space="preserve">
+    <value>复制 VPN 诊断信息</value>
+  </data>
+  <data name="Reveal VPN log in Finder" xml:space="preserve">
+    <value>在访达中显示 VPN 日志</value>
+  </data>
+  <data name="Clear VPN log" xml:space="preserve">
+    <value>清除 VPN 日志</value>
+  </data>
+  <data name="Copied to clipboard." xml:space="preserve">
+    <value>已复制到剪贴板。</value>
+  </data>
+  <data name="If a VPN connection fails, copy this log and send it — it records the bundled tools, their architecture, and the connection tool&apos;s full output." xml:space="preserve">
+    <value>如果 VPN 连接失败，请复制此日志并发送——它记录了内置工具、其架构以及连接工具的完整输出。</value>
+  </data>
+  <data name="When enabled, VPN/tunnel adapters (utun, tun, tap, ipsec, ppp) are excluded from totals. Loopback and AirDrop are always excluded, since they never carry internet traffic. All adapters remain visible in the adapter list." xml:space="preserve">
+    <value>启用后，VPN/隧道适配器（utun、tun、tap、ipsec、ppp）将从总计中排除。回环和 AirDrop 始终被排除，因为它们不承载互联网流量。所有适配器仍会显示在适配器列表中。</value>
+  </data>
+  <data name="Network Slice" xml:space="preserve">
+    <value>网络切片</value>
+  </data>
+  <data name="Who your Mac is talking to right now." xml:space="preserve">
+    <value>你的 Mac 此刻正在与谁通信。</value>
+  </data>
+  <data name="Traffic Rate" xml:space="preserve">
+    <value>流量速率</value>
+  </data>
+  <data name="Network Hosts" xml:space="preserve">
+    <value>网络主机</value>
+  </data>
+  <data name="Services" xml:space="preserve">
+    <value>服务</value>
+  </data>
+  <data name="Apps" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="Pause" xml:space="preserve">
+    <value>暂停</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>继续</value>
+  </data>
+  <data name="Port {0}" xml:space="preserve">
+    <value>端口 {0}</value>
+  </data>
+  <data name="No traffic captured yet." xml:space="preserve">
+    <value>尚未捕获到流量。</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="Local Address" xml:space="preserve">
+    <value>本地地址</value>
+  </data>
+  <data name="Local Port" xml:space="preserve">
+    <value>本地端口</value>
+  </data>
+  <data name="Remote Port" xml:space="preserve">
+    <value>远程端口</value>
+  </data>
+  <data name="Protocol" xml:space="preserve">
+    <value>协议</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>服务</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>返回</value>
+  </data>
+  <data name="{0} connections" xml:space="preserve">
+    <value>{0} 个连接</value>
+  </data>
+  <data name="Live view — traffic from the last few seconds." xml:space="preserve">
+    <value>实时视图——最近几秒的流量。</value>
+  </data>
+  <data name="Accumulated view — total traffic since this window was opened." xml:space="preserve">
+    <value>累计视图——自打开此窗口以来的总流量。</value>
+  </data>
+  <data name="No active hosts right now." xml:space="preserve">
+    <value>当前没有活跃的主机。</value>
+  </data>
+  <data name="No active services right now." xml:space="preserve">
+    <value>当前没有活跃的服务。</value>
+  </data>
+  <data name="No active apps right now." xml:space="preserve">
+    <value>当前没有活跃的应用。</value>
+  </data>
+  <data name="App" xml:space="preserve">
+    <value>应用</value>
+  </data>
+  <data name="Host" xml:space="preserve">
+    <value>主机</value>
+  </data>
+  <data name="Authentication" xml:space="preserve">
+    <value>身份验证</value>
+  </data>
+  <data name="Local admin" xml:space="preserve">
+    <value>本地管理员</value>
+  </data>
+  <data name="API key" xml:space="preserve">
+    <value>API 密钥</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS) using a Network API key. Create one in the UniFi Network app under Settings → Control Plane → Integrations. API keys work with 2FA enabled and never expire." xml:space="preserve">
+    <value>使用 Network API 密钥通过本地 API（HTTPS）查询你的 UniFi 网关。可在 UniFi Network 应用的“设置 → Control Plane → 集成”中创建。API 密钥在启用双重验证时仍可使用，且永不过期。</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS). Requires a local admin account on the UniFi controller. If the account has 2FA enabled, use an API key instead — password login cannot complete a 2FA challenge." xml:space="preserve">
+    <value>通过本地 API（HTTPS）查询你的 UniFi 网关。需要 UniFi 控制器上的本地管理员账户。如果该账户启用了双重验证，请改用 API 密钥——密码登录无法完成双重验证。</value>
+  </data>
+  <data name="Version {0}" xml:space="preserve">
+    <value>版本 {0}</value>
+  </data>
+  <data name="NetFluss {0} is available!" xml:space="preserve">
+    <value>NetFluss {0} 已发布！</value>
+  </data>
+  <data name="Rename &quot;{0}&quot;" xml:space="preserve">
+    <value>重命名“{0}”</value>
+  </data>
+  <data name="Custom name" xml:space="preserve">
+    <value>自定义名称</value>
+  </data>
+  <data name="Cafe X, back room, hotel Wi-Fi, coworking desk 4…" xml:space="preserve">
+    <value>X 咖啡馆、后厅、酒店 Wi-Fi、联合办公 4 号工位…</value>
+  </data>
+</root>

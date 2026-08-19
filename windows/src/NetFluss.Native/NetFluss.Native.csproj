@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Win32 interop. Split out from the app so it can be referenced by both
+    NetFluss.App (user session) and NetFluss.Service (LocalSystem).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <RootNamespace>NetFluss.Native</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../NetFluss.Core/NetFluss.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The interop surface stays internal; the layout tests need to see it. -->
+    <InternalsVisibleTo Include="NetFluss.Native.Tests" />
+  </ItemGroup>
+
+</Project>

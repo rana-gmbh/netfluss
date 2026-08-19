@@ -19,3 +19,14 @@ SESSION-HANDOFF.md
 /Icon.Pack.zip
 /dist/
 /Icon.Pack/
+
+# Windows port (.NET) build output
+windows/**/bin/
+windows/**/obj/
+windows/artifacts/
+
+# The `*.app` rule above is for built macOS bundles, but git matches it
+# case-insensitively on APFS, so it also swallows the whole NetFluss.App project
+# directory. Re-include it explicitly — the parent directory must be un-excluded
+# first, since git never descends into an excluded directory.
+!windows/src/NetFluss.App/

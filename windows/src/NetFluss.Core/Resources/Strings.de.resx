@@ -1,0 +1,1246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="System Default" xml:space="preserve">
+    <value>Systemsprache</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="System Default follows the language selected in macOS." xml:space="preserve">
+    <value>Systemsprache folgt der in Windows ausgewählten Sprache.</value>
+  </data>
+  <data name="Preferences" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="Preferences…" xml:space="preserve">
+    <value>Einstellungen…</value>
+  </data>
+  <data name="General" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="Update" xml:space="preserve">
+    <value>Update</value>
+  </data>
+  <data name="Units" xml:space="preserve">
+    <value>Einheiten</value>
+  </data>
+  <data name="Launch" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="Launch at login" xml:space="preserve">
+    <value>Beim Anmelden starten</value>
+  </data>
+  <data name="Refresh interval" xml:space="preserve">
+    <value>Aktualisierungsintervall</value>
+  </data>
+  <data name="Check GitHub for updates automatically" xml:space="preserve">
+    <value>Automatisch auf GitHub nach Updates suchen</value>
+  </data>
+  <data name="When enabled, NetFluss checks once per day in the background. The manual Check for Updates button in About stays available." xml:space="preserve">
+    <value>Wenn aktiviert, sucht NetFluss einmal täglich im Hintergrund nach Updates. Die manuelle Schaltfläche „Nach Updates suchen“ im Infofenster bleibt verfügbar.</value>
+  </data>
+  <data name="Display rates in bits per second" xml:space="preserve">
+    <value>Raten in Bit pro Sekunde anzeigen</value>
+  </data>
+  <data name="Adapters" xml:space="preserve">
+    <value>Adapter</value>
+  </data>
+  <data name="Adapter Visibility" xml:space="preserve">
+    <value>Adapter-Sichtbarkeit</value>
+  </data>
+  <data name="Show inactive adapters" xml:space="preserve">
+    <value>Inaktive Adapter anzeigen</value>
+  </data>
+  <data name="Show other adapters (VPN, virtual)" xml:space="preserve">
+    <value>Andere Adapter anzeigen (VPN, virtuell)</value>
+  </data>
+  <data name="Hide adapters after inactivity" xml:space="preserve">
+    <value>Adapter nach Inaktivität ausblenden</value>
+  </data>
+  <data name="Hide after" xml:space="preserve">
+    <value>Ausblenden nach</value>
+  </data>
+  <data name="No adapters match current filters." xml:space="preserve">
+    <value>Keine Adapter entsprechen den aktuellen Filtern.</value>
+  </data>
+  <data name="Only include visible adapters in totals" xml:space="preserve">
+    <value>Nur sichtbare Adapter in Summen einbeziehen</value>
+  </data>
+  <data name="Exclude VPN/tunnel adapters from totals" xml:space="preserve">
+    <value>VPN-/Tunnel-Adapter aus Summen ausschließen</value>
+  </data>
+  <data name="When enabled, the Download/Upload summary and menu bar use only adapters that are visible here." xml:space="preserve">
+    <value>Wenn aktiviert, verwenden Download-/Upload-Summe und Menüleiste nur die hier sichtbaren Adapter.</value>
+  </data>
+  <data name="Tunnel adapters such as utun, tun, tap, ipsec, and ppp are excluded from totals but remain visible in the adapter list." xml:space="preserve">
+    <value>Tunnel-Adapter wie utun, tun, tap, ipsec und ppp werden aus Summen ausgeschlossen, bleiben aber in der Adapterliste sichtbar.</value>
+  </data>
+  <data name="Statistics" xml:space="preserve">
+    <value>Statistiken</value>
+  </data>
+  <data name="Collect historical statistics" xml:space="preserve">
+    <value>Historische Statistiken erfassen</value>
+  </data>
+  <data name="Disabled by default to avoid extra background work and energy use. When enabled, NetFluss keeps hourly and daily rollups for adapters and optional app traffic analysis." xml:space="preserve">
+    <value>Standardmäßig deaktiviert, um zusätzliche Hintergrundarbeit und Energieverbrauch zu vermeiden. Wenn aktiviert, speichert NetFluss stündliche und tägliche Zusammenfassungen für Adapter und optional App-Datenverkehr.</value>
+  </data>
+  <data name="Collect app statistics" xml:space="preserve">
+    <value>App-Statistiken erfassen</value>
+  </data>
+  <data name="App statistics are on by default and may increase energy consumption because NetFluss periodically samples per-app network usage in the background." xml:space="preserve">
+    <value>App-Statistiken sind standardmäßig aktiviert und können den Energieverbrauch erhöhen, da NetFluss regelmäßig die Netzwerknutzung pro App im Hintergrund misst.</value>
+  </data>
+  <data name="Appearance" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="Upload arrow ↑" xml:space="preserve">
+    <value>Upload-Pfeil ↑</value>
+  </data>
+  <data name="Download arrow ↓" xml:space="preserve">
+    <value>Download-Pfeil ↓</value>
+  </data>
+  <data name="Upload number ↑" xml:space="preserve">
+    <value>Upload-Zahl ↑</value>
+  </data>
+  <data name="Download number ↓" xml:space="preserve">
+    <value>Download-Zahl ↓</value>
+  </data>
+  <data name="Menu bar icon style" xml:space="preserve">
+    <value>Menüleisten-Stil</value>
+  </data>
+  <data name="Menu bar icon" xml:space="preserve">
+    <value>Menüleisten-Symbol</value>
+  </data>
+  <data name="Menu bar size" xml:space="preserve">
+    <value>Menüleisten-Größe</value>
+  </data>
+  <data name="Menu bar font" xml:space="preserve">
+    <value>Menüleisten-Schrift</value>
+  </data>
+  <data name="Menu bar unit" xml:space="preserve">
+    <value>Menüleisten-Einheit</value>
+  </data>
+  <data name="Decimals" xml:space="preserve">
+    <value>Dezimalstellen</value>
+  </data>
+  <data name="Standard" xml:space="preserve">
+    <value>Standard</value>
+  </data>
+  <data name="Unified pill" xml:space="preserve">
+    <value>Einheitliche Pille</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Icon" xml:space="preserve">
+    <value>Symbol</value>
+  </data>
+  <data name="Monospaced" xml:space="preserve">
+    <value>Monospace</value>
+  </data>
+  <data name="System" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="Rounded" xml:space="preserve">
+    <value>Gerundet</value>
+  </data>
+  <data name="Auto" xml:space="preserve">
+    <value>Auto</value>
+  </data>
+  <data name="IP addresses" xml:space="preserve">
+    <value>IP-Adressen</value>
+  </data>
+  <data name="IP display" xml:space="preserve">
+    <value>IP-Anzeige</value>
+  </data>
+  <data name="External IP" xml:space="preserve">
+    <value>Externe IP</value>
+  </data>
+  <data name="List" xml:space="preserve">
+    <value>Liste</value>
+  </data>
+  <data name="Flow" xml:space="preserve">
+    <value>Flow</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="Dashboard uses router-wide traffic when Fritz!Box, UniFi, OpenWRT, or OPNsense bandwidth is enabled and available." xml:space="preserve">
+    <value>Das Dashboard verwendet routerweiten Datenverkehr, wenn Fritz!Box-, UniFi-, OpenWRT- oder OPNsense-Bandbreite aktiviert und verfügbar ist.</value>
+  </data>
+  <data name="Top Apps" xml:space="preserve">
+    <value>Top-Apps</value>
+  </data>
+  <data name="Show top apps by network usage" xml:space="preserve">
+    <value>Top-Apps nach Netzwerknutzung anzeigen</value>
+  </data>
+  <data name="Shows the top 5 processes ranked by current network traffic." xml:space="preserve">
+    <value>Zeigt die Top 5 Prozesse nach aktuellem Netzwerkverkehr.</value>
+  </data>
+  <data name="Keep apps visible after traffic stops" xml:space="preserve">
+    <value>Apps nach Ende des Datenverkehrs sichtbar lassen</value>
+  </data>
+  <data name="Visible for" xml:space="preserve">
+    <value>Sichtbar für</value>
+  </data>
+  <data name="DNS" xml:space="preserve">
+    <value>DNS</value>
+  </data>
+  <data name="DNS Switcher" xml:space="preserve">
+    <value>DNS-Umschalter</value>
+  </data>
+  <data name="Show DNS switcher in popover" xml:space="preserve">
+    <value>DNS-Umschalter im Popover anzeigen</value>
+  </data>
+  <data name="DNS changes and Ethernet reconnects install a privileged helper the first time. macOS may ask for administrator approval and, on some systems, additional approval in System Settings." xml:space="preserve">
+    <value>DNS-Änderungen und Ethernet-Neuverbindungen installieren beim ersten Mal ein privilegiertes Hilfsprogramm. Windows kann nach Administratorfreigabe und auf manchen Systemen nach zusätzlicher Freigabe in den Systemeinstellungen fragen.</value>
+  </data>
+  <data name="Add Custom DNS…" xml:space="preserve">
+    <value>Eigenes DNS hinzufügen…</value>
+  </data>
+  <data name="Router" xml:space="preserve">
+    <value>Router</value>
+  </data>
+  <data name="Fritz!Box Bandwidth" xml:space="preserve">
+    <value>Fritz!Box-Bandbreite</value>
+  </data>
+  <data name="UniFi Bandwidth" xml:space="preserve">
+    <value>UniFi-Bandbreite</value>
+  </data>
+  <data name="OpenWRT Bandwidth" xml:space="preserve">
+    <value>OpenWRT-Bandbreite</value>
+  </data>
+  <data name="OPNsense Bandwidth" xml:space="preserve">
+    <value>OPNsense-Bandbreite</value>
+  </data>
+  <data name="Show Fritz!Box bandwidth in popover" xml:space="preserve">
+    <value>Fritz!Box-Bandbreite im Popover anzeigen</value>
+  </data>
+  <data name="Show UniFi bandwidth in popover" xml:space="preserve">
+    <value>UniFi-Bandbreite im Popover anzeigen</value>
+  </data>
+  <data name="Show OpenWRT bandwidth in popover" xml:space="preserve">
+    <value>OpenWRT-Bandbreite im Popover anzeigen</value>
+  </data>
+  <data name="Show OPNsense bandwidth in popover" xml:space="preserve">
+    <value>OPNsense-Bandbreite im Popover anzeigen</value>
+  </data>
+  <data name="Router address" xml:space="preserve">
+    <value>Router-Adresse</value>
+  </data>
+  <data name="Credentials" xml:space="preserve">
+    <value>Zugangsdaten</value>
+  </data>
+  <data name="API Credentials" xml:space="preserve">
+    <value>API-Zugangsdaten</value>
+  </data>
+  <data name="Configured" xml:space="preserve">
+    <value>Konfiguriert</value>
+  </data>
+  <data name="Not set" xml:space="preserve">
+    <value>Nicht gesetzt</value>
+  </data>
+  <data name="Edit…" xml:space="preserve">
+    <value>Bearbeiten…</value>
+  </data>
+  <data name="(auto)" xml:space="preserve">
+    <value>(auto)</value>
+  </data>
+  <data name="Connecting…" xml:space="preserve">
+    <value>Verbinden…</value>
+  </data>
+  <data name="Gathering data…" xml:space="preserve">
+    <value>Daten werden erfasst…</value>
+  </data>
+  <data name="Automatic (DHCP)" xml:space="preserve">
+    <value>Automatisch (DHCP)</value>
+  </data>
+  <data name="Bandwidth Statistics" xml:space="preserve">
+    <value>Bandbreitenstatistiken</value>
+  </data>
+  <data name="Speed Test…" xml:space="preserve">
+    <value>Speedtest…</value>
+  </data>
+  <data name="About NetFluss" xml:space="preserve">
+    <value>Über NetFluss</value>
+  </data>
+  <data name="Try FileFluss" xml:space="preserve">
+    <value>FileFluss ausprobieren</value>
+  </data>
+  <data name="Support NetFluss project" xml:space="preserve">
+    <value>NetFluss-Projekt unterstützen</value>
+  </data>
+  <data name="Quit NetFluss" xml:space="preserve">
+    <value>NetFluss beenden</value>
+  </data>
+  <data name="Speed Test" xml:space="preserve">
+    <value>Speedtest</value>
+  </data>
+  <data name="About" xml:space="preserve">
+    <value>Über</value>
+  </data>
+  <data name="Refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="Range" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="Custom date range" xml:space="preserve">
+    <value>Eigener Zeitraum</value>
+  </data>
+  <data name="Custom Date Range" xml:space="preserve">
+    <value>Eigener Zeitraum</value>
+  </data>
+  <data name="From" xml:space="preserve">
+    <value>Von</value>
+  </data>
+  <data name="To" xml:space="preserve">
+    <value>Bis</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Anwenden</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Ändern</value>
+  </data>
+  <data name="Done" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Sichern</value>
+  </data>
+  <data name="Clear" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Later" xml:space="preserve">
+    <value>Später</value>
+  </data>
+  <data name="Open Release Page" xml:space="preserve">
+    <value>Release-Seite öffnen</value>
+  </data>
+  <data name="0" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="1" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="10 s" xml:space="preserve">
+    <value>10 s</value>
+  </data>
+  <data name="2" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="3" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="3 s" xml:space="preserve">
+    <value>3 s</value>
+  </data>
+  <data name="5 s" xml:space="preserve">
+    <value>5 s</value>
+  </data>
+  <data name="A newer version is available on GitHub. Open the latest release page to download it." xml:space="preserve">
+    <value>Eine neue Version ist auf GitHub verfügbar. Öffne die neueste Release-Seite, um sie herunterzuladen.</value>
+  </data>
+  <data name="Add a short note so you can remember exactly where you took this measurement later." xml:space="preserve">
+    <value>Füge eine kurze Notiz hinzu, damit du später genau weißt, wo diese Messung gemacht wurde.</value>
+  </data>
+  <data name="App statistics are disabled" xml:space="preserve">
+    <value>App-Statistiken sind deaktiviert</value>
+  </data>
+  <data name="Apps that used bandwidth in the last 60 seconds:" xml:space="preserve">
+    <value>Apps, die in den letzten 60 Sekunden Bandbreite genutzt haben:</value>
+  </data>
+  <data name="BSSID" xml:space="preserve">
+    <value>BSSID</value>
+  </data>
+  <data name="Buy me a coffee ↗" xml:space="preserve">
+    <value>Buy me a coffee ↗</value>
+  </data>
+  <data name="Check Again" xml:space="preserve">
+    <value>Erneut prüfen</value>
+  </data>
+  <data name="Check for Updates" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="Checking for updates…" xml:space="preserve">
+    <value>Suche nach Updates…</value>
+  </data>
+  <data name="Cloudflare measures against nearby Cloudflare edge locations, so results can differ from broader Internet-path tests." xml:space="preserve">
+    <value>Cloudflare misst gegen nahe Cloudflare-Edge-Standorte, daher können Ergebnisse von breiteren Internet-Pfad-Tests abweichen.</value>
+  </data>
+  <data name="Connection successful" xml:space="preserve">
+    <value>Verbindung erfolgreich</value>
+  </data>
+  <data name="Continue with M-Lab" xml:space="preserve">
+    <value>Mit M-Lab fortfahren</value>
+  </data>
+  <data name="Could not check for updates" xml:space="preserve">
+    <value>Updates konnten nicht geprüft werden</value>
+  </data>
+  <data name="Custom Color" xml:space="preserve">
+    <value>Eigene Farbe</value>
+  </data>
+  <data name="Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Download and upload history for the selected range." xml:space="preserve">
+    <value>Download- und Upload-Verlauf für den ausgewählten Zeitraum.</value>
+  </data>
+  <data name="Fritz!Box" xml:space="preserve">
+    <value>Fritz!Box</value>
+  </data>
+  <data name="Fritz!Box Address" xml:space="preserve">
+    <value>Fritz!Box-Adresse</value>
+  </data>
+  <data name="GNU General Public License v3.0 ↗" xml:space="preserve">
+    <value>GNU General Public License v3.0 ↗</value>
+  </data>
+  <data name="Generate these in OPNsense: System → User Management → API" xml:space="preserve">
+    <value>Diese in OPNsense erstellen: System → Benutzerverwaltung → API</value>
+  </data>
+  <data name="Hidden apps:" xml:space="preserve">
+    <value>Ausgeblendete Apps:</value>
+  </data>
+  <data name="Hide Apps" xml:space="preserve">
+    <value>Apps ausblenden</value>
+  </data>
+  <data name="History" xml:space="preserve">
+    <value>Verlauf</value>
+  </data>
+  <data name="IPv4" xml:space="preserve">
+    <value>IPv4</value>
+  </data>
+  <data name="IPv6" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="If you want to support this project," xml:space="preserve">
+    <value>Wenn du dieses Projekt unterstützen möchtest,</value>
+  </data>
+  <data name="Latency" xml:space="preserve">
+    <value>Latenz</value>
+  </data>
+  <data name="M-Lab keeps results public, so NetFluss stores your consent once before the first test." xml:space="preserve">
+    <value>M-Lab veröffentlicht Ergebnisse öffentlich, daher speichert NetFluss deine Zustimmung einmal vor dem ersten Test.</value>
+  </data>
+  <data name="M-Lab publishes measurement data publicly, including your public IP address. NetFluss needs your consent before running the first M-Lab speed test." xml:space="preserve">
+    <value>M-Lab veröffentlicht Messdaten öffentlich, einschließlich deiner öffentlichen IP-Adresse. NetFluss benötigt deine Zustimmung vor dem ersten M-Lab-Speedtest.</value>
+  </data>
+  <data name="Made by Rana GmbH" xml:space="preserve">
+    <value>Made by Rana GmbH</value>
+  </data>
+  <data name="NetFluss" xml:space="preserve">
+    <value>NetFluss</value>
+  </data>
+  <data name="No active adapters" xml:space="preserve">
+    <value>Keine aktiven Adapter</value>
+  </data>
+  <data name="No adapter history yet." xml:space="preserve">
+    <value>Noch kein Adapterverlauf.</value>
+  </data>
+  <data name="No recent apps detected yet. Keep Top Apps enabled and check back shortly." xml:space="preserve">
+    <value>Noch keine aktuellen Apps erkannt. Lass Top-Apps aktiviert und prüfe gleich erneut.</value>
+  </data>
+  <data name="No speed tests yet" xml:space="preserve">
+    <value>Noch keine Speedtests</value>
+  </data>
+  <data name="Note" xml:space="preserve">
+    <value>Notiz</value>
+  </data>
+  <data name="OPNsense" xml:space="preserve">
+    <value>OPNsense</value>
+  </data>
+  <data name="OPNsense API Credentials" xml:space="preserve">
+    <value>OPNsense-API-Zugangsdaten</value>
+  </data>
+  <data name="Open Preferences" xml:space="preserve">
+    <value>Einstellungen öffnen</value>
+  </data>
+  <data name="OpenWRT" xml:space="preserve">
+    <value>OpenWRT</value>
+  </data>
+  <data name="Provider" xml:space="preserve">
+    <value>Anbieter</value>
+  </data>
+  <data name="Queries your Fritz!Box via TR-064 (no authentication needed for bandwidth data). Auto uses the current default gateway. Set a fixed address if your Fritz!Box is reachable at a different IP. Port 49000 must be reachable." xml:space="preserve">
+    <value>Fragt deine Fritz!Box über TR-064 ab (keine Authentifizierung für Bandbreitendaten nötig). Auto verwendet das aktuelle Standard-Gateway. Setze eine feste Adresse, wenn deine Fritz!Box unter einer anderen IP erreichbar ist. Port 49000 muss erreichbar sein.</value>
+  </data>
+  <data name="Queries your OPNsense router via REST API over HTTPS or HTTP. Auto uses the current default gateway. Requires API key and secret configured in OPNsense." xml:space="preserve">
+    <value>Fragt deinen OPNsense-Router über die REST-API per HTTPS oder HTTP ab. Auto verwendet das aktuelle Standard-Gateway. Erfordert API-Schlüssel und Secret aus OPNsense.</value>
+  </data>
+  <data name="Queries your OpenWRT router via ubus JSON-RPC over HTTPS or HTTP. Auto uses the current default gateway, which may be the wrong router on dual-router setups. Set a fixed OpenWRT IP or URL if needed. Requires the router&apos;s admin credentials and the uhttpd-mod-ubus package." xml:space="preserve">
+    <value>Fragt deinen OpenWRT-Router über ubus JSON-RPC per HTTPS oder HTTP ab. Auto verwendet das aktuelle Standard-Gateway, was bei Setups mit zwei Routern falsch sein kann. Setze bei Bedarf eine feste OpenWRT-IP oder URL. Erfordert Admin-Zugangsdaten des Routers und das Paket uhttpd-mod-ubus.</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS). Requires a local admin account on the UniFi controller." xml:space="preserve">
+    <value>Fragt dein UniFi-Gateway über dessen lokale API (HTTPS) ab. Erfordert ein lokales Admin-Konto auf dem UniFi-Controller.</value>
+  </data>
+  <data name="Recent results saved on this Mac. Add notes to remember the exact place." xml:space="preserve">
+    <value>Aktuelle Ergebnisse, die auf diesem Mac gespeichert sind. Füge Notizen hinzu, um den genauen Ort festzuhalten.</value>
+  </data>
+  <data name="Release Notes ↗" xml:space="preserve">
+    <value>Versionshinweise ↗</value>
+  </data>
+  <data name="Release Page ↗" xml:space="preserve">
+    <value>Release-Seite ↗</value>
+  </data>
+  <data name="Released under the" xml:space="preserve">
+    <value>Veröffentlicht unter der</value>
+  </data>
+  <data name="Reset to Auto" xml:space="preserve">
+    <value>Auf Auto zurücksetzen</value>
+  </data>
+  <data name="Run a speed test when you want and NetFluss will keep the recent results here." xml:space="preserve">
+    <value>Starte bei Bedarf einen Speedtest, und NetFluss speichert die letzten Ergebnisse hier.</value>
+  </data>
+  <data name="Sample history loaded" xml:space="preserve">
+    <value>Beispielverlauf geladen</value>
+  </data>
+  <data name="Speed Test History" xml:space="preserve">
+    <value>Speedtest-Verlauf</value>
+  </data>
+  <data name="Speed Test Note" xml:space="preserve">
+    <value>Speedtest-Notiz</value>
+  </data>
+  <data name="This is generated demo traffic so you can review the charts, adapter ranking, and top-app lists across all ranges." xml:space="preserve">
+    <value>Dies ist generierter Demo-Datenverkehr, damit du Diagramme, Adapter-Ranking und Top-App-Listen für alle Zeiträume ansehen kannst.</value>
+  </data>
+  <data name="Top adapters by transferred data for the selected range." xml:space="preserve">
+    <value>Top-Adapter nach übertragenen Daten im ausgewählten Zeitraum.</value>
+  </data>
+  <data name="Try Again" xml:space="preserve">
+    <value>Erneut versuchen</value>
+  </data>
+  <data name="Turn them on in Preferences if you want top download and upload apps in this view." xml:space="preserve">
+    <value>Aktiviere sie in den Einstellungen, wenn du Top-Download- und Upload-Apps in dieser Ansicht sehen möchtest.</value>
+  </data>
+  <data name="UniFi" xml:space="preserve">
+    <value>UniFi</value>
+  </data>
+  <data name="Update Available" xml:space="preserve">
+    <value>Update verfügbar</value>
+  </data>
+  <data name="Upload" xml:space="preserve">
+    <value>Upload</value>
+  </data>
+  <data name="When" xml:space="preserve">
+    <value>Zeitpunkt</value>
+  </data>
+  <data name="You&apos;re up to date" xml:space="preserve">
+    <value>Du bist auf dem neuesten Stand</value>
+  </data>
+  <data name="please consider to " xml:space="preserve">
+    <value>bitte erwäge, </value>
+  </data>
+  <data name="www.ranagmbh.de" xml:space="preserve">
+    <value>www.ranagmbh.de</value>
+  </data>
+  <data name="Loading statistics…" xml:space="preserve">
+    <value>Statistiken werden geladen…</value>
+  </data>
+  <data name="Live Data" xml:space="preserve">
+    <value>Live-Daten</value>
+  </data>
+  <data name="Load Sample Data" xml:space="preserve">
+    <value>Beispieldaten laden</value>
+  </data>
+  <data name="Top Downloads" xml:space="preserve">
+    <value>Top-Downloads</value>
+  </data>
+  <data name="Top Uploads" xml:space="preserve">
+    <value>Top-Uploads</value>
+  </data>
+  <data name="Top 10 apps by received data." xml:space="preserve">
+    <value>Top 10 Apps nach empfangenen Daten.</value>
+  </data>
+  <data name="Top 10 apps by sent data." xml:space="preserve">
+    <value>Top 10 Apps nach gesendeten Daten.</value>
+  </data>
+  <data name="App statistics collection is currently off." xml:space="preserve">
+    <value>App-Statistikerfassung ist derzeit deaktiviert.</value>
+  </data>
+  <data name="No app history yet." xml:space="preserve">
+    <value>Noch kein App-Verlauf.</value>
+  </data>
+  <data name="Not enough statistics yet" xml:space="preserve">
+    <value>Noch nicht genug Statistiken</value>
+  </data>
+  <data name="Statistics collection is off" xml:space="preserve">
+    <value>Statistikerfassung ist deaktiviert</value>
+  </data>
+  <data name="Previewing generated sample statistics for the last year. Live collection continues with your current preferences." xml:space="preserve">
+    <value>Vorschau generierter Beispielstatistiken für das letzte Jahr. Die Live-Erfassung läuft mit deinen aktuellen Einstellungen weiter.</value>
+  </data>
+  <data name="Adapter statistics are collected continuously while NetFluss runs. App statistics are sampled every {0}." xml:space="preserve">
+    <value>Adapter-Statistiken werden kontinuierlich erfasst, während NetFluss läuft. App-Statistiken werden alle {0} erfasst.</value>
+  </data>
+  <data name="Adapter statistics are being collected. App statistics are currently disabled." xml:space="preserve">
+    <value>Adapter-Statistiken werden erfasst. App-Statistiken sind derzeit deaktiviert.</value>
+  </data>
+  <data name="Statistics collection is disabled in Preferences." xml:space="preserve">
+    <value>Die Statistikerfassung ist in den Einstellungen deaktiviert.</value>
+  </data>
+  <data name="Keep NetFluss running for a while and this view will fill in with adapter and app history." xml:space="preserve">
+    <value>Lass NetFluss eine Weile laufen, dann füllt sich diese Ansicht mit Adapter- und App-Verlauf.</value>
+  </data>
+  <data name="Enable statistics in Preferences to start collecting preset and custom date range network history." xml:space="preserve">
+    <value>Aktiviere Statistiken in den Einstellungen, um Netzwerkverlauf für vordefinierte und eigene Zeiträume zu sammeln.</value>
+  </data>
+  <data name="Collecting since {0}" xml:space="preserve">
+    <value>Erfassung seit {0}</value>
+  </data>
+  <data name="Last adapter update {0}" xml:space="preserve">
+    <value>Letztes Adapter-Update {0}</value>
+  </data>
+  <data name="Last app update {0}" xml:space="preserve">
+    <value>Letztes App-Update {0}</value>
+  </data>
+  <data name="Peak" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="Avg" xml:space="preserve">
+    <value>Durchschn.</value>
+  </data>
+  <data name="Last Hour" xml:space="preserve">
+    <value>Letzte Stunde</value>
+  </data>
+  <data name="Last 24 Hours" xml:space="preserve">
+    <value>Letzte 24 Stunden</value>
+  </data>
+  <data name="Last 7 Days" xml:space="preserve">
+    <value>Letzte 7 Tage</value>
+  </data>
+  <data name="Last 30 Days" xml:space="preserve">
+    <value>Letzte 30 Tage</value>
+  </data>
+  <data name="Last Year" xml:space="preserve">
+    <value>Letztes Jahr</value>
+  </data>
+  <data name="Minute Traffic" xml:space="preserve">
+    <value>Minütlicher Datenverkehr</value>
+  </data>
+  <data name="Hourly Traffic" xml:space="preserve">
+    <value>Stündlicher Datenverkehr</value>
+  </data>
+  <data name="Daily Traffic" xml:space="preserve">
+    <value>Täglicher Datenverkehr</value>
+  </data>
+  <data name="Monthly Traffic" xml:space="preserve">
+    <value>Monatlicher Datenverkehr</value>
+  </data>
+  <data name="Data Usage" xml:space="preserve">
+    <value>Datennutzung</value>
+  </data>
+  <data name="Today" xml:space="preserve">
+    <value>Heute</value>
+  </data>
+  <data name="This Month" xml:space="preserve">
+    <value>Dieser Monat</value>
+  </data>
+  <data name="Total" xml:space="preserve">
+    <value>Gesamt</value>
+  </data>
+  <data name="Display usage summary on popover" xml:space="preserve">
+    <value>Nutzungsübersicht im Popover anzeigen</value>
+  </data>
+  <data name="Shows today&apos;s and this month&apos;s upload, download, and total data in the popover. Requires historical statistics collection." xml:space="preserve">
+    <value>Zeigt Upload, Download und Gesamtvolumen für heute und diesen Monat im Popover an. Erfordert die Erfassung historischer Statistiken.</value>
+  </data>
+  <data name="Run Test" xml:space="preserve">
+    <value>Test starten</value>
+  </data>
+  <data name="Run Again" xml:space="preserve">
+    <value>Erneut starten</value>
+  </data>
+  <data name="Connection Details" xml:space="preserve">
+    <value>Verbindungsdetails</value>
+  </data>
+  <data name="Server" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="Waiting for a server selection" xml:space="preserve">
+    <value>Warte auf Serverauswahl</value>
+  </data>
+  <data name="Started" xml:space="preserve">
+    <value>Gestartet</value>
+  </data>
+  <data name="Started {0}" xml:space="preserve">
+    <value>Gestartet {0}</value>
+  </data>
+  <data name="Not started" xml:space="preserve">
+    <value>Nicht gestartet</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>Beendet</value>
+  </data>
+  <data name="Finished {0}" xml:space="preserve">
+    <value>Beendet {0}</value>
+  </data>
+  <data name="In progress" xml:space="preserve">
+    <value>Läuft</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notizen</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="Final Result" xml:space="preserve">
+    <value>Endergebnis</value>
+  </data>
+  <data name="Jitter" xml:space="preserve">
+    <value>Jitter</value>
+  </data>
+  <data name="Remember This Test" xml:space="preserve">
+    <value>Diesen Test merken</value>
+  </data>
+  <data name="Edit Note" xml:space="preserve">
+    <value>Notiz bearbeiten</value>
+  </data>
+  <data name="Add Note" xml:space="preserve">
+    <value>Notiz hinzufügen</value>
+  </data>
+  <data name="Add note" xml:space="preserve">
+    <value>Notiz hinzufügen</value>
+  </data>
+  <data name="M-Lab Consent" xml:space="preserve">
+    <value>M-Lab-Zustimmung</value>
+  </data>
+  <data name="Review M-Lab privacy policy" xml:space="preserve">
+    <value>M-Lab-Datenschutzerklärung ansehen</value>
+  </data>
+  <data name="M-Lab (Recommended)" xml:space="preserve">
+    <value>M-Lab (empfohlen)</value>
+  </data>
+  <data name="Public measurement servers with a more Internet-path-oriented result." xml:space="preserve">
+    <value>Öffentliche Messserver mit stärker am Internetpfad orientiertem Ergebnis.</value>
+  </data>
+  <data name="Nearby Cloudflare edge locations for a fast CDN-oriented result." xml:space="preserve">
+    <value>Nahe Cloudflare-Edge-Standorte für ein schnelles CDN-orientiertes Ergebnis.</value>
+  </data>
+  <data name="M-Lab chooses a nearby public measurement server and runs a full ndt7 download and upload test." xml:space="preserve">
+    <value>M-Lab wählt einen nahegelegenen öffentlichen Messserver und führt einen vollständigen ndt7-Download- und Upload-Test aus.</value>
+  </data>
+  <data name="Cloudflare measures against its nearest edge, which can be faster than broader Internet-path tests." xml:space="preserve">
+    <value>Cloudflare misst gegen den nächstgelegenen Edge-Standort, was schneller sein kann als breitere Internetpfad-Tests.</value>
+  </data>
+  <data name="Ready" xml:space="preserve">
+    <value>Bereit</value>
+  </data>
+  <data name="Consent required" xml:space="preserve">
+    <value>Zustimmung erforderlich</value>
+  </data>
+  <data name="Preparing" xml:space="preserve">
+    <value>Vorbereiten</value>
+  </data>
+  <data name="Finding server" xml:space="preserve">
+    <value>Server suchen</value>
+  </data>
+  <data name="Measuring latency" xml:space="preserve">
+    <value>Latenz messen</value>
+  </data>
+  <data name="Testing download" xml:space="preserve">
+    <value>Download testen</value>
+  </data>
+  <data name="Testing upload" xml:space="preserve">
+    <value>Upload testen</value>
+  </data>
+  <data name="Finalizing" xml:space="preserve">
+    <value>Abschließen</value>
+  </data>
+  <data name="Complete" xml:space="preserve">
+    <value>Abgeschlossen</value>
+  </data>
+  <data name="Cancelled" xml:space="preserve">
+    <value>Abgebrochen</value>
+  </data>
+  <data name="Failed" xml:space="preserve">
+    <value>Fehlgeschlagen</value>
+  </data>
+  <data name="Choose a provider and run a speed test when you want." xml:space="preserve">
+    <value>Wähle einen Anbieter und starte einen Speedtest, wenn du möchtest.</value>
+  </data>
+  <data name="Speed test stopped." xml:space="preserve">
+    <value>Speedtest gestoppt.</value>
+  </data>
+  <data name="M-Lab publishes measurement data publicly, so NetFluss asks for consent before the first test." xml:space="preserve">
+    <value>M-Lab veröffentlicht Messdaten öffentlich, daher fragt NetFluss vor dem ersten Test nach Zustimmung.</value>
+  </data>
+  <data name="Preparing the M-Lab test..." xml:space="preserve">
+    <value>M-Lab-Test wird vorbereitet...</value>
+  </data>
+  <data name="Preparing the Cloudflare test..." xml:space="preserve">
+    <value>Cloudflare-Test wird vorbereitet...</value>
+  </data>
+  <data name="M-Lab speed test complete." xml:space="preserve">
+    <value>M-Lab-Speedtest abgeschlossen.</value>
+  </data>
+  <data name="Cloudflare speed test complete." xml:space="preserve">
+    <value>Cloudflare-Speedtest abgeschlossen.</value>
+  </data>
+  <data name="Wi-Fi" xml:space="preserve">
+    <value>WLAN</value>
+  </data>
+  <data name="Wi-Fi Networks" xml:space="preserve">
+    <value>WLAN-Netzwerke</value>
+  </data>
+  <data name="Wi-Fi Switcher" xml:space="preserve">
+    <value>WLAN-Umschalter</value>
+  </data>
+  <data name="No Wi-Fi adapter found." xml:space="preserve">
+    <value>Kein WLAN-Adapter gefunden.</value>
+  </data>
+  <data name="Location access is required to list nearby Wi-Fi networks. macOS uses the same restriction in System Settings → Wi-Fi." xml:space="preserve">
+    <value>Standortzugriff ist erforderlich, um nahegelegene WLAN-Netzwerke aufzulisten. Windows verwendet die gleiche Einschränkung unter Systemeinstellungen → WLAN.</value>
+  </data>
+  <data name="Open Location Settings…" xml:space="preserve">
+    <value>Standorteinstellungen öffnen…</value>
+  </data>
+  <data name="Waiting for Location permission…" xml:space="preserve">
+    <value>Warte auf Standortberechtigung…</value>
+  </data>
+  <data name="Scanning for networks…" xml:space="preserve">
+    <value>Suche nach Netzwerken…</value>
+  </data>
+  <data name="Not available" xml:space="preserve">
+    <value>Nicht verfügbar</value>
+  </data>
+  <data name="Pin to top" xml:space="preserve">
+    <value>Oben anheften</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Anheftung entfernen</value>
+  </data>
+  <data name="ESSID" xml:space="preserve">
+    <value>ESSID</value>
+  </data>
+  <data name="Security" xml:space="preserve">
+    <value>Sicherheit</value>
+  </data>
+  <data name="Band" xml:space="preserve">
+    <value>Band</value>
+  </data>
+  <data name="Channel" xml:space="preserve">
+    <value>Kanal</value>
+  </data>
+  <data name="RSSI" xml:space="preserve">
+    <value>RSSI</value>
+  </data>
+  <data name="Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Not in range" xml:space="preserve">
+    <value>Außer Reichweite</value>
+  </data>
+  <data name="Pinned" xml:space="preserve">
+    <value>Angeheftet</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="Connect to {0}" xml:space="preserve">
+    <value>Mit {0} verbinden</value>
+  </data>
+  <data name="Enter the password for this {0} network." xml:space="preserve">
+    <value>Geben Sie das Passwort für dieses {0}-Netzwerk ein.</value>
+  </data>
+  <data name="Enter the network password." xml:space="preserve">
+    <value>Geben Sie das Netzwerkpasswort ein.</value>
+  </data>
+  <data name="Join" xml:space="preserve">
+    <value>Verbinden</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Passwort</value>
+  </data>
+  <data name="Network is not in range right now." xml:space="preserve">
+    <value>Netzwerk ist gerade nicht in Reichweite.</value>
+  </data>
+  <data name="Network is no longer in range." xml:space="preserve">
+    <value>Netzwerk ist nicht mehr in Reichweite.</value>
+  </data>
+  <data name="Show Wi-Fi networks in popover" xml:space="preserve">
+    <value>WLAN-Netzwerke im Popover anzeigen</value>
+  </data>
+  <data name="Lists nearby Wi-Fi networks from the system&apos;s cached scan. Tap a row to join — saved networks reconnect immediately, new secured networks prompt for a password." xml:space="preserve">
+    <value>Zeigt nahegelegene WLAN-Netzwerke aus dem zwischengespeicherten System-Scan an. Auf eine Zeile tippen, um beizutreten — gespeicherte Netzwerke verbinden sofort, neue gesicherte Netzwerke fragen nach einem Passwort.</value>
+  </data>
+  <data name="Only show the strongest networks" xml:space="preserve">
+    <value>Nur die stärksten Netzwerke anzeigen</value>
+  </data>
+  <data name="Maximum networks shown" xml:space="preserve">
+    <value>Maximal angezeigte Netzwerke</value>
+  </data>
+  <data name="Pinned networks and the currently-connected network always appear regardless of this limit." xml:space="preserve">
+    <value>Angeheftete Netzwerke und das aktuell verbundene Netzwerk werden unabhängig von diesem Limit immer angezeigt.</value>
+  </data>
+  <data name="System access" xml:space="preserve">
+    <value>Systemzugriff</value>
+  </data>
+  <data name="Grant Location Access…" xml:space="preserve">
+    <value>Standortzugriff gewähren…</value>
+  </data>
+  <data name="Refresh Wi-Fi Scan" xml:space="preserve">
+    <value>WLAN-Scan aktualisieren</value>
+  </data>
+  <data name="Granted" xml:space="preserve">
+    <value>Gewährt</value>
+  </data>
+  <data name="Not requested yet" xml:space="preserve">
+    <value>Noch nicht angefragt</value>
+  </data>
+  <data name="Denied — open System Settings to allow" xml:space="preserve">
+    <value>Verweigert — Systemeinstellungen öffnen, um zu erlauben</value>
+  </data>
+  <data name="Required to list nearby Wi-Fi networks. macOS uses the same gate for its own Wi-Fi menu." xml:space="preserve">
+    <value>Erforderlich, um nahegelegene WLAN-Netzwerke aufzulisten. Windows verwendet dieselbe Berechtigungsschwelle für sein eigenes WLAN-Menü.</value>
+  </data>
+  <data name="Install Privileged Helper…" xml:space="preserve">
+    <value>Privilegierten Helfer installieren…</value>
+  </data>
+  <data name="Installing…" xml:space="preserve">
+    <value>Installiere…</value>
+  </data>
+  <data name="Used to change DNS servers and to persist new Wi-Fi credentials into macOS&apos;s Known Networks. macOS may show a &quot;Background Items Added&quot; approval prompt the first time." xml:space="preserve">
+    <value>Wird verwendet, um DNS-Server zu ändern und neue WLAN-Anmeldedaten in Windows' bekannten Netzwerken zu speichern. Beim ersten Mal zeigt Windows möglicherweise eine "Hintergrundobjekte hinzugefügt"-Genehmigungsaufforderung.</value>
+  </data>
+  <data name="Already installed" xml:space="preserve">
+    <value>Bereits installiert</value>
+  </data>
+  <data name="Registered" xml:space="preserve">
+    <value>Registriert</value>
+  </data>
+  <data name="Popover sections" xml:space="preserve">
+    <value>Popover-Abschnitte</value>
+  </data>
+  <data name="Drag to reorder sections in the popover. Toggling a row mirrors the corresponding pref in DNS, Wi-Fi, Router, or Top Apps panels." xml:space="preserve">
+    <value>Ziehen, um die Reihenfolge der Abschnitte im Popover zu ändern. Das Umschalten einer Zeile spiegelt die entsprechende Einstellung in den Bereichen DNS, WLAN, Router oder Top-Apps wider.</value>
+  </data>
+  <data name="Download / Upload" xml:space="preserve">
+    <value>Download / Upload</value>
+  </data>
+  <data name="Network adapters" xml:space="preserve">
+    <value>Netzwerkadapter</value>
+  </data>
+  <data name="Network flow" xml:space="preserve">
+    <value>Netzwerkfluss</value>
+  </data>
+  <data name="Copy Network Diagnostics…" xml:space="preserve">
+    <value>Netzwerk-Diagnose kopieren…</value>
+  </data>
+  <data name="Record network diagnostics?" xml:space="preserve">
+    <value>Netzwerk-Diagnose aufzeichnen?</value>
+  </data>
+  <data name="Start" xml:space="preserve">
+    <value>Starten</value>
+  </data>
+  <data name="Diagnostics copied to clipboard" xml:space="preserve">
+    <value>Diagnose in die Zwischenablage kopiert</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="NetFluss will record per-interface byte counters for {0} seconds. After you click Start, begin a large download (for example a Speed Test) and let it run until the capture finishes. The diagnostics will then be copied to your clipboard so you can paste them into a GitHub issue.&#10;&#10;No network traffic is sent — only local counters from your machine are recorded." xml:space="preserve">
+    <value>NetFluss zeichnet die Byte-Zähler pro Schnittstelle für {0} Sekunden auf. Nachdem Sie auf „Starten" geklickt haben, starten Sie einen großen Download (zum Beispiel einen Speedtest) und lassen Sie ihn bis zum Ende der Aufzeichnung laufen. Die Diagnose wird anschließend in Ihre Zwischenablage kopiert, damit Sie sie in ein GitHub-Issue einfügen können.
+
+Es wird kein Netzwerkverkehr gesendet — nur lokale Zähler von Ihrem Mac werden aufgezeichnet.</value>
+  </data>
+  <data name="{0} snapshots were captured. Paste them into the GitHub issue (issue #31) so the developer can identify which interface accumulates download bytes on your Mac." xml:space="preserve">
+    <value>{0} Aufnahmen wurden erfasst. Fügen Sie sie in das GitHub-Issue (#31) ein, damit der Entwickler erkennen kann, welche Schnittstelle auf Ihrem Mac Download-Bytes ansammelt.</value>
+  </data>
+  <data name="Wi-Fi Details" xml:space="preserve">
+    <value>WLAN-Details</value>
+  </data>
+  <data name="Reconnect" xml:space="preserve">
+    <value>Erneut verbinden</value>
+  </data>
+  <data name="Reconnect automatically" xml:space="preserve">
+    <value>Automatisch neu verbinden</value>
+  </data>
+  <data name="Connect when NetFluss starts" xml:space="preserve">
+    <value>Beim Start von NetFluss verbinden</value>
+  </data>
+  <data name="Use custom DNS while connected" xml:space="preserve">
+    <value>Während der Verbindung eigene DNS-Server verwenden</value>
+  </data>
+  <data name="Choose a DNS preset" xml:space="preserve">
+    <value>DNS-Voreinstellung wählen</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Bearbeiten</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="Custom color" xml:space="preserve">
+    <value>Eigene Farbe</value>
+  </data>
+  <data name="Dashboard (basic)" xml:space="preserve">
+    <value>Dashboard (einfach)</value>
+  </data>
+  <data name="Clear custom date range" xml:space="preserve">
+    <value>Benutzerdefinierten Zeitraum löschen</value>
+  </data>
+  <data name="Apps to Hide…" xml:space="preserve">
+    <value>Auszublendende Apps…</value>
+  </data>
+  <data name="Apps to Hide ({0})…" xml:space="preserve">
+    <value>Auszublendende Apps ({0})…</value>
+  </data>
+  <data name="VPN" xml:space="preserve">
+    <value>VPN</value>
+  </data>
+  <data name="Show VPN in popover" xml:space="preserve">
+    <value>VPN im Popover anzeigen</value>
+  </data>
+  <data name="Import OpenVPN profile…" xml:space="preserve">
+    <value>OpenVPN-Profil importieren…</value>
+  </data>
+  <data name="Import WireGuard profile…" xml:space="preserve">
+    <value>WireGuard-Profil importieren…</value>
+  </data>
+  <data name="Import a single config file, or a folder or .zip of them (e.g. a provider&apos;s router profiles). Each config becomes a selectable server." xml:space="preserve">
+    <value>Importiere eine einzelne Konfigurationsdatei oder einen Ordner bzw. eine .zip-Datei davon (z. B. die Router-Profile eines Anbieters). Jede Konfiguration wird zu einem auswählbaren Server.</value>
+  </data>
+  <data name="Add system VPN…" xml:space="preserve">
+    <value>System-VPN hinzufügen…</value>
+  </data>
+  <data name="Add IKEv2 VPN…" xml:space="preserve">
+    <value>IKEv2-VPN hinzufügen…</value>
+  </data>
+  <data name="Install configuration profile (.mobileconfig)…" xml:space="preserve">
+    <value>Konfigurationsprofil installieren (.mobileconfig)…</value>
+  </data>
+  <data name="Refresh system VPNs" xml:space="preserve">
+    <value>System-VPNs aktualisieren</value>
+  </data>
+  <data name="System VPN (IKEv2 / IPsec / L2TP)" xml:space="preserve">
+    <value>System-VPN (IKEv2 / IPsec / L2TP)</value>
+  </data>
+  <data name="No system VPNs found. Configure one in System Settings → VPN, or install a provider configuration profile below." xml:space="preserve">
+    <value>Keine System-VPNs gefunden. Richte eines in den Systemeinstellungen → VPN ein oder installiere unten ein Konfigurationsprofil eines Anbieters.</value>
+  </data>
+  <data name="Profiles" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="No VPN profiles. Add one in Preferences → VPN." xml:space="preserve">
+    <value>Keine VPN-Profile. Füge eines unter Einstellungen → VPN hinzu.</value>
+  </data>
+  <data name="Not connected" xml:space="preserve">
+    <value>Nicht verbunden</value>
+  </data>
+  <data name="Connected" xml:space="preserve">
+    <value>Verbunden</value>
+  </data>
+  <data name="Connect" xml:space="preserve">
+    <value>Verbinden</value>
+  </data>
+  <data name="Disconnect" xml:space="preserve">
+    <value>Trennen</value>
+  </data>
+  <data name="Disconnecting…" xml:space="preserve">
+    <value>Trennen…</value>
+  </data>
+  <data name="Reconnecting…" xml:space="preserve">
+    <value>Erneut verbinden…</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Username" xml:space="preserve">
+    <value>Benutzername</value>
+  </data>
+  <data name="Save credentials" xml:space="preserve">
+    <value>Zugangsdaten speichern</value>
+  </data>
+  <data name="Saved" xml:space="preserve">
+    <value>Gespeichert</value>
+  </data>
+  <data name="Move up" xml:space="preserve">
+    <value>Nach oben verschieben</value>
+  </data>
+  <data name="Move down" xml:space="preserve">
+    <value>Nach unten verschieben</value>
+  </data>
+  <data name="Add IKEv2 VPN" xml:space="preserve">
+    <value>IKEv2-VPN hinzufügen</value>
+  </data>
+  <data name="Add" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="Creates an IKEv2 profile NetFluss connects directly (username/password). The password is stored in your Keychain. If the server uses a private CA, trust its certificate in Keychain Access first." xml:space="preserve">
+    <value>Erstellt ein IKEv2-Profil, mit dem sich NetFluss direkt verbindet (Benutzername/Passwort). Das Passwort wird in deinem Schlüsselbund gespeichert. Verwendet der Server eine private CA, vertraue zuerst deren Zertifikat in der Schlüsselbundverwaltung.</value>
+  </data>
+  <data name="VPN Diagnostics" xml:space="preserve">
+    <value>VPN-Diagnose</value>
+  </data>
+  <data name="Copy VPN diagnostics" xml:space="preserve">
+    <value>VPN-Diagnose kopieren</value>
+  </data>
+  <data name="Reveal VPN log in Finder" xml:space="preserve">
+    <value>VPN-Protokoll im Finder zeigen</value>
+  </data>
+  <data name="Clear VPN log" xml:space="preserve">
+    <value>VPN-Protokoll löschen</value>
+  </data>
+  <data name="Copied to clipboard." xml:space="preserve">
+    <value>In die Zwischenablage kopiert.</value>
+  </data>
+  <data name="If a VPN connection fails, copy this log and send it — it records the bundled tools, their architecture, and the connection tool&apos;s full output." xml:space="preserve">
+    <value>Wenn eine VPN-Verbindung fehlschlägt, kopiere dieses Protokoll und sende es — es erfasst die mitgelieferten Programme, ihre Architektur und die vollständige Ausgabe des Verbindungswerkzeugs.</value>
+  </data>
+  <data name="When enabled, VPN/tunnel adapters (utun, tun, tap, ipsec, ppp) are excluded from totals. Loopback and AirDrop are always excluded, since they never carry internet traffic. All adapters remain visible in the adapter list." xml:space="preserve">
+    <value>Wenn aktiviert, werden VPN-/Tunnel-Adapter (utun, tun, tap, ipsec, ppp) aus den Summen ausgeschlossen. Loopback und AirDrop werden immer ausgeschlossen, da sie keinen Internetverkehr führen. Alle Adapter bleiben in der Adapterliste sichtbar.</value>
+  </data>
+  <data name="Network Slice" xml:space="preserve">
+    <value>Network Slice</value>
+  </data>
+  <data name="Who your Mac is talking to right now." xml:space="preserve">
+    <value>Mit wem dein Mac gerade spricht.</value>
+  </data>
+  <data name="Traffic Rate" xml:space="preserve">
+    <value>Datenrate</value>
+  </data>
+  <data name="Network Hosts" xml:space="preserve">
+    <value>Netzwerk-Hosts</value>
+  </data>
+  <data name="Services" xml:space="preserve">
+    <value>Dienste</value>
+  </data>
+  <data name="Apps" xml:space="preserve">
+    <value>Apps</value>
+  </data>
+  <data name="Pause" xml:space="preserve">
+    <value>Pause</value>
+  </data>
+  <data name="Resume" xml:space="preserve">
+    <value>Fortsetzen</value>
+  </data>
+  <data name="Port {0}" xml:space="preserve">
+    <value>Port {0}</value>
+  </data>
+  <data name="No traffic captured yet." xml:space="preserve">
+    <value>Noch kein Datenverkehr erfasst.</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>Sonstige</value>
+  </data>
+  <data name="Local Address" xml:space="preserve">
+    <value>Lokale Adresse</value>
+  </data>
+  <data name="Local Port" xml:space="preserve">
+    <value>Lokaler Port</value>
+  </data>
+  <data name="Remote Port" xml:space="preserve">
+    <value>Remote-Port</value>
+  </data>
+  <data name="Protocol" xml:space="preserve">
+    <value>Protokoll</value>
+  </data>
+  <data name="Service" xml:space="preserve">
+    <value>Dienst</value>
+  </data>
+  <data name="Back" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="{0} connections" xml:space="preserve">
+    <value>{0} Verbindungen</value>
+  </data>
+  <data name="Live view — traffic from the last few seconds." xml:space="preserve">
+    <value>Live-Ansicht — Datenverkehr der letzten Sekunden.</value>
+  </data>
+  <data name="Accumulated view — total traffic since this window was opened." xml:space="preserve">
+    <value>Summenansicht — gesamter Datenverkehr seit dem Öffnen dieses Fensters.</value>
+  </data>
+  <data name="No active hosts right now." xml:space="preserve">
+    <value>Gerade keine aktiven Hosts.</value>
+  </data>
+  <data name="No active services right now." xml:space="preserve">
+    <value>Gerade keine aktiven Dienste.</value>
+  </data>
+  <data name="No active apps right now." xml:space="preserve">
+    <value>Gerade keine aktiven Apps.</value>
+  </data>
+  <data name="App" xml:space="preserve">
+    <value>App</value>
+  </data>
+  <data name="Host" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="Authentication" xml:space="preserve">
+    <value>Authentifizierung</value>
+  </data>
+  <data name="Local admin" xml:space="preserve">
+    <value>Lokaler Admin</value>
+  </data>
+  <data name="API key" xml:space="preserve">
+    <value>API-Schlüssel</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS) using a Network API key. Create one in the UniFi Network app under Settings → Control Plane → Integrations. API keys work with 2FA enabled and never expire." xml:space="preserve">
+    <value>Fragt dein UniFi-Gateway über dessen lokale API (HTTPS) mit einem Network-API-Schlüssel ab. Erstelle einen in der UniFi-Network-App unter Einstellungen → Control Plane → Integrationen. API-Schlüssel funktionieren auch mit aktivierter 2FA und laufen nie ab.</value>
+  </data>
+  <data name="Queries your UniFi gateway via its local API (HTTPS). Requires a local admin account on the UniFi controller. If the account has 2FA enabled, use an API key instead — password login cannot complete a 2FA challenge." xml:space="preserve">
+    <value>Fragt dein UniFi-Gateway über dessen lokale API (HTTPS) ab. Erfordert ein lokales Admin-Konto auf dem UniFi-Controller. Wenn für das Konto 2FA aktiviert ist, verwende stattdessen einen API-Schlüssel — die Anmeldung mit Passwort kann keine 2FA-Abfrage abschließen.</value>
+  </data>
+  <data name="Version {0}" xml:space="preserve">
+    <value>Version {0}</value>
+  </data>
+  <data name="NetFluss {0} is available!" xml:space="preserve">
+    <value>NetFluss {0} ist verfügbar!</value>
+  </data>
+  <data name="Rename &quot;{0}&quot;" xml:space="preserve">
+    <value>„{0}“ umbenennen</value>
+  </data>
+  <data name="Custom name" xml:space="preserve">
+    <value>Eigener Name</value>
+  </data>
+  <data name="Cafe X, back room, hotel Wi-Fi, coworking desk 4…" xml:space="preserve">
+    <value>Café X, Hinterzimmer, Hotel-WLAN, Coworking-Platz 4 …</value>
+  </data>
+</root>

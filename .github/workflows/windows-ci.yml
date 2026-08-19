@@ -1,0 +1,67 @@
+name: Windows CI
+
+# Scoped to the Windows port so it never runs for macOS-only changes. The macOS
+# release workflow triggers on `v*` tags and is untouched by this.
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "windows/**"
+      - "Packaging/Resources/*.lproj/Localizable.strings"
+      - ".github/workflows/windows-ci.yml"
+  pull_request:
+    paths:
+      - "windows/**"
+      - "Packaging/Resources/*.lproj/Localizable.strings"
+      - ".github/workflows/windows-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Verify generated resources are current
+        shell: bash
+        # The macOS .strings files are the single source of truth for both platforms.
+        # If someone edits a translation without regenerating, this fails here rather
+        # than shipping a Windows build with stale German.
+        run: python3 windows/tools/strings2resx.py --check
+
+      - name: Restore
+        run: dotnet restore windows/NetFluss.sln
+
+      - name: Build
+        run: dotnet build windows/NetFluss.sln --configuration Release --no-restore
+
+      - name: Test
+        # NetFluss.Native.Tests exercises the hand-marshalled MIB_IF_ROW2 against the real
+        # kernel interface table — it can only run on a Windows host, which is the whole
+        # reason this job exists.
+        run: dotnet test windows/NetFluss.sln --configuration Release --no-build --logger "trx;LogFileName=results.trx" --results-directory artifacts/test-results
+
+      - name: Render tray meter contact sheet
+        # Phase 0 deliverable: renders every tray layout at 16/20/24/32 px on light and
+        # dark taskbar swatches so the legibility question can be answered by looking.
+        run: dotnet run --project windows/src/NetFluss.TrayPreview/NetFluss.TrayPreview.csproj --configuration Release --no-build -- artifacts/tray-contact-sheet.png
+
+      - name: Upload tray contact sheet
+        uses: actions/upload-artifact@v4
+        with:
+          name: tray-contact-sheet
+          path: artifacts/tray-contact-sheet.png
+          if-no-files-found: error
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: artifacts/test-results
+          if-no-files-found: warn
