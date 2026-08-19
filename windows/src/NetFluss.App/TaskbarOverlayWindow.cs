@@ -52,10 +52,16 @@ internal sealed class TaskbarOverlayWindow : Window
         ShowInTaskbar = false;
         AllowsTransparency = true;
 
-        // Transparent, not taskbar-coloured: the taskbar may be acrylic, tinted by the
-        // wallpaper, or a flat colour depending on settings, and only drawing the glyphs
-        // themselves is correct under all three.
-        Background = Brushes.Transparent;
+        // Very nearly transparent, and the "very nearly" is load-bearing.
+        //
+        // The taskbar may be acrylic, tinted by the wallpaper, or a flat colour, so only the
+        // glyphs themselves should be painted. But AllowsTransparency makes this a layered
+        // window, and a layered window does not hit-test pixels with zero alpha — a fully
+        // transparent background means every click sails through to the taskbar underneath.
+        // That silently cost the overlay both its left-click popover and its right-click
+        // menu, which on a machine with the tray icon hidden left no way into Preferences
+        // and no way to quit. One unit of alpha is invisible and hit-tests everywhere.
+        Background = new SolidColorBrush(Color.FromArgb(1, 0, 0, 0));
         Topmost = true;
         Focusable = false;
         ShowActivated = false;
@@ -66,7 +72,24 @@ internal sealed class TaskbarOverlayWindow : Window
         // Left-click opens the popover, exactly as the tray icon does, so the two surfaces
         // behave the same way and neither has to be learned separately.
         MouseLeftButtonUp += (_, _) => Clicked?.Invoke(this, EventArgs.Empty);
-        MouseRightButtonUp += (_, _) => ContextMenuRequested?.Invoke(this, EventArgs.Empty);
+
+        // Right-click has to open the full menu, not just Preferences. This may be the only
+        // NetFluss surface on screen, so it is also the only way out of the app.
+        MouseRightButtonUp += (_, e) =>
+        {
+            if (ContextMenu is null)
+            {
+                return;
+            }
+
+            // WS_EX_NOACTIVATE means this window never takes focus, and a WPF context menu
+            // on an unfocusable owner closes itself the moment it opens. Placing it on the
+            // mouse and letting it capture instead is what keeps it up.
+            ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.IsOpen = true;
+            e.Handled = true;
+        };
 
         _reanchor = new DispatcherTimer(DispatcherPriority.Background) { Interval = ReanchorInterval };
         _reanchor.Tick += (_, _) => Reanchor();
@@ -76,9 +99,6 @@ internal sealed class TaskbarOverlayWindow : Window
 
     /// <summary>Raised on left click, to toggle the popover.</summary>
     internal event EventHandler? Clicked;
-
-    /// <summary>Raised on right click, to show the same menu the tray icon shows.</summary>
-    internal event EventHandler? ContextMenuRequested;
 
     /// <summary>
     /// Raised when the taskbar cannot be anchored to at all, so the app can fall back to the

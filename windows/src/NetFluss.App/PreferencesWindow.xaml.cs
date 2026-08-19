@@ -279,6 +279,7 @@ public partial class PreferencesWindow : Window
         Select(MeterStyleBox, settings.MeterStyle);
         Select(UnitsBox, settings.UseBits);
         WidgetToggle.IsChecked = settings.ShowFloatingWidget;
+        HideTrayToggle.IsChecked = settings.HideTrayIcon;
         Select(IntervalBox, settings.RefreshIntervalSeconds);
         Select(LanguageBox, settings.Language);
         Select(ThemeBox, settings.ThemeId);
@@ -306,6 +307,7 @@ public partial class PreferencesWindow : Window
         ReadoutStyleBox.SelectionChanged += OnChanged;
         ReadoutSizeBox.SelectionChanged += OnChanged;
         WidgetToggle.Click += OnChanged;
+        HideTrayToggle.Click += OnChanged;
         GlyphBox.SelectionChanged += OnChanged;
         MeterStyleBox.SelectionChanged += OnChanged;
         UnitsBox.SelectionChanged += OnChanged;
@@ -334,6 +336,7 @@ public partial class PreferencesWindow : Window
             settings.ReadoutStyle = Value(ReadoutStyleBox, settings.ReadoutStyle);
             settings.ReadoutFontSize = Value(ReadoutSizeBox, settings.ReadoutFontSize);
             settings.ShowFloatingWidget = WidgetToggle.IsChecked == true;
+            settings.HideTrayIcon = HideTrayToggle.IsChecked == true;
             settings.TrayIconGlyph = Value(GlyphBox, settings.TrayIconGlyph);
             settings.MeterStyle = Value(MeterStyleBox, settings.MeterStyle);
             settings.UseBits = Value(UnitsBox, settings.UseBits);
@@ -443,6 +446,13 @@ public partial class PreferencesWindow : Window
             : "A 16–32 px icon, depending on your display scaling. Cramped, and it never breaks.";
 
         FallbackNotice.Visibility = fellBack ? Visibility.Visible : Visibility.Collapsed;
+
+        // Hiding the tray icon is only meaningful when something else carries the meter, and
+        // it is worth saying plainly what it costs: the icon is the obvious way back here.
+        HideTrayToggle.IsEnabled = overlayChosen;
+        HideTrayCaption.Text = overlayChosen
+            ? "The icon stays as a plain glyph so the rates are not shown twice. Hiding it leaves right-clicking the taskbar meter as the only way to reach Preferences or quit."
+            : "Only available when the meter is on the taskbar — otherwise this is where the meter lives.";
     }
 
     private static void UpdateSwatch(System.Windows.Controls.Border swatch, ThemeColor color, ThemeColor taskbar, bool enforce)

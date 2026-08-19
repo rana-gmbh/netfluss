@@ -223,6 +223,26 @@ public class SettingsStoreTests : IDisposable
     public void ReadoutFontSize_IsClampedToTheMacOsRange(double set, double expected)
         => Assert.Equal(expected, new AppSettings { ReadoutFontSize = set }.ReadoutFontSize);
 
+    /// <summary>
+    /// The notification-area icon must be present on a fresh install, whatever surface the
+    /// meter is on.
+    ///
+    /// <para>Regression, and the reason this test is worth its length: the tray icon used to
+    /// hide itself automatically whenever the taskbar overlay anchored. A user who also
+    /// turned off the floating widget was then left with no visible NetFluss icon anywhere —
+    /// no discoverable route to Preferences, and no way to quit the app short of Task
+    /// Manager. Hiding it is now something the user asks for explicitly.</para>
+    /// </summary>
+    [Fact]
+    public void TrayIcon_IsNotHiddenByDefault()
+    {
+        var settings = new AppSettings();
+
+        Assert.Equal(MeterSurface.TaskbarOverlay, settings.MeterSurface);
+        Assert.False(settings.ShowFloatingWidget);
+        Assert.False(settings.HideTrayIcon);
+    }
+
     [Fact]
     public void AccentResolution_FallsBackForSystem()
     {

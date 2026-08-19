@@ -88,6 +88,20 @@ someone's game is a defect report.
 **Falling back is automatic.** Losing the anchor brings the tray icon straight back, and
 Preferences says so rather than leaving a setting that appears to do nothing.
 
+**Every surface carries the same menu**, built once in `SurfaceMenu`. Whichever placement a
+user picked is, for them, the entire application, so each one has to offer Preferences *and*
+Quit. The tray icon also stays visible by default even when the overlay carries the numbers —
+it drops to a static glyph so the rates are not shown twice, but it remains, because it is
+where Windows users look for a background app's menu. Hiding it is an explicit preference,
+not a side effect of choosing a placement.
+
+**A layered-window trap that cost the overlay every click.** `AllowsTransparency` makes the
+overlay a layered window, and a layered window does not hit-test pixels with zero alpha, so a
+`Transparent` background let every click sail through to the taskbar underneath. Both the
+left-click popover and the right-click menu were silently dead — and with the tray icon
+hidden that left no way into Preferences and no way to quit but Task Manager. The background
+is now `#01000000`: one unit of alpha, invisible, and hit-testable everywhere.
+
 **A DPI trap worth knowing about.** Window geometry is physical pixels; WPF lays its content
 out in device-independent units. Passing a width computed in DIPs straight to `SetWindowPos`
 gives a window half the size it needs at 200% scaling, which clips the left-hand rate clean

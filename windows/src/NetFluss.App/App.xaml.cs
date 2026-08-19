@@ -120,13 +120,17 @@ public partial class NetFlussApplication : Application
         ApplyOverlay(settings, download, upload);
         ApplyWidget(settings, download, upload);
 
-        _tray.Options = BuildMeterOptions();
-        _tray.Redraw();
+        var overlayCarriesTheMeter = _overlay is { IsAnchored: true };
 
-        // The tray icon is hidden while the overlay is carrying the meter, but only while it
-        // is genuinely anchored — otherwise the fallback would have nothing to fall back to.
-        _tray.IsVisible = settings.MeterSurface == MeterSurface.Tray
-                          || _overlay is not { IsAnchored: true };
+        // While another surface shows the numbers, the tray icon drops to a static glyph so
+        // the rates are not displayed twice — but it stays *present*, because it is where a
+        // Windows user looks for a background app's menu. Hiding it is opt-in.
+        _tray.Options = overlayCarriesTheMeter
+            ? BuildMeterOptions() with { Layout = TrayMeterLayout.Icon }
+            : BuildMeterOptions();
+
+        _tray.Redraw();
+        _tray.IsVisible = !(settings.HideTrayIcon && overlayCarriesTheMeter);
 
         PushTotals();
     }
@@ -144,9 +148,12 @@ public partial class NetFlussApplication : Application
 
         if (_overlay is null)
         {
-            _overlay = new TaskbarOverlayWindow(_monitor!);
+            _overlay = new TaskbarOverlayWindow(_monitor!)
+            {
+                ContextMenu = SurfaceMenu.Build(ShowPreferences, Shutdown),
+            };
+
             _overlay.Clicked += (_, _) => TogglePopover();
-            _overlay.ContextMenuRequested += (_, _) => ShowPreferences();
 
             // The overlay reports rather than decides. Losing the anchor brings the tray
             // meter back immediately, so there is never a moment with no meter at all.
@@ -177,8 +184,11 @@ public partial class NetFlussApplication : Application
 
         if (_widget is null)
         {
-            _widget = new FloatingWidgetWindow(settings);
-            _widget.ContextMenuRequested += (_, _) => ShowPreferences();
+            _widget = new FloatingWidgetWindow(settings)
+            {
+                ContextMenu = SurfaceMenu.Build(ShowPreferences, Shutdown),
+            };
+
             _widget.Show();
             _widget.Place();
         }

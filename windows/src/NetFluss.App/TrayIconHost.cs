@@ -65,10 +65,10 @@ public sealed class TrayIconHost : IDisposable
     /// <summary>
     /// Whether the notification-area icon is shown at all.
     ///
-    /// <para>Hidden while the taskbar overlay is carrying the meter, so the rates are not
-    /// duplicated in two places. It comes straight back if the overlay loses its anchor —
-    /// the tray icon is the surface that cannot break, and it is what the fallback falls
-    /// back to.</para>
+    /// <para>Shown by default even when another surface carries the numbers, because this is
+    /// where a Windows user looks for a background app's menu — including the only way to
+    /// quit it. Only the explicit <c>HideTrayIcon</c> preference takes it away, and the app
+    /// puts it straight back if the overlay loses its anchor.</para>
     /// </summary>
     public bool IsVisible
     {
@@ -137,21 +137,11 @@ public sealed class TrayIconHost : IDisposable
             "\n↓ ",
             RateFormatter.FormatRate(totals.RxRateBps, options.UseBits));
 
+    /// <summary>Built by <see cref="SurfaceMenu"/>, so every surface offers the same commands.</summary>
     private ContextMenu BuildContextMenu()
-    {
-        var menu = new ContextMenu();
-
-        var preferences = new MenuItem { Header = "Preferences…" };
-        preferences.Click += (_, _) => PreferencesRequested?.Invoke(this, EventArgs.Empty);
-
-        var quit = new MenuItem { Header = "Quit NetFluss" };
-        quit.Click += (_, _) => QuitRequested?.Invoke(this, EventArgs.Empty);
-
-        menu.Items.Add(preferences);
-        menu.Items.Add(new Separator());
-        menu.Items.Add(quit);
-        return menu;
-    }
+        => SurfaceMenu.Build(
+            () => PreferencesRequested?.Invoke(this, EventArgs.Empty),
+            () => QuitRequested?.Invoke(this, EventArgs.Empty));
 
     public void Dispose()
     {

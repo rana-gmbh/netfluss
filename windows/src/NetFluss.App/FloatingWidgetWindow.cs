@@ -56,7 +56,19 @@ internal sealed class FloatingWidgetWindow : Window
             }
         };
 
-        MouseRightButtonUp += (_, _) => ContextMenuRequested?.Invoke(this, EventArgs.Empty);
+        // Same reasoning as the overlay: this can be the only NetFluss window on screen.
+        MouseRightButtonUp += (_, e) =>
+        {
+            if (ContextMenu is null)
+            {
+                return;
+            }
+
+            ContextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.MousePoint;
+            ContextMenu.PlacementTarget = this;
+            ContextMenu.IsOpen = true;
+            e.Handled = true;
+        };
 
         // Position is remembered, so it survives a restart the way the macOS pin does.
         LocationChanged += (_, _) =>
@@ -68,8 +80,6 @@ internal sealed class FloatingWidgetWindow : Window
             }
         };
     }
-
-    internal event EventHandler? ContextMenuRequested;
 
     internal void ApplySettings(AppSettings settings, ThemeColor download, ThemeColor upload, bool darkSurface)
     {

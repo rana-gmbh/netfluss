@@ -101,6 +101,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     private double? _floatingWidgetLeft;
     private double? _floatingWidgetTop;
     private string _trayIconGlyph = "netfluss";
+    private bool _hideTrayIcon;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -256,6 +257,26 @@ public sealed class AppSettings : INotifyPropertyChanged
     {
         get => _floatingWidgetTop;
         set => Set(ref _floatingWidgetTop, value);
+    }
+
+    /// <summary>
+    /// Hide the notification-area icon while another surface is carrying the meter.
+    ///
+    /// <para><b>Off by default, and that is a deliberate safety choice.</b> The tray icon is
+    /// where Windows users look for a background app's menu, and for a while this was
+    /// hidden automatically whenever the taskbar overlay anchored — which left a user who
+    /// had also turned off the floating widget with no discoverable way into Preferences and
+    /// no way to quit at all, short of Task Manager.</para>
+    ///
+    /// <para>Turning it on is fine, and the overlay's own right-click menu still works, but
+    /// it is a choice the user makes knowingly rather than a side effect of picking a
+    /// placement. While it is on and the overlay is carrying the numbers, the tray icon
+    /// drops to a static glyph so the rates are not shown twice.</para>
+    /// </summary>
+    public bool HideTrayIcon
+    {
+        get => _hideTrayIcon;
+        set => Set(ref _hideTrayIcon, value);
     }
 
     /// <summary>Id from the tray glyph library, used by <see cref="MeterStyle.Icon"/>.</summary>

@@ -192,6 +192,20 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Hide the notification area icon" Style="{StaticResource RowTitle}" />
+                            <TextBlock x:Name="HideTrayCaption" Style="{StaticResource RowSubtitle}" />
+                        </StackPanel>
+                        <CheckBox x:Name="HideTrayToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
                             <TextBlock Text="Floating widget" Style="{StaticResource RowTitle}" />
                             <TextBlock Style="{StaticResource RowSubtitle}"
                                        Text="An always-on-top panel you can drag anywhere. Works alongside the other placements, and depends on nothing that a Windows update can move." />
