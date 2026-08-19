@@ -1,0 +1,81 @@
+# Line endings and binary classification.
+#
+# NetFluss is authored on macOS but the Windows port is developed on Windows, so the
+# repository is now written from two platforms. Without this file, git on Windows
+# defaults to core.autocrlf=true and rewrites the line endings of every file it
+# touches, producing commits full of whole-file diffs.
+#
+# Policy: normalise everything to LF in the repository and check out LF everywhere.
+# Only the handful of formats that genuinely want CRLF on Windows are excepted.
+
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Formats that must stay CRLF on Windows
+# ---------------------------------------------------------------------------
+
+# Visual Studio rewrites solution files with CRLF on every save; leaving them LF
+# guarantees a spurious diff the first time anyone opens NetFluss.sln.
+*.sln       text eol=crlf
+
+# Batch files are parsed line-by-line by cmd.exe and misbehave with bare LF.
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# ---------------------------------------------------------------------------
+# Formats that must stay LF
+# ---------------------------------------------------------------------------
+
+# A shell script with CRLF fails as "bad interpreter: /bin/bash^M". The VPN bundle
+# script is part of the macOS release build, so this one is load-bearing.
+*.sh        text eol=lf
+
+*.swift     text eol=lf
+*.cs        text eol=lf
+*.py        text eol=lf
+*.strings   text eol=lf
+
+# ---------------------------------------------------------------------------
+# Binary — never diffed, never line-ending converted
+#
+# The .gitignore already warns that this project legitimately tracks Screenshots/,
+# screenshot.png and Packaging/Resources/*.icns. Marking them explicitly keeps
+# text=auto's heuristics out of the decision entirely.
+# ---------------------------------------------------------------------------
+
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.webp      binary
+*.gif       binary
+*.icns      binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.gz        binary
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+*.mov       binary
+*.mp4       binary
+*.dylib     binary
+*.so        binary
+*.dll       binary
+*.exe       binary
+*.msi       binary
+*.nupkg     binary
+
+# ---------------------------------------------------------------------------
+# GitHub presentation
+# ---------------------------------------------------------------------------
+
+# Generated from the macOS Localizable.strings by windows/tools/strings2resx.py.
+# Collapsing them keeps a translation change from burying the real diff, and keeps
+# 200 KB of generated XML out of the repository's language statistics.
+windows/src/NetFluss.Core/Resources/*.resx          linguist-generated=true
+windows/src/NetFluss.Core/Resources/platform-review.md linguist-generated=true
+
+# Vendored speed-test assets shared verbatim with the macOS app.
+Packaging/Resources/SpeedTest/**                    linguist-vendored=true
