@@ -108,6 +108,38 @@ gives a window half the size it needs at 200% scaling, which clips the left-hand
 off the readout — the meter still looks plausible, just wrong. `TaskbarAnchor.Locate` takes
 DIPs and scales by the taskbar's own DPI for exactly this reason.
 
+## The popover
+
+Opened by clicking any surface — the tray icon, the taskbar overlay or the floating widget —
+so whichever one a user has kept behaves the same way. The widget tells a click from a drag
+by whether the window actually moved: `DragMove` blocks until release, and Windows applies
+its own drag threshold first, so a click with a pixel of hand-shake in it moves the mouse but
+not the window and is still a click.
+
+It is **resizable**, and the size persists. `WindowStyle="None"` means WPF reports every point
+as client area, so `ResizeMode="CanResize"` alone gives a window that cannot be resized —
+`ResizeHook` answers `WM_NCHITTEST` with the edge codes and hands the drag back to Windows,
+which brings snapping and double-click-to-maximise along with it. The hit test works in
+physical pixels throughout: converting the message's screen coordinates into WPF units to
+compare against a device-pixel window rect is how a 6-unit grip silently becomes a 3-pixel one
+at 200% scaling.
+
+## Adapter visibility
+
+Preferences lists every adapter with a checkbox. The list comes from
+`NetworkMonitorService.AllAdapters`, deliberately *not* from the filtered `Adapters` the
+popover binds to: a checklist built on the filtered set would drop each row the moment it was
+unticked, leaving no way to ever tick it back. Loopback and the WFP/QoS filter
+pseudo-interfaces stay out of both, since they mirror the adapter they sit on and would offer
+the user four copies of their Ethernet card to choose between.
+
+`HiddenAdapters` was another write-only setting — stored, round-trip tested, and never handed
+to the monitor. `AppSettings.VisibilityOptions()` is now the one place the preferences are
+assembled into the filter's input, so the popover, the totals and the checklist cannot
+disagree about which adapters count. Note `SetAdapterHidden` replaces the list rather than
+mutating it: `Set<T>` compares a `List` by reference, so an in-place edit would raise no
+change notification and the setting would be applied but never saved.
+
 ## Themes
 
 `AppTheme` ports the macOS presets (Dracula, Nord, Solarized) plus a `system` entry that

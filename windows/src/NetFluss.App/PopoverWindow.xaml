@@ -3,10 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="NetFluss"
         Width="320"
-        SizeToContent="Height"
-        MaxHeight="560"
+        Height="460"
+        MinWidth="280"
+        MinHeight="220"
         WindowStyle="None"
-        ResizeMode="NoResize"
+        ResizeMode="CanResize"
         ShowInTaskbar="False"
         Topmost="True"
         AllowsTransparency="True"
@@ -17,9 +18,14 @@
             BorderBrush="{DynamicResource PopoverBorderBrush}"
             BorderThickness="1"
             Padding="14">
-        <StackPanel>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             <!-- Header totals, matching the macOS popover header. -->
-            <Grid Margin="0,0,0,12">
+            <Grid Grid.Row="0" Margin="0,0,0,12">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
@@ -44,13 +50,15 @@
                 </StackPanel>
             </Grid>
 
-            <TextBlock Text="Adapters" Foreground="{DynamicResource PopoverSecondaryBrush}" FontSize="11" Margin="0,0,0,6" />
+            <TextBlock Grid.Row="1" Text="Adapters" Foreground="{DynamicResource PopoverSecondaryBrush}" FontSize="11" Margin="0,0,0,6" />
 
             <!--
-                Capped like the macOS popover so many VPN/virtual interfaces cannot push
-                the window past the screen edge.
+                Fills whatever height the window has been dragged to. It used to be capped
+                at a fixed 300, which was the right call while the window could not be
+                resized and is the wrong one now that it can — a resized popover would have
+                grown a band of empty background under a still-scrolling list.
             -->
-            <ScrollViewer MaxHeight="300" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="AdapterList">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -81,6 +89,6 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
-        </StackPanel>
+        </Grid>
     </Border>
 </Window>

@@ -1,7 +1,9 @@
 // Copyright (C) 2026 Rana GmbH — GPLv3. See LICENSE at the repository root.
 
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Interop;
 using System.Windows.Media;
 using NetFluss.Core;
 
@@ -14,14 +16,37 @@ namespace NetFluss.App;
 public partial class PopoverWindow : Window
 {
     private readonly NetworkMonitorService _monitor;
+    private readonly AppSettings _settings;
 
-    public PopoverWindow(NetworkMonitorService monitor)
+    public PopoverWindow(NetworkMonitorService monitor, AppSettings settings)
     {
         InitializeComponent();
 
         _monitor = monitor;
+        _settings = settings;
         AdapterList.ItemsSource = monitor.Adapters;
         monitor.PropertyChanged += OnMonitorChanged;
+
+        Width = settings.PopoverWidth;
+        Height = settings.PopoverHeight;
+
+        // A borderless window gets no resize hit-testing of its own; the hook below supplies
+        // it. Installed here rather than in a constructor body because it needs the handle.
+        SourceInitialized += (_, _) =>
+            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(ResizeHook);
+
+        // Remembered on every change rather than on close: the popover is dismissed by
+        // deactivating, which is not a close, so waiting for one would never save anything.
+        SizeChanged += (_, _) =>
+        {
+            if (!IsLoaded)
+            {
+                return;
+            }
+
+            _settings.PopoverWidth = ActualWidth;
+            _settings.PopoverHeight = ActualHeight;
+        };
 
         // Dismiss-on-deactivate, matching NSPopover.
         Deactivated += (_, _) =>
@@ -68,6 +93,84 @@ public partial class PopoverWindow : Window
             ? Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)
             : Color.FromArgb(0x22, 0x00, 0x00, 0x00));
     }
+
+    /// <summary>
+    /// Supplies the resize borders that <c>WindowStyle="None"</c> takes away.
+    ///
+    /// <para>WPF reports every point of a chromeless window as client area, so
+    /// <c>ResizeMode="CanResize"</c> alone gives a window that cannot actually be resized.
+    /// Answering WM_NCHITTEST with the edge codes hands the drag back to Windows, which
+    /// then does the resize itself — with the snapping and the double-click-to-maximise
+    /// behaviour a hand-rolled mouse loop would have to reimplement badly.</para>
+    ///
+    /// <para>Worked in physical pixels throughout: the message carries screen coordinates in
+    /// device pixels, and converting them to WPF units to compare against a device-pixel
+    /// window rect is how an eight-pixel grip becomes a four-pixel one at 200% scaling.</para>
+    /// </summary>
+    private nint ResizeHook(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled)
+    {
+        if (msg != WmNcHitTest || !GetWindowRect(hwnd, out var bounds))
+        {
+            return nint.Zero;
+        }
+
+        // Signed: a point on a monitor left of the primary one has a negative X.
+        var x = (short)(lParam & 0xFFFF);
+        var y = (short)((lParam >> 16) & 0xFFFF);
+
+        var grip = (int)Math.Round(ResizeGripDips * (GetDpiForWindow(hwnd) / 96.0));
+
+        var left = x < bounds.Left + grip;
+        var right = x >= bounds.Right - grip;
+        var top = y < bounds.Top + grip;
+        var bottom = y >= bounds.Bottom - grip;
+
+        var hit = (left, right, top, bottom) switch
+        {
+            (true, _, true, _) => HtTopLeft,
+            (_, true, true, _) => HtTopRight,
+            (true, _, _, true) => HtBottomLeft,
+            (_, true, _, true) => HtBottomRight,
+            (true, _, _, _) => HtLeft,
+            (_, true, _, _) => HtRight,
+            (_, _, true, _) => HtTop,
+            (_, _, _, true) => HtBottom,
+            _ => HtClient,
+        };
+
+        handled = true;
+        return hit;
+    }
+
+    private const int WmNcHitTest = 0x0084;
+    private const int HtClient = 1;
+    private const int HtLeft = 10;
+    private const int HtRight = 11;
+    private const int HtTop = 12;
+    private const int HtTopLeft = 13;
+    private const int HtTopRight = 14;
+    private const int HtBottom = 15;
+    private const int HtBottomLeft = 16;
+    private const int HtBottomRight = 17;
+
+    /// <summary>Grip width in device-independent units — comfortable without swallowing clicks.</summary>
+    private const double ResizeGripDips = 6;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(nint window, out NativeRect rect);
+
+    [DllImport("user32.dll")]
+    private static extern uint GetDpiForWindow(nint window);
 
     public void ShowNearTray()
     {

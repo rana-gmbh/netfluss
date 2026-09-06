@@ -114,6 +114,11 @@ public partial class NetFlussApplication : Application
         _monitor.ExcludeTunnelAdapters = settings.ExcludeTunnelAdapters;
         _monitor.TotalsFromVisibleAdaptersOnly = settings.TotalsFromVisibleAdaptersOnly;
 
+        // Adapter visibility was the same shape of bug as the theme: HiddenAdapters was
+        // stored and round-trip tested, and nothing ever handed it to the monitor.
+        _monitor.Visibility = settings.VisibilityOptions();
+        _monitor.Refresh();
+
         var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
         var (download, upload) = settings.ResolveRateColors(systemDownload, systemUpload);
 
@@ -209,6 +214,7 @@ public partial class NetFlussApplication : Application
                 ContextMenu = SurfaceMenu.Build(ShowPreferences, Shutdown),
             };
 
+            _widget.Clicked += (_, _) => TogglePopover();
             _widget.Show();
             _widget.Place();
         }
@@ -229,7 +235,7 @@ public partial class NetFlussApplication : Application
             return;
         }
 
-        _preferences = new PreferencesWindow(_store);
+        _preferences = new PreferencesWindow(_store, _monitor!);
         _preferences.Closed += (_, _) => _preferences = null;
         _preferences.Show();
         _preferences.Activate();
@@ -255,7 +261,7 @@ public partial class NetFlussApplication : Application
 
         if (_popover is null)
         {
-            _popover = new PopoverWindow(_monitor);
+            _popover = new PopoverWindow(_monitor, _store!.Settings);
             _popover.Hidden += (_, _) => _popoverHiddenAt = DateTime.UtcNow;
 
             // Themed on creation as well as on every settings change: the window is built

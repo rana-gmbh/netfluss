@@ -1,5 +1,6 @@
 // Copyright (C) 2026 Rana GmbH — GPLv3. See LICENSE at the repository root.
 
+using System.ComponentModel;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -30,19 +31,27 @@ public partial class PreferencesWindow : Window
     private static readonly RateTotals PreviewTotals = new(4_720_000, 834_000);
 
     private readonly SettingsStore _store;
+    private readonly NetworkMonitorService _monitor;
     private readonly TrayMeterRenderer _renderer = new();
     private bool _loading;
 
-    public PreferencesWindow(SettingsStore store)
+    public PreferencesWindow(SettingsStore store, NetworkMonitorService monitor)
     {
         InitializeComponent();
 
         _store = store;
+        _monitor = monitor;
+
+        // The checklist has to offer every adapter the machine has, including ones currently
+        // filtered out of the popover — otherwise an adapter hidden by mistake could never be
+        // found again to unhide it.
+        _monitor.PropertyChanged += OnMonitorChanged;
 
         ApplyTheme();
         PopulateChoices();
         LoadFromSettings();
         RefreshPreview();
+        RefreshAdapterList();
 
         // Both need the window handle, so neither can run from the constructor body.
         SourceInitialized += (_, _) =>
@@ -280,6 +289,8 @@ public partial class PreferencesWindow : Window
         Select(UnitsBox, settings.UseBits);
         WidgetToggle.IsChecked = settings.ShowFloatingWidget;
         HideTrayToggle.IsChecked = settings.HideTrayIcon;
+        ShowInactiveToggle.IsChecked = settings.ShowInactiveAdapters;
+        TotalsVisibleOnlyToggle.IsChecked = settings.TotalsFromVisibleAdaptersOnly;
         Select(IntervalBox, settings.RefreshIntervalSeconds);
         Select(LanguageBox, settings.Language);
         Select(ThemeBox, settings.ThemeId);
@@ -308,6 +319,8 @@ public partial class PreferencesWindow : Window
         ReadoutSizeBox.SelectionChanged += OnChanged;
         WidgetToggle.Click += OnChanged;
         HideTrayToggle.Click += OnChanged;
+        ShowInactiveToggle.Click += OnChanged;
+        TotalsVisibleOnlyToggle.Click += OnChanged;
         GlyphBox.SelectionChanged += OnChanged;
         MeterStyleBox.SelectionChanged += OnChanged;
         UnitsBox.SelectionChanged += OnChanged;
@@ -337,6 +350,8 @@ public partial class PreferencesWindow : Window
             settings.ReadoutFontSize = Value(ReadoutSizeBox, settings.ReadoutFontSize);
             settings.ShowFloatingWidget = WidgetToggle.IsChecked == true;
             settings.HideTrayIcon = HideTrayToggle.IsChecked == true;
+            settings.ShowInactiveAdapters = ShowInactiveToggle.IsChecked == true;
+            settings.TotalsFromVisibleAdaptersOnly = TotalsVisibleOnlyToggle.IsChecked == true;
             settings.TrayIconGlyph = Value(GlyphBox, settings.TrayIconGlyph);
             settings.MeterStyle = Value(MeterStyleBox, settings.MeterStyle);
             settings.UseBits = Value(UnitsBox, settings.UseBits);
@@ -506,6 +521,82 @@ public partial class PreferencesWindow : Window
     private sealed record Choice<T>(T Value, string Label)
     {
         public override string ToString() => Label;
+    }
+
+    /// <summary>
+    /// Preferences is rebuilt every time it opens, so the monitor subscription has to come
+    /// off with it — otherwise each visit leaves another handler ticking once a second
+    /// against a dead window for the life of the process.
+    /// </summary>
+    protected override void OnClosed(EventArgs e)
+    {
+        _monitor.PropertyChanged -= OnMonitorChanged;
+        base.OnClosed(e);
+    }
+
+    /// <summary>One row of the adapter checklist.</summary>
+    private sealed record AdapterRow(string Id, string DisplayName, string Description, string StatusText)
+    {
+        public bool IsShown { get; init; }
+    }
+
+    private void OnMonitorChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(NetworkMonitorService.AllAdapters))
+        {
+            RefreshAdapterList();
+        }
+    }
+
+    /// <summary>
+    /// Rebuilds the checklist from the machine's current adapters.
+    ///
+    /// <para>Rebuilt on every monitor tick rather than bound directly, because a tick
+    /// replaces the <see cref="AdapterStatus"/> records wholesale and a live binding would
+    /// reset each checkbox from the settings mid-click.</para>
+    /// </summary>
+    private void RefreshAdapterList()
+    {
+        var settings = _store.Settings;
+
+        var rows = _monitor.AllAdapters
+            .Select(adapter => new AdapterRow(
+                adapter.Id,
+                settings.AdapterCustomNames.TryGetValue(adapter.Id, out var custom) ? custom : adapter.DisplayName,
+                adapter.Description,
+                adapter.IsUp ? RateFormatter.FormatRate(adapter.RxRateBps + adapter.TxRateBps, settings.UseBits) : "Disconnected")
+            {
+                IsShown = !settings.IsAdapterHidden(adapter.Id),
+            })
+            .ToList();
+
+        // Only touch the ItemsSource when the set actually changed. Reassigning it every
+        // second would close the checkbox's own visual state mid-interaction and make the
+        // list feel like it is fighting the pointer.
+        if (AdapterChecklist.ItemsSource is IEnumerable<AdapterRow> existing && existing.SequenceEqual(rows))
+        {
+            return;
+        }
+
+        AdapterChecklist.ItemsSource = rows;
+
+        var hidden = rows.Count(row => !row.IsShown);
+        AdapterCaption.Text = rows.Count == 0
+            ? "No adapters reported yet."
+            : hidden == 0
+                ? $"{rows.Count} adapter(s). Untick one to keep it out of the popover."
+                : $"{rows.Count} adapter(s), {hidden} hidden.";
+    }
+
+    private void OnAdapterVisibilityChanged(object sender, RoutedEventArgs e)
+    {
+        if (_loading || sender is not CheckBox { Tag: string adapterId } box)
+        {
+            return;
+        }
+
+        _store.Batch(settings => settings.SetAdapterHidden(adapterId, box.IsChecked != true));
+        RefreshAdapterList();
     }
 
     private sealed record PreviewItem(BitmapSource Image, int Size, string Caption, Brush Swatch);

@@ -46,13 +46,37 @@ internal sealed class FloatingWidgetWindow : Window
 
         Content = _frame;
 
-        // Drag anywhere. There is no title bar to grab, and a widget the user cannot move is
-        // a widget in the wrong place.
+        // Drag anywhere — there is no title bar to grab, and a widget the user cannot move is
+        // a widget in the wrong place — but a plain click has to open the popover, the same
+        // as clicking the tray icon or the taskbar meter.
+        //
+        // DragMove blocks until the button is released, so the two are told apart by whether
+        // the window actually went anywhere. That beats a movement threshold on the mouse:
+        // Windows applies its own drag threshold before the window starts following the
+        // pointer, so a click with a pixel of hand-shake in it moves the mouse but not the
+        // window, and is still a click.
         MouseLeftButtonDown += (_, e) =>
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
+            if (e.ButtonState != MouseButtonState.Pressed)
+            {
+                return;
+            }
+
+            var before = new Point(Left, Top);
+
+            try
             {
                 DragMove();
+            }
+            catch (InvalidOperationException)
+            {
+                // Raised when the button was already released before the drag began; that is
+                // a click by definition, so fall through and treat it as one.
+            }
+
+            if (before == new Point(Left, Top))
+            {
+                Clicked?.Invoke(this, EventArgs.Empty);
             }
         };
 
@@ -80,6 +104,9 @@ internal sealed class FloatingWidgetWindow : Window
             }
         };
     }
+
+    /// <summary>Raised on a click that was not a drag, to toggle the popover.</summary>
+    internal event EventHandler? Clicked;
 
     internal void ApplySettings(AppSettings settings, ThemeColor download, ThemeColor upload, SurfacePalette surface)
     {

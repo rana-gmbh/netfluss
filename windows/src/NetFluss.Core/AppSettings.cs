@@ -102,6 +102,10 @@ public sealed class AppSettings : INotifyPropertyChanged
     private double? _floatingWidgetTop;
     private string _trayIconGlyph = "netfluss";
     private bool _hideTrayIcon;
+    private bool _showInactiveAdapters;
+    private bool _showOtherAdapters = true;
+    private double _popoverWidth = 320;
+    private double _popoverHeight = 460;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -296,6 +300,80 @@ public sealed class AppSettings : INotifyPropertyChanged
     public List<string> HiddenAdapters { get; set; } = [];
 
     /// <summary>Resolved download colour, or <paramref name="fallback"/> for "system".</summary>
+    /// <summary>
+    /// Show adapters that are down. Off by default: a laptop has a dozen disconnected
+    /// virtual and tunnel interfaces and listing them all buries the one that matters.
+    /// </summary>
+    public bool ShowInactiveAdapters
+    {
+        get => _showInactiveAdapters;
+        set => Set(ref _showInactiveAdapters, value);
+    }
+
+    /// <summary>Show interfaces NDIS could not classify. On by default, as on macOS.</summary>
+    public bool ShowOtherAdapters
+    {
+        get => _showOtherAdapters;
+        set => Set(ref _showOtherAdapters, value);
+    }
+
+    /// <summary>Remembered popover size. The user resizes it; it stays resized.</summary>
+    public double PopoverWidth
+    {
+        get => _popoverWidth;
+        set => Set(ref _popoverWidth, Math.Clamp(value, 280, 900));
+    }
+
+    public double PopoverHeight
+    {
+        get => _popoverHeight;
+        set => Set(ref _popoverHeight, Math.Clamp(value, 220, 1200));
+    }
+
+    /// <summary>
+    /// The visibility rules assembled from the individual preferences.
+    ///
+    /// <para>Built here rather than at the call site so the popover, the totals and the
+    /// Preferences list cannot end up disagreeing about which adapters count — the whole
+    /// reason <see cref="AdapterVisibilityOptions"/> bundles them.</para>
+    /// </summary>
+    public AdapterVisibilityOptions VisibilityOptions() => new()
+    {
+        Hidden = HiddenAdapters.ToHashSet(StringComparer.OrdinalIgnoreCase),
+        ShowOtherAdapters = ShowOtherAdapters,
+        ShowInactive = ShowInactiveAdapters,
+    };
+
+    /// <summary>Whether <paramref name="adapterId"/> is currently hidden by the user.</summary>
+    public bool IsAdapterHidden(string adapterId)
+        => HiddenAdapters.Contains(adapterId, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Shows or hides one adapter. Mutates the list in place and republishes it, because
+    /// <see cref="Set{T}"/> compares by reference for a List and would not fire otherwise —
+    /// which would leave the setting saved but unapplied until something else changed.
+    /// </summary>
+    public void SetAdapterHidden(string adapterId, bool hidden)
+    {
+        var already = IsAdapterHidden(adapterId);
+        if (already == hidden)
+        {
+            return;
+        }
+
+        var updated = HiddenAdapters
+            .Where(id => !string.Equals(id, adapterId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (hidden)
+        {
+            updated.Add(adapterId);
+        }
+
+        HiddenAdapters = updated;
+        OnPropertyChanged(nameof(HiddenAdapters));
+    }
+
     /// <summary>The selected theme, or <see cref="AppTheme.System"/> for an unknown id.</summary>
     public AppTheme Theme => AppTheme.Named(ThemeId);
 
@@ -330,6 +408,9 @@ public sealed class AppSettings : INotifyPropertyChanged
 
         return (ResolveDownloadColor(baseDownload), ResolveUploadColor(baseUpload));
     }
+
+    private void OnPropertyChanged(string name)
+        => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
     private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {

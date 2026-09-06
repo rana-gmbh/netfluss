@@ -125,6 +125,84 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="28,0,28,24">
             <StackPanel>
 
+                <!-- ============================ Adapters ============================ -->
+                <TextBlock Text="Adapters" Style="{StaticResource SectionHeader}" />
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Which adapters to show" Style="{StaticResource RowTitle}" />
+                        <TextBlock x:Name="AdapterCaption" Style="{StaticResource RowSubtitle}" Margin="0,0,0,4" />
+
+                        <ItemsControl x:Name="AdapterChecklist" Margin="0,6,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <CheckBox Grid.Column="0"
+                                                  VerticalAlignment="Center"
+                                                  Margin="0,0,10,0"
+                                                  IsChecked="{Binding IsShown, Mode=TwoWay}"
+                                                  Tag="{Binding Id}"
+                                                  Checked="OnAdapterVisibilityChanged"
+                                                  Unchecked="OnAdapterVisibilityChanged" />
+
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}"
+                                                       Foreground="{DynamicResource TextBrush}"
+                                                       FontSize="13" />
+                                            <TextBlock Text="{Binding Description}"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                                       FontSize="11"
+                                                       TextTrimming="CharacterEllipsis" />
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="2"
+                                                   VerticalAlignment="Center"
+                                                   Text="{Binding StatusText}"
+                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                   FontSize="11" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Include disconnected adapters" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="Most machines carry a dozen idle virtual and tunnel interfaces, so this is off by default." />
+                        </StackPanel>
+                        <CheckBox x:Name="ShowInactiveToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                            <TextBlock Text="Count only shown adapters in the totals" Style="{StaticResource RowTitle}" />
+                            <TextBlock Style="{StaticResource RowSubtitle}"
+                                       Text="Off, the meter totals every internet-carrying adapter whether or not it is listed." />
+                        </StackPanel>
+                        <CheckBox x:Name="TotalsVisibleOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                    </Grid>
+                </Border>
+
                 <!-- ============================ Placement ============================ -->
                 <TextBlock Text="Where to show it" Style="{StaticResource SectionHeader}" />
 

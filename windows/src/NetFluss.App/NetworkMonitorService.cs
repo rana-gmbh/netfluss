@@ -35,7 +35,17 @@ public sealed class NetworkMonitorService : INotifyPropertyChanged, IDisposable
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    /// <summary>The adapters that pass the visibility filter, in traffic order.</summary>
     public ObservableCollection<AdapterStatus> Adapters { get; } = [];
+
+    /// <summary>
+    /// Every adapter the machine reports, filter or no filter.
+    ///
+    /// <para>Preferences lists from this rather than from <see cref="Adapters"/>: hiding an
+    /// adapter removes it from the filtered set, so a checklist built on that would drop the
+    /// row the moment it was unticked and leave no way to ever tick it back.</para>
+    /// </summary>
+    public ObservableCollection<AdapterStatus> AllAdapters { get; } = [];
 
     public RateTotals Totals
     {
@@ -105,6 +115,19 @@ public sealed class NetworkMonitorService : INotifyPropertyChanged, IDisposable
         {
             Adapters.Add(adapter);
         }
+
+        // Loopback and the WFP/QoS filter pseudo-interfaces are excluded even here: they
+        // mirror the adapter they sit on, so offering them in a checklist would be offering
+        // the user four copies of their Ethernet card to choose between.
+        AllAdapters.Clear();
+        foreach (var adapter in sampled
+                     .Where(adapter => !adapter.IsNonInternet)
+                     .OrderBy(adapter => adapter.DisplayName, StringComparer.CurrentCultureIgnoreCase))
+        {
+            AllAdapters.Add(adapter);
+        }
+
+        OnPropertyChanged(nameof(AllAdapters));
     }
 
     public void Dispose() => _timer.Stop();
