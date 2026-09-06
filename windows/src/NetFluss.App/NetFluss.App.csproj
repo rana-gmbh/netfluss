@@ -14,6 +14,23 @@
 
   <ItemGroup>
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+    <!--
+      The speed test runs the macOS app's own HTML/JS unchanged. Only the host bridge is
+      ported, which is what keeps the two platforms measuring the same way. The Evergreen
+      runtime ships with Windows 11; the WiX installer will need to bootstrap it for
+      Windows 10.
+    -->
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3485.44" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Shared verbatim with macOS rather than copied into windows/. These files are the test:
+      forking them would mean the two platforms silently start reporting different numbers.
+    -->
+    <Content Include="..\..\..\Packaging\Resources\SpeedTest\**\*.*"
+             Link="SpeedTest\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

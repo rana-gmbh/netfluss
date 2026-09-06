@@ -58,6 +58,8 @@ public sealed class TrayIconHost : IDisposable
 
     public event EventHandler? PreferencesRequested;
 
+    public event EventHandler? SpeedTestRequested;
+
     public event EventHandler? QuitRequested;
 
     public TrayMeterOptions Options { get; set; }
@@ -141,6 +143,7 @@ public sealed class TrayIconHost : IDisposable
     private ContextMenu BuildContextMenu()
         => SurfaceMenu.Build(
             () => PreferencesRequested?.Invoke(this, EventArgs.Empty),
+            () => SpeedTestRequested?.Invoke(this, EventArgs.Empty),
             () => QuitRequested?.Invoke(this, EventArgs.Empty));
 
     public void Dispose()

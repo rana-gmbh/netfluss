@@ -52,6 +52,7 @@ public partial class NetFlussApplication : Application
         _tray.LeftClicked += (_, _) => TogglePopover();
         _tray.QuitRequested += (_, _) => Shutdown();
         _tray.PreferencesRequested += (_, _) => ShowPreferences();
+        _tray.SpeedTestRequested += (_, _) => ShowSpeedTest();
 
         // Preferences writes, then everything re-reads. One direction, so there is no way
         // for the tray and the settings file to disagree about what is configured.
@@ -162,7 +163,7 @@ public partial class NetFlussApplication : Application
         {
             _overlay = new TaskbarOverlayWindow(_monitor!)
             {
-                ContextMenu = SurfaceMenu.Build(ShowPreferences, Shutdown),
+                ContextMenu = SurfaceMenu.Build(ShowPreferences, ShowSpeedTest, Shutdown),
             };
 
             _overlay.Clicked += (_, _) => TogglePopover();
@@ -213,7 +214,7 @@ public partial class NetFlussApplication : Application
         {
             _widget = new FloatingWidgetWindow(settings)
             {
-                ContextMenu = SurfaceMenu.Build(ShowPreferences, Shutdown),
+                ContextMenu = SurfaceMenu.Build(ShowPreferences, ShowSpeedTest, Shutdown),
             };
 
             _widget.Clicked += (_, _) => TogglePopover();
@@ -222,6 +223,28 @@ public partial class NetFlussApplication : Application
         }
 
         _widget.ApplySettings(settings, download, upload, surface);
+    }
+
+    private SpeedTestWindow? _speedTest;
+
+    /// <summary>Opens the speed test, or brings the open one forward.</summary>
+    private void ShowSpeedTest()
+    {
+        if (_store is null)
+        {
+            return;
+        }
+
+        if (_speedTest is { IsLoaded: true })
+        {
+            _speedTest.Activate();
+            return;
+        }
+
+        _speedTest = new SpeedTestWindow(_store.Settings.Theme.Surface(SystemTheme.IsAppLight()));
+        _speedTest.Closed += (_, _) => _speedTest = null;
+        _speedTest.Show();
+        _speedTest.Activate();
     }
 
     private void ShowPreferences()

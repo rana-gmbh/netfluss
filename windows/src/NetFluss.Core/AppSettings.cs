@@ -290,6 +290,67 @@ public sealed class AppSettings : INotifyPropertyChanged
         set => Set(ref _trayIconGlyph, value);
     }
 
+    /// <summary>
+    /// User-defined DNS presets, appended to <see cref="DnsPreset.BuiltIn"/>. Mirrors the
+    /// macOS custom-preset list, including that built-ins cannot be edited or removed.
+    /// </summary>
+    public List<DnsPreset> CustomDnsPresets { get; set; } = [];
+
+    /// <summary>Built-ins followed by the user's own, which is the order the Mac shows them in.</summary>
+    public IReadOnlyList<DnsPreset> AllDnsPresets() => [.. DnsPreset.BuiltIn, .. CustomDnsPresets];
+
+    /// <summary>Adds a preset, rejecting anything that would not survive an elevated apply.</summary>
+    public DnsValidation AddDnsPreset(string name, IReadOnlyList<string> servers)
+    {
+        var trimmed = name?.Trim();
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            return DnsValidation.Fail("Give the preset a name.");
+        }
+
+        if (servers.Count == 0)
+        {
+            return DnsValidation.Fail("Give the preset at least one server.");
+        }
+
+        var validation = DnsValidator.Validate(servers);
+        if (!validation.IsValid)
+        {
+            return validation;
+        }
+
+        if (AllDnsPresets().Any(preset => string.Equals(preset.Name, trimmed, StringComparison.OrdinalIgnoreCase)))
+        {
+            return DnsValidation.Fail($"'{trimmed}' already exists.");
+        }
+
+        CustomDnsPresets =
+        [
+            .. CustomDnsPresets,
+            new DnsPreset
+            {
+                Id = $"custom-{Guid.NewGuid():N}",
+                Name = trimmed,
+                Servers = servers,
+            },
+        ];
+
+        OnPropertyChanged(nameof(CustomDnsPresets));
+        return DnsValidation.Ok;
+    }
+
+    public void RemoveDnsPreset(string id)
+    {
+        var remaining = CustomDnsPresets.Where(preset => preset.Id != id).ToList();
+        if (remaining.Count == CustomDnsPresets.Count)
+        {
+            return;
+        }
+
+        CustomDnsPresets = remaining;
+        OnPropertyChanged(nameof(CustomDnsPresets));
+    }
+
     /// <summary>BSD-equivalent interface ids in user order, mirroring macOS "adapterOrder".</summary>
     public List<string> AdapterOrder { get; set; } = [];
 

@@ -3,9 +3,9 @@
 Native Windows port of NetFluss, tracking the macOS app's feature set.
 Design and rationale live in [../docs/WINDOWS-PORT-PLAN.md](../docs/WINDOWS-PORT-PLAN.md).
 
-**Status: Phase 1, in progress.** Live rates in the notification area, a minimal popover,
-Preferences, three selectable meter surfaces, and the verification harness. No service and
-no VPN yet.
+**Status: Phase 1, in progress.** Live rates on three selectable surfaces, a resizable
+popover, tabbed Preferences, adapter selection, a DNS switcher, the speed test, and the
+verification harness. No service and no VPN yet.
 
 ## Build
 
@@ -164,6 +164,48 @@ excluded from the totals from the start, but `IsVisible` forgot them, so the pop
 plain Ethernet machine listed `Ethernet-WFP Native MAC Layer LightWeight Filter-0000` and two
 more beside the real adapter, every one reading an identical rate.
 
+## Speed test
+
+Runs the macOS app's own engine. `Packaging/Resources/SpeedTest/*.html` renders **nothing** —
+it measures and posts results to its host, which is why macOS draws the readout in SwiftUI and
+Windows draws it in WPF. The WebView2 is zero-sized and never shown; it is a measurement
+engine, not a page. Sharing it is the point: forking would let the two platforms quietly start
+reporting different numbers for the same link.
+
+The page talks to its host through `webkit.messageHandlers.speedTestBridge`, which exists on
+WKWebView and not on WebView2. A four-line shim maps it onto `chrome.webview.postMessage`, and
+that shim is the whole port.
+
+**The message shape is easy to get wrong.** `progress` does not carry a completion fraction —
+it carries the entire running summary, the same payload as `result`, posted repeatedly as the
+engine refines it. Reading it as a percentage leaves every figure on "—" until the test ends,
+which makes a twenty-second run look like it has hung.
+
+Assets are linked from `Packaging/Resources/SpeedTest` rather than copied into `windows/`, so
+there is only ever one copy of the test. WebView2's Evergreen runtime ships with Windows 11;
+the installer will need to bootstrap it for Windows 10, and the window says so plainly rather
+than leaving a dead Start button if it is missing.
+
+## DNS switcher
+
+The five macOS presets, plus custom ones, applied per adapter with the active one checkmarked.
+
+**Reading needs no privileges** — `NetworkInterface` reports the live resolvers — so the whole
+UI including the checkmark is accurate in an ordinary session. **Writing needs administrator**,
+which is why the port plan puts DNS switching in the Phase 2 service. Until that exists, an
+apply elevates one short-lived `netsh` run: one UAC prompt per change, rather than a tray app
+holding administrator rights all day so that a rarely-used setting can be changed.
+`IDnsApplier` is the seam the service will implement, and the UI will not change when it does.
+
+**`DnsValidator` is a security boundary, not a convenience.** Its output reaches the command
+line of an elevated process, so every server must round-trip through `IPAddress` — not merely
+look address-shaped — and the adapter name must be one Windows itself reported. `DnsTests`
+covers the injection-shaped inputs specifically.
+
+IPv4 and IPv6 are separate stores in Windows, so a preset carrying only IPv4 must also put
+IPv6 back on automatic; otherwise a leftover IPv6 resolver keeps answering and the change
+looks like it did nothing.
+
 ## Themes
 
 `AppTheme` ports the macOS presets (Dracula, Nord, Solarized) plus a `system` entry that
@@ -198,7 +240,8 @@ no two of them render identically.
 
 ## Preferences and settings
 
-`PreferencesWindow` follows Windows 11 Settings rather than the macOS tabbed `Form`: one
+`PreferencesWindow` follows Windows 11 Settings, split across five pivot tabs — General,
+Meter, Placement, DNS, Adapters. Each tab is one
 scrolling column of grouped cards, control on the right, changes applied and persisted
 immediately with no OK button. It is hand-styled — the port plan names WPF-UI for the wider
 Phase 1 UI, but Preferences needs four control types and a card, and a package that ships its

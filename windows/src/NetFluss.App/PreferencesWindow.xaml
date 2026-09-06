@@ -106,6 +106,70 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <!--
+            WinUI "pivot" tabs: plain text with an accent underline on the selected one, and
+            no frame around the content. Windows 11 Settings itself uses a navigation pane,
+            but that wants an icon per section and a wider window; pivots are the standard
+            control for a handful of peer sections and read as native beside it.
+        -->
+        <Style x:Key="PivotTabItem" TargetType="TabItem">
+            <Setter Property="FontFamily" Value="{StaticResource UIFont}" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Grid Background="Transparent" Margin="0,0,22,0">
+                            <ContentPresenter x:Name="Label"
+                                              ContentSource="Header"
+                                              Margin="0,6,0,8"
+                                              VerticalAlignment="Center" />
+                            <Border x:Name="Underline"
+                                    Height="3"
+                                    CornerRadius="2"
+                                    VerticalAlignment="Bottom"
+                                    Background="Transparent" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter TargetName="Underline" Property="Background" Value="{DynamicResource AccentBrush}" />
+                            </Trigger>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsMouseOver" Value="True" />
+                                    <Condition Property="IsSelected" Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+                            </MultiTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PivotTabs" TargetType="TabControl">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <TabPanel Grid.Row="0" IsItemsHost="True" Margin="0,0,0,6" />
+
+                            <Border Grid.Row="1" Background="Transparent">
+                                <ContentPresenter ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -122,453 +186,567 @@
                    Foreground="{DynamicResource TextBrush}"
                    Margin="28,20,28,0" />
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="28,0,28,24">
-            <StackPanel>
+        <TabControl Grid.Row="1"
+                    x:Name="Tabs"
+                    Margin="28,12,28,0"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Style="{StaticResource PivotTabs}"
+                    ItemContainerStyle="{StaticResource PivotTabItem}">
 
-                <!-- ============================ Adapters ============================ -->
-                <TextBlock Text="Adapters" Style="{StaticResource SectionHeader}" />
 
-                <Border Style="{StaticResource Card}">
+            <TabItem Header="General">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,8,28,24">
                     <StackPanel>
-                        <TextBlock Text="Which adapters to show" Style="{StaticResource RowTitle}" />
-                        <TextBlock x:Name="AdapterCaption" Style="{StaticResource RowSubtitle}" Margin="0,0,0,4" />
 
-                        <ItemsControl x:Name="AdapterChecklist" Margin="0,6,0,0">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="Transparent"
-                                            Tag="{Binding Id}"
-                                            AllowDrop="True"
-                                            PreviewMouseLeftButtonDown="OnAdapterRowMouseDown"
-                                            MouseMove="OnAdapterRowMouseMove"
-                                            DragOver="OnAdapterRowDragOver"
-                                            DragLeave="OnAdapterRowDragLeave"
-                                            Drop="OnAdapterRowDrop"
-                                            BorderThickness="0,2,0,0"
-                                            BorderBrush="Transparent"
-                                            Padding="0,2">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Update frequency" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Longer intervals use less battery on an idle machine." />
+                                </StackPanel>
+                                <ComboBox x:Name="IntervalBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
 
-                                            <!-- Grab handle. Dragging is limited to this so a
-                                                 click in the name field cannot start one. -->
-                                            <TextBlock Grid.Column="0"
-                                                       Text="⣿"
-                                                       ToolTip="Drag to reorder"
-                                                       VerticalAlignment="Center"
-                                                       Margin="0,0,8,0"
-                                                       FontSize="13"
-                                                       Cursor="SizeNS"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}" />
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Start with Windows" Style="{StaticResource RowTitle}" />
+                                    <TextBlock x:Name="LaunchCaption" Style="{StaticResource RowSubtitle}" />
+                                </StackPanel>
+                                <CheckBox x:Name="LaunchToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
 
-                                            <CheckBox Grid.Column="1"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,10,0"
-                                                      IsChecked="{Binding IsShown, Mode=TwoWay}"
-                                                      Tag="{Binding Id}"
-                                                      Checked="OnAdapterVisibilityChanged"
-                                                      Unchecked="OnAdapterVisibilityChanged" />
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Language" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Shared with the macOS app — one set of translations for both." />
+                                </StackPanel>
+                                <ComboBox x:Name="LanguageBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
 
-                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                                                <TextBox Text="{Binding DisplayName, Mode=OneWay}"
-                                                         Tag="{Binding Id}"
-                                                         LostFocus="OnAdapterNameCommitted"
-                                                         KeyDown="OnAdapterNameKeyDown"
-                                                         ToolTip="Rename. Clear the field to restore the Windows name."
-                                                         Background="Transparent"
-                                                         BorderThickness="0"
-                                                         Padding="0"
-                                                         Foreground="{DynamicResource TextBrush}"
-                                                         FontSize="13" />
-                                                <TextBlock Text="{Binding Description}"
-                                                           Foreground="{DynamicResource SecondaryTextBrush}"
-                                                           FontSize="11"
-                                                           TextTrimming="CharacterEllipsis" />
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Theme" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Sets the popover, the widget and the rate colours. A colour set above to anything but Automatic keeps that colour." />
+                                </StackPanel>
+                                <ComboBox x:Name="ThemeBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Meter">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,8,28,24">
+                    <StackPanel>
+                        <!-- ============================ Meter ============================ -->
+                        <TextBlock Text="Notification area" Style="{StaticResource SectionHeader}" />
+
+                        <!--
+                            Live preview. Windows tray icons are 16 px at 100% DPI, which is the
+                            whole difficulty of this port, so Preferences shows the real renderer
+                            output at every scaling rather than describing the choice in words.
+                        -->
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Preview" Style="{StaticResource RowTitle}" />
+                                <TextBlock x:Name="PreviewCaption"
+                                           Style="{StaticResource RowSubtitle}"
+                                           Text="Your taskbar, at each display scaling." />
+                                <ItemsControl x:Name="PreviewStrip" Margin="0,12,0,2">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <!--
+                                                Fixed-height swatch row with the icons bottom-aligned:
+                                                the four sizes differ by 16 px, so without this the
+                                                captions sit at four different heights and the strip
+                                                reads as broken rather than as a scale comparison.
+                                            -->
+                                            <StackPanel Margin="0,0,20,0" VerticalAlignment="Bottom">
+                                                <Grid Height="52">
+                                                    <Border Background="{Binding Swatch}"
+                                                            CornerRadius="3"
+                                                            Padding="8"
+                                                            VerticalAlignment="Bottom"
+                                                            HorizontalAlignment="Center">
+                                                        <Image Source="{Binding Image}"
+                                                               Width="{Binding Size}"
+                                                               Height="{Binding Size}"
+                                                               RenderOptions.BitmapScalingMode="NearestNeighbor"
+                                                               SnapsToDevicePixels="True" />
+                                                    </Border>
+                                                </Grid>
+                                                <TextBlock Text="{Binding Caption}"
+                                                           Style="{StaticResource RowSubtitle}"
+                                                           HorizontalAlignment="Center" />
                                             </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
 
-                                            <TextBlock Grid.Column="3"
-                                                       VerticalAlignment="Center"
-                                                       Margin="10,0,0,0"
-                                                       Text="{Binding StatusText}"
-                                                       Foreground="{DynamicResource SecondaryTextBrush}"
-                                                       FontSize="11" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Meter style" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="A single line gets the full icon height, which is sharper at 100% scaling." />
+                                </StackPanel>
+                                <ComboBox x:Name="MeterStyleBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
 
-                        <Button x:Name="ResetOrderButton"
-                                Content="Reset order"
-                                HorizontalAlignment="Left"
-                                Margin="0,10,0,0"
-                                Padding="10,4"
-                                Click="OnResetAdapterOrder" />
+                        <!-- Only meaningful for the Icon meter style; disabled otherwise. -->
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock x:Name="GlyphTitle" Text="Icon" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Used when the meter style is set to Icon only. Drawn to fit whatever size your display asks for." />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Image x:Name="GlyphPreview" Width="24" Height="24" Margin="0,0,10,0"
+                                           VerticalAlignment="Center"
+                                           RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                    <ComboBox x:Name="GlyphBox" MinWidth="150" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Units" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Bytes per second, or bits as ISPs quote them." />
+                                </StackPanel>
+                                <ComboBox x:Name="UnitsBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Show direction arrows" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Costs width the digits need below 24 px. The row colour already shows direction." />
+                                </StackPanel>
+                                <CheckBox x:Name="ArrowsToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Keep colours readable" Style="{StaticResource RowTitle}" />
+                                    <TextBlock x:Name="ContrastCaption" Style="{StaticResource RowSubtitle}" />
+                                </StackPanel>
+                                <CheckBox x:Name="ContrastToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
+                        <!-- ============================ Colours ============================ -->
+                        <TextBlock Text="Colours" Style="{StaticResource SectionHeader}" />
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Download" Style="{StaticResource RowTitle}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Border x:Name="DownloadSwatch" Width="20" Height="20" CornerRadius="10"
+                                            Margin="0,0,10,0" VerticalAlignment="Center"
+                                            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" />
+                                    <ComboBox x:Name="DownloadAccentBox" MinWidth="150" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Upload" Style="{StaticResource RowTitle}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Border x:Name="UploadSwatch" Width="20" Height="20" CornerRadius="10"
+                                            Margin="0,0,10,0" VerticalAlignment="Center"
+                                            BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" />
+                                    <ComboBox x:Name="UploadAccentBox" MinWidth="150" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                </Border>
+                </ScrollViewer>
+            </TabItem>
 
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Include disconnected adapters" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Most machines carry a dozen idle virtual and tunnel interfaces, so this is off by default." />
-                        </StackPanel>
-                        <CheckBox x:Name="ShowInactiveToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Count only shown adapters in the totals" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Off, the meter totals every internet-carrying adapter whether or not it is listed." />
-                        </StackPanel>
-                        <CheckBox x:Name="TotalsVisibleOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <!-- ============================ Placement ============================ -->
-                <TextBlock Text="Where to show it" Style="{StaticResource SectionHeader}" />
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Meter location" Style="{StaticResource RowTitle}" />
-                            <TextBlock x:Name="SurfaceCaption" Style="{StaticResource RowSubtitle}" />
-                        </StackPanel>
-                        <ComboBox x:Name="SurfaceBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <!-- Only shown when the overlay asked for the taskbar and could not have it. -->
-                <Border x:Name="FallbackNotice"
-                        Style="{StaticResource Card}"
-                        Visibility="Collapsed"
-                        Background="{DynamicResource NoticeBrush}">
+            <TabItem Header="Placement">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,8,28,24">
                     <StackPanel>
-                        <TextBlock Text="Showing in the notification area instead"
-                                   Style="{StaticResource RowTitle}" />
-                        <TextBlock Style="{StaticResource RowSubtitle}"
-                                   Text="NetFluss could not find room on the taskbar, so the meter fell back to the notification area. It will move back on its own if the taskbar becomes available." />
+                        <!-- ============================ Placement ============================ -->
+                        <TextBlock Text="Where to show it" Style="{StaticResource SectionHeader}" />
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Meter location" Style="{StaticResource RowTitle}" />
+                                    <TextBlock x:Name="SurfaceCaption" Style="{StaticResource RowSubtitle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="SurfaceBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Only shown when the overlay asked for the taskbar and could not have it. -->
+                        <Border x:Name="FallbackNotice"
+                                Style="{StaticResource Card}"
+                                Visibility="Collapsed"
+                                Background="{DynamicResource NoticeBrush}">
+                            <StackPanel>
+                                <TextBlock Text="Showing in the notification area instead"
+                                           Style="{StaticResource RowTitle}" />
+                                <TextBlock Style="{StaticResource RowSubtitle}"
+                                           Text="NetFluss could not find room on the taskbar, so the meter fell back to the notification area. It will move back on its own if the taskbar becomes available." />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Taskbar and widget layout" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="One line has room for full units; stacked matches the notification area." />
+                                </StackPanel>
+                                <ComboBox x:Name="ReadoutStyleBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Text size" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Applies to the taskbar meter and the floating widget." />
+                                </StackPanel>
+                                <ComboBox x:Name="ReadoutSizeBox" Grid.Column="1" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Hide the notification area icon" Style="{StaticResource RowTitle}" />
+                                    <TextBlock x:Name="HideTrayCaption" Style="{StaticResource RowSubtitle}" />
+                                </StackPanel>
+                                <CheckBox x:Name="HideTrayToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Floating widget" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="An always-on-top panel you can drag anywhere. Works alongside the other placements, and depends on nothing that a Windows update can move." />
+                                </StackPanel>
+                                <CheckBox x:Name="WidgetToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                </Border>
+                </ScrollViewer>
+            </TabItem>
 
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Taskbar and widget layout" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="One line has room for full units; stacked matches the notification area." />
-                        </StackPanel>
-                        <ComboBox x:Name="ReadoutStyleBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Text size" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Applies to the taskbar meter and the floating widget." />
-                        </StackPanel>
-                        <ComboBox x:Name="ReadoutSizeBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Hide the notification area icon" Style="{StaticResource RowTitle}" />
-                            <TextBlock x:Name="HideTrayCaption" Style="{StaticResource RowSubtitle}" />
-                        </StackPanel>
-                        <CheckBox x:Name="HideTrayToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Floating widget" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="An always-on-top panel you can drag anywhere. Works alongside the other placements, and depends on nothing that a Windows update can move." />
-                        </StackPanel>
-                        <CheckBox x:Name="WidgetToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <!-- ============================ Meter ============================ -->
-                <TextBlock Text="Notification area" Style="{StaticResource SectionHeader}" />
-
-                <!--
-                    Live preview. Windows tray icons are 16 px at 100% DPI, which is the
-                    whole difficulty of this port, so Preferences shows the real renderer
-                    output at every scaling rather than describing the choice in words.
-                -->
-                <Border Style="{StaticResource Card}">
+            <TabItem Header="DNS">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,8,28,24">
                     <StackPanel>
-                        <TextBlock Text="Preview" Style="{StaticResource RowTitle}" />
-                        <TextBlock x:Name="PreviewCaption"
-                                   Style="{StaticResource RowSubtitle}"
-                                   Text="Your taskbar, at each display scaling." />
-                        <ItemsControl x:Name="PreviewStrip" Margin="0,12,0,2">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <!--
-                                        Fixed-height swatch row with the icons bottom-aligned:
-                                        the four sizes differ by 16 px, so without this the
-                                        captions sit at four different heights and the strip
-                                        reads as broken rather than as a scale comparison.
-                                    -->
-                                    <StackPanel Margin="0,0,20,0" VerticalAlignment="Bottom">
-                                        <Grid Height="52">
-                                            <Border Background="{Binding Swatch}"
-                                                    CornerRadius="3"
-                                                    Padding="8"
-                                                    VerticalAlignment="Bottom"
-                                                    HorizontalAlignment="Center">
-                                                <Image Source="{Binding Image}"
-                                                       Width="{Binding Size}"
-                                                       Height="{Binding Size}"
-                                                       RenderOptions.BitmapScalingMode="NearestNeighbor"
-                                                       SnapsToDevicePixels="True" />
+                        <TextBlock Text="DNS servers" Style="{StaticResource SectionHeader}" />
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Adapter" Style="{StaticResource RowTitle}" />
+                                    <TextBlock x:Name="DnsCurrentCaption" Style="{StaticResource RowSubtitle}" />
+                                </StackPanel>
+                                <ComboBox x:Name="DnsAdapterBox" Grid.Column="1" MinWidth="200" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Preset" Style="{StaticResource RowTitle}" />
+                                <TextBlock Style="{StaticResource RowSubtitle}"
+                                           Text="Changing DNS needs administrator rights, so applying asks for confirmation once. A green check marks the preset already in use." />
+
+                                <ItemsControl x:Name="DnsPresetList" Margin="0,10,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,3">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="20" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Grid.Column="0"
+                                                           Text="{Binding Check}"
+                                                           Foreground="{DynamicResource ActiveBrush}"
+                                                           FontSize="14"
+                                                           VerticalAlignment="Center" />
+
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Foreground="{DynamicResource TextBrush}"
+                                                               FontSize="13" />
+                                                    <TextBlock Text="{Binding ServersText}"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               FontSize="11" />
+                                                </StackPanel>
+
+                                                <Button Grid.Column="2"
+                                                        Content="Apply"
+                                                        Padding="12,4"
+                                                        Tag="{Binding Id}"
+                                                        Click="OnApplyDnsPreset" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Add a preset" Style="{StaticResource RowTitle}" />
+                                <TextBlock Style="{StaticResource RowSubtitle}"
+                                           Text="IPv4 or IPv6, separated by commas. Both families are written, so a preset with only IPv4 puts IPv6 back on automatic." />
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox x:Name="DnsNewName" Grid.Column="0" Width="140" Padding="6,4"
+                                             Margin="0,0,8,0" VerticalAlignment="Center" />
+                                    <TextBox x:Name="DnsNewServers" Grid.Column="1" Padding="6,4"
+                                             VerticalAlignment="Center" />
+                                    <Button x:Name="DnsAddButton" Grid.Column="2" Content="Add"
+                                            Margin="8,0,0,0" Padding="12,4" Click="OnAddDnsPreset" />
+                                </Grid>
+                                <TextBlock x:Name="DnsStatus" Style="{StaticResource RowSubtitle}" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Adapters">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,8,28,24">
+                    <StackPanel>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Which adapters to show" Style="{StaticResource RowTitle}" />
+                                <TextBlock x:Name="AdapterCaption" Style="{StaticResource RowSubtitle}" Margin="0,0,0,4" />
+
+                                <ItemsControl x:Name="AdapterChecklist" Margin="0,6,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="Transparent"
+                                                    Tag="{Binding Id}"
+                                                    AllowDrop="True"
+                                                    PreviewMouseLeftButtonDown="OnAdapterRowMouseDown"
+                                                    MouseMove="OnAdapterRowMouseMove"
+                                                    DragOver="OnAdapterRowDragOver"
+                                                    DragLeave="OnAdapterRowDragLeave"
+                                                    Drop="OnAdapterRowDrop"
+                                                    BorderThickness="0,2,0,0"
+                                                    BorderBrush="Transparent"
+                                                    Padding="0,2">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <!-- Grab handle. Dragging is limited to this so a
+                                                         click in the name field cannot start one. -->
+                                                    <TextBlock Grid.Column="0"
+                                                               Text="⣿"
+                                                               ToolTip="Drag to reorder"
+                                                               VerticalAlignment="Center"
+                                                               Margin="0,0,8,0"
+                                                               FontSize="13"
+                                                               Cursor="SizeNS"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}" />
+
+                                                    <CheckBox Grid.Column="1"
+                                                              VerticalAlignment="Center"
+                                                              Margin="0,0,10,0"
+                                                              IsChecked="{Binding IsShown, Mode=TwoWay}"
+                                                              Tag="{Binding Id}"
+                                                              Checked="OnAdapterVisibilityChanged"
+                                                              Unchecked="OnAdapterVisibilityChanged" />
+
+                                                    <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                        <TextBox Text="{Binding DisplayName, Mode=OneWay}"
+                                                                 Tag="{Binding Id}"
+                                                                 LostFocus="OnAdapterNameCommitted"
+                                                                 KeyDown="OnAdapterNameKeyDown"
+                                                                 ToolTip="Rename. Clear the field to restore the Windows name."
+                                                                 Background="Transparent"
+                                                                 BorderThickness="0"
+                                                                 Padding="0"
+                                                                 Foreground="{DynamicResource TextBrush}"
+                                                                 FontSize="13" />
+                                                        <TextBlock Text="{Binding Description}"
+                                                                   Foreground="{DynamicResource SecondaryTextBrush}"
+                                                                   FontSize="11"
+                                                                   TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+
+                                                    <TextBlock Grid.Column="3"
+                                                               VerticalAlignment="Center"
+                                                               Margin="10,0,0,0"
+                                                               Text="{Binding StatusText}"
+                                                               Foreground="{DynamicResource SecondaryTextBrush}"
+                                                               FontSize="11" />
+                                                </Grid>
                                             </Border>
-                                        </Grid>
-                                        <TextBlock Text="{Binding Caption}"
-                                                   Style="{StaticResource RowSubtitle}"
-                                                   HorizontalAlignment="Center" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
+                                <Button x:Name="ResetOrderButton"
+                                        Content="Reset order"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,10,0,0"
+                                        Padding="10,4"
+                                        Click="OnResetAdapterOrder" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Include disconnected adapters" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Most machines carry a dozen idle virtual and tunnel interfaces, so this is off by default." />
+                                </StackPanel>
+                                <CheckBox x:Name="ShowInactiveToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="Count only shown adapters in the totals" Style="{StaticResource RowTitle}" />
+                                    <TextBlock Style="{StaticResource RowSubtitle}"
+                                               Text="Off, the meter totals every internet-carrying adapter whether or not it is listed." />
+                                </StackPanel>
+                                <CheckBox x:Name="TotalsVisibleOnlyToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
-                </Border>
+                </ScrollViewer>
+            </TabItem>
 
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Meter style" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="A single line gets the full icon height, which is sharper at 100% scaling." />
-                        </StackPanel>
-                        <ComboBox x:Name="MeterStyleBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
+        </TabControl>
 
-                <!-- Only meaningful for the Icon meter style; disabled otherwise. -->
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock x:Name="GlyphTitle" Text="Icon" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Used when the meter style is set to Icon only. Drawn to fit whatever size your display asks for." />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Image x:Name="GlyphPreview" Width="24" Height="24" Margin="0,0,10,0"
-                                   VerticalAlignment="Center"
-                                   RenderOptions.BitmapScalingMode="NearestNeighbor" />
-                            <ComboBox x:Name="GlyphBox" MinWidth="150" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Units" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Bytes per second, or bits as ISPs quote them." />
-                        </StackPanel>
-                        <ComboBox x:Name="UnitsBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Show direction arrows" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Costs width the digits need below 24 px. The row colour already shows direction." />
-                        </StackPanel>
-                        <CheckBox x:Name="ArrowsToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Keep colours readable" Style="{StaticResource RowTitle}" />
-                            <TextBlock x:Name="ContrastCaption" Style="{StaticResource RowSubtitle}" />
-                        </StackPanel>
-                        <CheckBox x:Name="ContrastToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <!-- ============================ Colours ============================ -->
-                <TextBlock Text="Colours" Style="{StaticResource SectionHeader}" />
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Download" Style="{StaticResource RowTitle}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Border x:Name="DownloadSwatch" Width="20" Height="20" CornerRadius="10"
-                                    Margin="0,0,10,0" VerticalAlignment="Center"
-                                    BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" />
-                            <ComboBox x:Name="DownloadAccentBox" MinWidth="150" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Upload" Style="{StaticResource RowTitle}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Orientation="Horizontal">
-                            <Border x:Name="UploadSwatch" Width="20" Height="20" CornerRadius="10"
-                                    Margin="0,0,10,0" VerticalAlignment="Center"
-                                    BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" />
-                            <ComboBox x:Name="UploadAccentBox" MinWidth="150" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
-
-                <!-- ============================ General ============================ -->
-                <TextBlock Text="General" Style="{StaticResource SectionHeader}" />
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Update frequency" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Longer intervals use less battery on an idle machine." />
-                        </StackPanel>
-                        <ComboBox x:Name="IntervalBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Start with Windows" Style="{StaticResource RowTitle}" />
-                            <TextBlock x:Name="LaunchCaption" Style="{StaticResource RowSubtitle}" />
-                        </StackPanel>
-                        <CheckBox x:Name="LaunchToggle" Grid.Column="1" Style="{StaticResource ToggleSwitch}" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Language" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Shared with the macOS app — one set of translations for both." />
-                        </StackPanel>
-                        <ComboBox x:Name="LanguageBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                            <TextBlock Text="Theme" Style="{StaticResource RowTitle}" />
-                            <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Sets the popover, the widget and the rate colours. A colour set above to anything but Automatic keeps that colour." />
-                        </StackPanel>
-                        <ComboBox x:Name="ThemeBox" Grid.Column="1" />
-                    </Grid>
-                </Border>
-
-                <TextBlock x:Name="FooterText"
-                           Style="{StaticResource RowSubtitle}"
-                           HorizontalAlignment="Center"
-                           Margin="0,4,0,0" />
-            </StackPanel>
-        </ScrollViewer>
+        <TextBlock Grid.Row="1"
+                   x:Name="FooterText"
+                   Style="{StaticResource RowSubtitle}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,6" />
     </Grid>
 </Window>

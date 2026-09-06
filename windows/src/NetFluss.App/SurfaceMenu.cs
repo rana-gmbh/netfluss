@@ -24,9 +24,12 @@ internal static class SurfaceMenu
     /// opened them, so sharing one instance across the overlay and the widget would have
     /// the second one open in the first one's position.
     /// </summary>
-    internal static ContextMenu Build(Action showPreferences, Action quit)
+    internal static ContextMenu Build(Action showPreferences, Action showSpeedTest, Action quit)
     {
         var menu = new ContextMenu();
+
+        var speedTest = new MenuItem { Header = "Speed Test…" };
+        speedTest.Click += (_, _) => showSpeedTest();
 
         var preferences = new MenuItem { Header = "Preferences…" };
         preferences.Click += (_, _) => showPreferences();
@@ -34,6 +37,7 @@ internal static class SurfaceMenu
         var exit = new MenuItem { Header = "Quit NetFluss" };
         exit.Click += (_, _) => quit();
 
+        menu.Items.Add(speedTest);
         menu.Items.Add(preferences);
         menu.Items.Add(new Separator());
         menu.Items.Add(exit);

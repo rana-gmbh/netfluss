@@ -53,6 +53,8 @@ public partial class PreferencesWindow : Window
         LoadFromSettings();
         RefreshPreview();
         RefreshAdapterList();
+        RefreshDns();
+        DnsAdapterBox.SelectionChanged += OnDnsAdapterChanged;
 
         // Both need the window handle, so neither can run from the constructor body.
         SourceInitialized += (_, _) =>
@@ -187,6 +189,9 @@ public partial class PreferencesWindow : Window
 
         // Informational, not an error: the overlay failing to anchor is a supported outcome.
         Brush("NoticeBrush", light ? "#FFF4CE" : "#433519");
+
+        // The active-preset checkmark, matching the green the macOS DNS list uses.
+        Brush("ActiveBrush", light ? "#0F7B0F" : "#6CCB5F");
 
         Resources["AccentBrush"] = new SolidColorBrush(SystemParameters.WindowGlassColor.A == 0
             ? (Color)ColorConverter.ConvertFromString("#0078D4")
@@ -816,6 +821,116 @@ public partial class PreferencesWindow : Window
     }
 
     private const string AdapterDragFormat = "NetFluss.AdapterId";
+
+    // ======================================= DNS =======================================
+
+    private readonly DnsController _dns = new();
+
+    private sealed record DnsPresetRow(string Id, string Name, string ServersText, string Check);
+
+    /// <summary>
+    /// Rebuilds the DNS tab from the selected adapter's live resolvers.
+    ///
+    /// <para>Reading takes no privileges, so the whole tab — including which preset is
+    /// currently active — is accurate in an ordinary session. Only Apply elevates.</para>
+    /// </summary>
+    private void RefreshDns()
+    {
+        var states = DnsController.Read();
+
+        if (DnsAdapterBox.ItemsSource is not IEnumerable<Choice<string>> existing ||
+            !existing.Select(c => c.Value).SequenceEqual(states.Select(s => s.AdapterName), StringComparer.Ordinal))
+        {
+            var previous = (DnsAdapterBox.SelectedItem as Choice<string>)?.Value;
+
+            DnsAdapterBox.ItemsSource = states
+                .Select(state => new Choice<string>(state.AdapterName, state.AdapterName))
+                .ToArray();
+
+            // Default to the adapter actually carrying traffic — on a laptop with a dozen
+            // virtual interfaces, the first alphabetically is almost never the one meant.
+            var busiest = _monitor.Adapters.FirstOrDefault()?.DisplayName;
+
+            Select(DnsAdapterBox, previous
+                                  ?? states.FirstOrDefault(s => s.AdapterName == busiest)?.AdapterName
+                                  ?? states.FirstOrDefault()?.AdapterName
+                                  ?? string.Empty);
+        }
+
+        var selected = (DnsAdapterBox.SelectedItem as Choice<string>)?.Value;
+        var active = states.FirstOrDefault(s => s.AdapterName == selected)?.Servers ?? [];
+
+        DnsCurrentCaption.Text = active.Count == 0
+            ? "No DNS servers reported — this adapter is on automatic."
+            : $"Currently {string.Join(", ", active)}";
+
+        DnsPresetList.ItemsSource = _store.Settings.AllDnsPresets()
+            .Select(preset => new DnsPresetRow(
+                preset.Id,
+                preset.Name,
+                preset.IsAutomatic ? "From DHCP" : string.Join(", ", preset.Servers),
+                preset.Matches(active) ? "✓" : string.Empty))
+            .ToList();
+    }
+
+    private void OnDnsAdapterChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loading)
+        {
+            RefreshDns();
+        }
+    }
+
+    private async void OnApplyDnsPreset(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: string presetId } button ||
+            (DnsAdapterBox.SelectedItem as Choice<string>)?.Value is not { } adapter)
+        {
+            return;
+        }
+
+        var preset = _store.Settings.AllDnsPresets().FirstOrDefault(p => p.Id == presetId);
+        if (preset is null)
+        {
+            return;
+        }
+
+        button.IsEnabled = false;
+        DnsStatus.Text = $"Applying {preset.Name}… confirm the administrator prompt.";
+
+        try
+        {
+            var result = await _dns.ApplyAsync(adapter, preset.Servers);
+            DnsStatus.Text = result.Message;
+        }
+        finally
+        {
+            button.IsEnabled = true;
+        }
+
+        // Read back rather than assume: the checkmark should reflect what the adapter now
+        // reports, not what was asked for.
+        RefreshDns();
+    }
+
+    private void OnAddDnsPreset(object sender, RoutedEventArgs e)
+    {
+        var servers = DnsValidator.Parse(DnsNewServers.Text);
+        DnsValidation result = DnsValidation.Ok;
+
+        _store.Batch(settings => result = settings.AddDnsPreset(DnsNewName.Text, servers));
+
+        if (!result.IsValid)
+        {
+            DnsStatus.Text = result.Error ?? "Could not add that preset.";
+            return;
+        }
+
+        DnsNewName.Text = string.Empty;
+        DnsNewServers.Text = string.Empty;
+        DnsStatus.Text = "Preset added.";
+        RefreshDns();
+    }
 
     private void OnAdapterVisibilityChanged(object sender, RoutedEventArgs e)
     {
