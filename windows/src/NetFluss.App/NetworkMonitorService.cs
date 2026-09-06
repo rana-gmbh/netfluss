@@ -80,6 +80,13 @@ public sealed class NetworkMonitorService : INotifyPropertyChanged, IDisposable
         set => _totalsFromVisibleOnly = value;
     }
 
+    /// <summary>User labels by interface GUID; empty means use the Windows connection name.</summary>
+    public IReadOnlyDictionary<string, string> AdapterNames { get; set; }
+        = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>User ordering by interface GUID; empty means busiest first.</summary>
+    public IReadOnlyList<string> AdapterOrder { get; set; } = [];
+
     public AdapterVisibilityOptions Visibility
     {
         get => _visibility;
@@ -105,9 +112,16 @@ public sealed class NetworkMonitorService : INotifyPropertyChanged, IDisposable
             _excludeTunnelAdapters,
             _visibility);
 
-        var visible = AdapterTotalsFilter.VisibleAdapters(sampled, _visibility)
-            .OrderByDescending(adapter => adapter.RxRateBps + adapter.TxRateBps)
-            .ToList();
+        // Custom names are applied to the user-facing list only. AllAdapters below stays as
+        // Windows reports it, because the rename field in Preferences has to be able to show
+        // what an adapter is called *without* a custom name — otherwise committing an
+        // untouched field would pin the current label and quietly stop the adapter from ever
+        // following its Windows name again.
+        var visible = AdapterTotalsFilter.InUserOrder(
+            AdapterTotalsFilter.WithCustomNames(
+                AdapterTotalsFilter.VisibleAdapters(sampled, _visibility),
+                AdapterNames),
+            AdapterOrder);
 
         // Rebuild in place: replacing the collection would drop the popover's bindings.
         Adapters.Clear();
@@ -119,10 +133,22 @@ public sealed class NetworkMonitorService : INotifyPropertyChanged, IDisposable
         // Loopback and the WFP/QoS filter pseudo-interfaces are excluded even here: they
         // mirror the adapter they sit on, so offering them in a checklist would be offering
         // the user four copies of their Ethernet card to choose between.
+        //
+        // Ranked adapters first in the user's order, then the rest alphabetically —
+        // deliberately *not* by traffic like the popover. This list is the one being
+        // rearranged, and rows that resort themselves every second would slide out from
+        // under the pointer mid-drag.
+        var rank = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < AdapterOrder.Count; i++)
+        {
+            rank.TryAdd(AdapterOrder[i], i);
+        }
+
         AllAdapters.Clear();
         foreach (var adapter in sampled
                      .Where(adapter => !adapter.IsNonInternet)
-                     .OrderBy(adapter => adapter.DisplayName, StringComparer.CurrentCultureIgnoreCase))
+                     .OrderBy(adapter => rank.TryGetValue(adapter.Id, out var position) ? position : int.MaxValue)
+                     .ThenBy(adapter => adapter.DisplayName, StringComparer.CurrentCultureIgnoreCase))
         {
             AllAdapters.Add(adapter);
         }

@@ -136,40 +136,79 @@
                         <ItemsControl x:Name="AdapterChecklist" Margin="0,6,0,0">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Grid Margin="0,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="Auto" />
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                                    <Border Background="Transparent"
+                                            Tag="{Binding Id}"
+                                            AllowDrop="True"
+                                            PreviewMouseLeftButtonDown="OnAdapterRowMouseDown"
+                                            MouseMove="OnAdapterRowMouseMove"
+                                            DragOver="OnAdapterRowDragOver"
+                                            DragLeave="OnAdapterRowDragLeave"
+                                            Drop="OnAdapterRowDrop"
+                                            BorderThickness="0,2,0,0"
+                                            BorderBrush="Transparent"
+                                            Padding="0,2">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
 
-                                        <CheckBox Grid.Column="0"
-                                                  VerticalAlignment="Center"
-                                                  Margin="0,0,10,0"
-                                                  IsChecked="{Binding IsShown, Mode=TwoWay}"
-                                                  Tag="{Binding Id}"
-                                                  Checked="OnAdapterVisibilityChanged"
-                                                  Unchecked="OnAdapterVisibilityChanged" />
+                                            <!-- Grab handle. Dragging is limited to this so a
+                                                 click in the name field cannot start one. -->
+                                            <TextBlock Grid.Column="0"
+                                                       Text="⣿"
+                                                       ToolTip="Drag to reorder"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,8,0"
+                                                       FontSize="13"
+                                                       Cursor="SizeNS"
+                                                       Foreground="{DynamicResource SecondaryTextBrush}" />
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding DisplayName}"
-                                                       Foreground="{DynamicResource TextBrush}"
-                                                       FontSize="13" />
-                                            <TextBlock Text="{Binding Description}"
+                                            <CheckBox Grid.Column="1"
+                                                      VerticalAlignment="Center"
+                                                      Margin="0,0,10,0"
+                                                      IsChecked="{Binding IsShown, Mode=TwoWay}"
+                                                      Tag="{Binding Id}"
+                                                      Checked="OnAdapterVisibilityChanged"
+                                                      Unchecked="OnAdapterVisibilityChanged" />
+
+                                            <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                                <TextBox Text="{Binding DisplayName, Mode=OneWay}"
+                                                         Tag="{Binding Id}"
+                                                         LostFocus="OnAdapterNameCommitted"
+                                                         KeyDown="OnAdapterNameKeyDown"
+                                                         ToolTip="Rename. Clear the field to restore the Windows name."
+                                                         Background="Transparent"
+                                                         BorderThickness="0"
+                                                         Padding="0"
+                                                         Foreground="{DynamicResource TextBrush}"
+                                                         FontSize="13" />
+                                                <TextBlock Text="{Binding Description}"
+                                                           Foreground="{DynamicResource SecondaryTextBrush}"
+                                                           FontSize="11"
+                                                           TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Column="3"
+                                                       VerticalAlignment="Center"
+                                                       Margin="10,0,0,0"
+                                                       Text="{Binding StatusText}"
                                                        Foreground="{DynamicResource SecondaryTextBrush}"
-                                                       FontSize="11"
-                                                       TextTrimming="CharacterEllipsis" />
-                                        </StackPanel>
-
-                                        <TextBlock Grid.Column="2"
-                                                   VerticalAlignment="Center"
-                                                   Text="{Binding StatusText}"
-                                                   Foreground="{DynamicResource SecondaryTextBrush}"
-                                                   FontSize="11" />
-                                    </Grid>
+                                                       FontSize="11" />
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
+
+                        <Button x:Name="ResetOrderButton"
+                                Content="Reset order"
+                                HorizontalAlignment="Left"
+                                Margin="0,10,0,0"
+                                Padding="10,4"
+                                Click="OnResetAdapterOrder" />
                     </StackPanel>
                 </Border>
 

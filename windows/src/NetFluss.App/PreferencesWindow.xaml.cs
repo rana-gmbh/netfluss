@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -534,10 +535,61 @@ public partial class PreferencesWindow : Window
         base.OnClosed(e);
     }
 
-    /// <summary>One row of the adapter checklist.</summary>
-    private sealed record AdapterRow(string Id, string DisplayName, string Description, string StatusText)
+    /// <summary>
+    /// One row of the adapter checklist.
+    ///
+    /// <para>Observable and mutable rather than a record, because the rate in
+    /// <see cref="StatusText"/> changes every second. Rebuilding the ItemsSource for that
+    /// would destroy and recreate the row's controls once a tick — which silently ate any
+    /// rename in progress, since the text box the user was typing into stopped existing
+    /// between keystrokes.</para>
+    ///
+    /// <para><see cref="DisplayName"/> is deliberately never updated in place for the same
+    /// reason: it only changes when the user renames the adapter, and writing to it on a
+    /// tick would overwrite half-typed text.</para>
+    /// </summary>
+    private sealed class AdapterRow(string id, string displayName, string description) : INotifyPropertyChanged
     {
-        public bool IsShown { get; init; }
+        private string _statusText = string.Empty;
+        private bool _isShown = true;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Id { get; } = id;
+
+        public string DisplayName { get; } = displayName;
+
+        public string Description { get; } = description;
+
+        public string StatusText
+        {
+            get => _statusText;
+            set
+            {
+                if (_statusText == value)
+                {
+                    return;
+                }
+
+                _statusText = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusText)));
+            }
+        }
+
+        public bool IsShown
+        {
+            get => _isShown;
+            set
+            {
+                if (_isShown == value)
+                {
+                    return;
+                }
+
+                _isShown = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsShown)));
+            }
+        }
     }
 
     private void OnMonitorChanged(object? sender, PropertyChangedEventArgs e)
@@ -559,27 +611,49 @@ public partial class PreferencesWindow : Window
     {
         var settings = _store.Settings;
 
+        string Status(AdapterStatus adapter) => adapter.IsUp
+            ? RateFormatter.FormatRate(adapter.RxRateBps + adapter.TxRateBps, settings.UseBits)
+            : "Disconnected";
+
+        var ids = _monitor.AllAdapters.Select(adapter => adapter.Id).ToList();
+
+        // Rebuild only when the set or the order of adapters actually changes. Anything that
+        // merely *varies* — the live rate, a checkbox — is pushed into the existing rows,
+        // because replacing the ItemsSource destroys the controls and takes any half-typed
+        // rename with them.
+        if (_adapterRows is not null && _adapterRows.Select(row => row.Id).SequenceEqual(ids, StringComparer.Ordinal))
+        {
+            foreach (var (row, adapter) in _adapterRows.Zip(_monitor.AllAdapters))
+            {
+                row.StatusText = Status(adapter);
+                row.IsShown = !settings.IsAdapterHidden(adapter.Id);
+            }
+
+            UpdateAdapterCaption();
+            return;
+        }
+
         var rows = _monitor.AllAdapters
             .Select(adapter => new AdapterRow(
                 adapter.Id,
-                settings.AdapterCustomNames.TryGetValue(adapter.Id, out var custom) ? custom : adapter.DisplayName,
-                adapter.Description,
-                adapter.IsUp ? RateFormatter.FormatRate(adapter.RxRateBps + adapter.TxRateBps, settings.UseBits) : "Disconnected")
+                settings.AdapterDisplayName(adapter.Id, adapter.DisplayName),
+                adapter.Description)
             {
+                StatusText = Status(adapter),
                 IsShown = !settings.IsAdapterHidden(adapter.Id),
             })
             .ToList();
 
-        // Only touch the ItemsSource when the set actually changed. Reassigning it every
-        // second would close the checkbox's own visual state mid-interaction and make the
-        // list feel like it is fighting the pointer.
-        if (AdapterChecklist.ItemsSource is IEnumerable<AdapterRow> existing && existing.SequenceEqual(rows))
-        {
-            return;
-        }
-
+        _adapterRows = rows;
         AdapterChecklist.ItemsSource = rows;
+        UpdateAdapterCaption();
+    }
 
+    private List<AdapterRow>? _adapterRows;
+
+    private void UpdateAdapterCaption()
+    {
+        var rows = _adapterRows ?? [];
         var hidden = rows.Count(row => !row.IsShown);
         AdapterCaption.Text = rows.Count == 0
             ? "No adapters reported yet."
@@ -587,6 +661,161 @@ public partial class PreferencesWindow : Window
                 ? $"{rows.Count} adapter(s). Untick one to keep it out of the popover."
                 : $"{rows.Count} adapter(s), {hidden} hidden.";
     }
+
+    /// <summary>Where a drag started, so a click can be told from the beginning of a drag.</summary>
+    private Point _dragOrigin;
+    private string? _dragAdapterId;
+
+    private void OnAdapterRowMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        // Only the handle starts a drag. Recording from anywhere on the row would mean a
+        // click into the rename field could turn into a reorder as the caret was placed.
+        if (e.OriginalSource is not TextBlock { Text: "⣿" } || sender is not FrameworkElement { Tag: string id })
+        {
+            _dragAdapterId = null;
+            return;
+        }
+
+        _dragOrigin = e.GetPosition(this);
+        _dragAdapterId = id;
+    }
+
+    private void OnAdapterRowMouseMove(object sender, MouseEventArgs e)
+    {
+        if (_dragAdapterId is null || e.LeftButton != MouseButtonState.Pressed)
+        {
+            return;
+        }
+
+        // Windows' own drag threshold, so a shaky click is not a reorder.
+        var moved = e.GetPosition(this) - _dragOrigin;
+        if (Math.Abs(moved.X) < SystemParameters.MinimumHorizontalDragDistance &&
+            Math.Abs(moved.Y) < SystemParameters.MinimumVerticalDragDistance)
+        {
+            return;
+        }
+
+        var dragged = _dragAdapterId;
+        _dragAdapterId = null;
+        DragDrop.DoDragDrop((DependencyObject)sender, new DataObject(AdapterDragFormat, dragged), DragDropEffects.Move);
+    }
+
+    private void OnAdapterRowDragOver(object sender, DragEventArgs e)
+    {
+        var carrying = e.Data.GetDataPresent(AdapterDragFormat);
+        e.Effects = carrying ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
+
+        // An insertion line, so it is clear where the row will land rather than only which
+        // row is under the pointer.
+        if (carrying && sender is Border border)
+        {
+            border.BorderBrush = (Brush)Resources["AccentBrush"];
+        }
+    }
+
+    private void OnAdapterRowDragLeave(object sender, DragEventArgs e)
+    {
+        if (sender is Border border)
+        {
+            border.BorderBrush = Brushes.Transparent;
+        }
+    }
+
+    private void OnAdapterRowDrop(object sender, DragEventArgs e)
+    {
+        if (sender is Border border)
+        {
+            border.BorderBrush = Brushes.Transparent;
+        }
+
+        if (!e.Data.GetDataPresent(AdapterDragFormat) ||
+            e.Data.GetData(AdapterDragFormat) is not string dragged ||
+            sender is not FrameworkElement { Tag: string target } ||
+            AdapterChecklist.ItemsSource is not IEnumerable<AdapterRow> rows)
+        {
+            return;
+        }
+
+        var order = rows.Select(row => row.Id).ToList();
+        var targetIndex = order.FindIndex(id => string.Equals(id, target, StringComparison.OrdinalIgnoreCase));
+        if (targetIndex < 0 || string.Equals(dragged, target, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        // The full sequence is handed over, not just the moved id: a position only means
+        // anything relative to the list it sits in.
+        _store.Batch(settings => settings.MoveAdapter(order, dragged, targetIndex));
+        RefreshAdapterList();
+    }
+
+    private void OnResetAdapterOrder(object sender, RoutedEventArgs e)
+    {
+        _store.Batch(settings => settings.ResetAdapterOrder());
+        RefreshAdapterList();
+    }
+
+    private void OnAdapterNameCommitted(object sender, RoutedEventArgs e)
+        => CommitAdapterName(sender as TextBox);
+
+    /// <summary>
+    /// Applies a rename, from either Enter or losing focus.
+    ///
+    /// <para>Enter calls this directly rather than shuffling focus and letting LostFocus do
+    /// it. <c>Keyboard.ClearFocus</c> moves keyboard focus without necessarily moving logical
+    /// focus, so LostFocus may never fire and the rename would be silently dropped — which is
+    /// exactly what it did.</para>
+    /// </summary>
+    private void CommitAdapterName(TextBox? box)
+    {
+        if (_loading || box is not { Tag: string adapterId })
+        {
+            return;
+        }
+
+        var typed = box.Text?.Trim();
+        var current = _store.Settings.AdapterCustomNames.TryGetValue(adapterId, out var stored) ? stored : null;
+
+        // The box shows the *effective* name, which for an unnamed adapter is the Windows
+        // one. Committing that unchanged must not silently pin it as a custom label, or the
+        // adapter would stop following its Windows name from then on.
+        var windowsName = _monitor.AllAdapters
+            .FirstOrDefault(adapter => string.Equals(adapter.Id, adapterId, StringComparison.OrdinalIgnoreCase))
+            ?.DisplayName;
+
+        if (current is null && (string.IsNullOrEmpty(typed) || typed == windowsName))
+        {
+            return;
+        }
+
+        _store.Batch(settings => settings.SetAdapterName(adapterId, typed));
+        RefreshAdapterList();
+    }
+
+    private void OnAdapterNameKeyDown(object sender, KeyEventArgs e)
+    {
+        if (sender is not TextBox box)
+        {
+            return;
+        }
+
+        if (e.Key == Key.Enter)
+        {
+            CommitAdapterName(box);
+            e.Handled = true;
+        }
+        else if (e.Key == Key.Escape)
+        {
+            box.Text = _store.Settings.AdapterDisplayName(
+                box.Tag as string ?? string.Empty,
+                box.Text);
+
+            e.Handled = true;
+        }
+    }
+
+    private const string AdapterDragFormat = "NetFluss.AdapterId";
 
     private void OnAdapterVisibilityChanged(object sender, RoutedEventArgs e)
     {

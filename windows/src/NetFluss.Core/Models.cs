@@ -226,8 +226,78 @@ public static class AdapterTotalsFilter
         return new RateTotals(rx, tx);
     }
 
+    /// <summary>
+    /// Applies the user's ordering: adapters they have placed come first, in their order,
+    /// and everything else follows sorted by current throughput.
+    ///
+    /// <para>The two-tier arrangement is what makes a partial order usable. macOS stores only
+    /// the adapters the user actually dragged, so a machine that later grows a VPN interface
+    /// has an id nobody ranked — and dropping it, or pinning it to the top, would both be
+    /// wrong. Busiest-first is the same default the list had before anyone reordered it.</para>
+    ///
+    /// <para>Ids that no longer exist are ignored rather than pruned: a docking station that
+    /// is currently unplugged should keep its position for when it comes back.</para>
+    /// </summary>
+    public static IReadOnlyList<AdapterStatus> InUserOrder(
+        IReadOnlyList<AdapterStatus> adapters,
+        IReadOnlyList<string> order)
+    {
+        if (order.Count == 0)
+        {
+            return [.. adapters.OrderByDescending(adapter => adapter.RxRateBps + adapter.TxRateBps)];
+        }
+
+        var rank = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        for (var i = 0; i < order.Count; i++)
+        {
+            // First mention wins, so a duplicated id cannot make the sort inconsistent.
+            rank.TryAdd(order[i], i);
+        }
+
+        return
+        [
+            .. adapters
+                .OrderBy(adapter => rank.TryGetValue(adapter.Id, out var position) ? position : int.MaxValue)
+                .ThenByDescending(adapter => adapter.RxRateBps + adapter.TxRateBps)
+        ];
+    }
+
+    /// <summary>
+    /// Replaces each adapter's <see cref="AdapterStatus.DisplayName"/> with the user's label
+    /// where they set one. Applied once, centrally, so every surface shows the same name
+    /// rather than each one deciding whether to consult the dictionary.
+    /// </summary>
+    public static IReadOnlyList<AdapterStatus> WithCustomNames(
+        IReadOnlyList<AdapterStatus> adapters,
+        IReadOnlyDictionary<string, string> names)
+    {
+        if (names.Count == 0)
+        {
+            return adapters;
+        }
+
+        return
+        [
+            .. adapters.Select(adapter =>
+                names.TryGetValue(adapter.Id, out var custom) && !string.IsNullOrWhiteSpace(custom)
+                    ? adapter with { DisplayName = custom }
+                    : adapter)
+        ];
+    }
+
     public static bool IsVisible(AdapterStatus adapter, AdapterVisibilityOptions options)
     {
+        // Loopback and the NDIS/WFP filter pseudo-interfaces mirror the adapter they sit on,
+        // so listing them shows the same rate three or four times over. They were already
+        // excluded from the totals by CountsTowardTotals — this was the one place that
+        // forgot, which is why the popover on a plain Ethernet machine listed
+        // "Ethernet-WFP Native MAC Layer LightWeight Filter-0000" beside the real adapter,
+        // all reading an identical figure.
+        if (adapter.IsNonInternet)
+        {
+            return false;
+        }
+
         if (!options.ShowOtherAdapters && adapter.Type == AdapterType.Other)
         {
             return false;

@@ -138,7 +138,31 @@ to the monitor. `AppSettings.VisibilityOptions()` is now the one place the prefe
 assembled into the filter's input, so the popover, the totals and the checklist cannot
 disagree about which adapters count. Note `SetAdapterHidden` replaces the list rather than
 mutating it: `Set<T>` compares a `List` by reference, so an in-place edit would raise no
-change notification and the setting would be applied but never saved.
+change notification and the setting would be applied but never saved. `SetAdapterName` does
+the same for the `Dictionary`.
+
+Rows can be **renamed** and **dragged to reorder**, both keyed on the interface GUID so they
+survive Windows renaming an adapter or it moving between ports. Two things worth knowing:
+
+- Custom names are applied to the *visible* list only, never to `AllAdapters`. The rename
+  field has to be able to show what an adapter is called without a custom name — otherwise
+  committing an untouched field would pin the current label and quietly stop the adapter
+  following its Windows name.
+- The checklist rows are observable objects updated in place, not records replaced wholesale.
+  The live rate in each row changes every second, and rebuilding the `ItemsSource` for that
+  destroyed and recreated the controls once a tick, which ate any rename in progress — the
+  text box stopped existing between keystrokes.
+
+`AdapterOrder` is a *partial* order: adapters the user has placed come first in their order,
+everything else follows by traffic. Storing only what was dragged is what makes a new VPN
+interface appear sensibly rather than being dropped or pinned to the top, and ids for
+adapters that are not currently present are kept so an unplugged dock keeps its slot.
+
+**Mirror interfaces.** Loopback and the NDIS/WFP filter pseudo-interfaces present themselves
+as ordinary adapters and carry a copy of the traffic of the adapter they sit on. They were
+excluded from the totals from the start, but `IsVisible` forgot them, so the popover on a
+plain Ethernet machine listed `Ethernet-WFP Native MAC Layer LightWeight Filter-0000` and two
+more beside the real adapter, every one reading an identical rate.
 
 ## Themes
 

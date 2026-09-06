@@ -374,6 +374,82 @@ public sealed class AppSettings : INotifyPropertyChanged
         OnPropertyChanged(nameof(HiddenAdapters));
     }
 
+    /// <summary>
+    /// Renames one adapter, or clears the label back to the Windows connection name when
+    /// given blank. Stored per interface GUID, so it survives the adapter being renamed in
+    /// Windows or moving between ports.
+    /// </summary>
+    public void SetAdapterName(string adapterId, string? name)
+    {
+        var trimmed = name?.Trim();
+        var updated = new Dictionary<string, string>(AdapterCustomNames, StringComparer.OrdinalIgnoreCase);
+
+        if (string.IsNullOrEmpty(trimmed))
+        {
+            if (!updated.Remove(adapterId))
+            {
+                return;
+            }
+        }
+        else
+        {
+            if (updated.TryGetValue(adapterId, out var existing) && existing == trimmed)
+            {
+                return;
+            }
+
+            updated[adapterId] = trimmed;
+        }
+
+        // Replaced rather than mutated, for the same reason SetAdapterHidden replaces its
+        // list: Set<T> compares a Dictionary by reference and an in-place edit would never
+        // raise a change, leaving the rename applied in memory and absent from disk.
+        AdapterCustomNames = updated;
+        OnPropertyChanged(nameof(AdapterCustomNames));
+    }
+
+    /// <summary>The user's label for an adapter, or <paramref name="fallback"/> if unnamed.</summary>
+    public string AdapterDisplayName(string adapterId, string fallback)
+        => AdapterCustomNames.TryGetValue(adapterId, out var custom) && !string.IsNullOrWhiteSpace(custom)
+            ? custom
+            : fallback;
+
+    /// <summary>
+    /// Moves one adapter to a new position, recording the full order as it stands.
+    ///
+    /// <para>The whole visible sequence is stored rather than just the moved id, because a
+    /// position is only meaningful relative to its neighbours — saving "the VPN is third"
+    /// says nothing once the list it was third in has changed.</para>
+    /// </summary>
+    public void MoveAdapter(IReadOnlyList<string> currentOrder, string adapterId, int newIndex)
+    {
+        var reordered = currentOrder
+            .Where(id => !string.Equals(id, adapterId, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        reordered.Insert(Math.Clamp(newIndex, 0, reordered.Count), adapterId);
+
+        if (reordered.SequenceEqual(AdapterOrder, StringComparer.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        AdapterOrder = reordered;
+        OnPropertyChanged(nameof(AdapterOrder));
+    }
+
+    /// <summary>Forgets the user's ordering, returning every surface to busiest-first.</summary>
+    public void ResetAdapterOrder()
+    {
+        if (AdapterOrder.Count == 0)
+        {
+            return;
+        }
+
+        AdapterOrder = [];
+        OnPropertyChanged(nameof(AdapterOrder));
+    }
+
     /// <summary>The selected theme, or <see cref="AppTheme.System"/> for an unknown id.</summary>
     public AppTheme Theme => AppTheme.Named(ThemeId);
 

@@ -117,6 +117,8 @@ public partial class NetFlussApplication : Application
         // Adapter visibility was the same shape of bug as the theme: HiddenAdapters was
         // stored and round-trip tested, and nothing ever handed it to the monitor.
         _monitor.Visibility = settings.VisibilityOptions();
+        _monitor.AdapterNames = settings.AdapterCustomNames;
+        _monitor.AdapterOrder = settings.AdapterOrder;
         _monitor.Refresh();
 
         var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
