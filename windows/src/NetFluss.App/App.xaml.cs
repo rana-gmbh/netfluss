@@ -84,14 +84,15 @@ public partial class NetFlussApplication : Application
     private TrayMeterOptions BuildMeterOptions()
     {
         var settings = _store!.Settings;
-        var (downloadInk, uploadInk) = SystemTheme.DefaultInk();
+        var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
+        var (downloadInk, uploadInk) = settings.ResolveRateColors(systemDownload, systemUpload);
 
         return new TrayMeterOptions
         {
             Size = Dpi.TrayIconSize(),
             Layout = PreferencesWindow.ToLayout(settings.MeterStyle),
-            DownloadColor = settings.ResolveDownloadColor(downloadInk),
-            UploadColor = settings.ResolveUploadColor(uploadInk),
+            DownloadColor = downloadInk,
+            UploadColor = uploadInk,
             UseBits = settings.UseBits,
             ShowArrows = settings.ShowArrows,
             TaskbarBackground = SystemTheme.TaskbarBackground(),
@@ -113,12 +114,16 @@ public partial class NetFlussApplication : Application
         _monitor.ExcludeTunnelAdapters = settings.ExcludeTunnelAdapters;
         _monitor.TotalsFromVisibleAdaptersOnly = settings.TotalsFromVisibleAdaptersOnly;
 
-        var (downloadInk, uploadInk) = SystemTheme.DefaultInk();
-        var download = settings.ResolveDownloadColor(downloadInk);
-        var upload = settings.ResolveUploadColor(uploadInk);
+        var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
+        var (download, upload) = settings.ResolveRateColors(systemDownload, systemUpload);
+
+        // One resolved palette for every themed window, so a theme cannot reach some
+        // surfaces and not others — which is how it came to be wired to none of them.
+        var surface = settings.Theme.Surface(SystemTheme.IsAppLight());
 
         ApplyOverlay(settings, download, upload);
-        ApplyWidget(settings, download, upload);
+        ApplyWidget(settings, download, upload, surface);
+        ApplyPopoverTheme();
 
         var overlayCarriesTheMeter = _overlay is { IsAnchored: true };
 
@@ -173,7 +178,22 @@ public partial class NetFlussApplication : Application
         OverlayFellBackToTray = !_overlay.IsAnchored;
     }
 
-    private void ApplyWidget(AppSettings settings, ThemeColor download, ThemeColor upload)
+    /// <summary>Pushes the current theme into the popover, whenever one exists to push into.</summary>
+    private void ApplyPopoverTheme()
+    {
+        if (_store is null || _popover is null)
+        {
+            return;
+        }
+
+        var settings = _store.Settings;
+        var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
+        var (download, upload) = settings.ResolveRateColors(systemDownload, systemUpload);
+
+        _popover.ApplyTheme(settings.Theme.Surface(SystemTheme.IsAppLight()), download, upload);
+    }
+
+    private void ApplyWidget(AppSettings settings, ThemeColor download, ThemeColor upload, SurfacePalette surface)
     {
         if (!settings.ShowFloatingWidget)
         {
@@ -193,7 +213,7 @@ public partial class NetFlussApplication : Application
             _widget.Place();
         }
 
-        _widget.ApplySettings(settings, download, upload, darkSurface: !SystemTheme.IsAppLight());
+        _widget.ApplySettings(settings, download, upload, surface);
     }
 
     private void ShowPreferences()
@@ -237,6 +257,10 @@ public partial class NetFlussApplication : Application
         {
             _popover = new PopoverWindow(_monitor);
             _popover.Hidden += (_, _) => _popoverHiddenAt = DateTime.UtcNow;
+
+            // Themed on creation as well as on every settings change: the window is built
+            // lazily on first open, so waiting for a change would show it unthemed once.
+            ApplyPopoverTheme();
         }
 
         _popover.ShowNearTray();

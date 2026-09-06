@@ -108,6 +108,28 @@ gives a window half the size it needs at 200% scaling, which clips the left-hand
 off the readout — the meter still looks plausible, just wrong. `TaskbarAnchor.Locate` takes
 DIPs and scales by the taskbar's own DPI for exactly this reason.
 
+## Themes
+
+`AppTheme` ports the macOS presets (Dracula, Nord, Solarized) plus a `system` entry that
+defers to Windows. A theme sets the popover, the floating widget and the two rate colours;
+`AppTheme.Surface(systemIsLight)` resolves it into a `SurfacePalette` with no nulls left, so
+a themed window never has to guess at a colour the theme declined to specify.
+
+**Precedence:** the theme supplies the base pair, and a per-row accent set to anything other
+than *Automatic* overrides it. Picking Dracula recolours both rows; a user who had pinned
+upload to orange keeps their orange. That matches macOS, where the theme sets the palette and
+the per-element pickers win over it.
+
+The theme picker was write-only for a while — Preferences stored `ThemeId` and nothing in the
+app ever read it back, so choosing Dracula rewrote a line in `settings.json` and changed
+nothing on screen. The popover made it worse by hardcoding its colours in XAML, so it ignored
+Windows' own light mode too. `ThemeResolutionTests` covers the precedence and asserts every
+theme's text clears 4.5:1 against its own background.
+
+Preferences itself deliberately stays on the Windows light/dark palette rather than following
+the app theme: it is styled to sit beside real Windows Settings, and a Solarized Settings
+clone would read as a rendering fault rather than a preference.
+
 ## Tray glyphs
 
 `TrayGlyphLibrary` ports the macOS `MenuBarIconLibrary` choice list. The glyphs are **drawn

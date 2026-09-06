@@ -141,7 +141,56 @@ public sealed record AppTheme
 
     public static AppTheme Named(string id)
         => All.FirstOrDefault(theme => theme.Id == id) ?? System;
+
+    /// <summary>
+    /// True when this theme dictates its own colours rather than deferring to Windows.
+    /// <see cref="System"/> is the only one that does not.
+    /// </summary>
+    public bool IsExplicit => Id != System.Id;
+
+    /// <summary>
+    /// The concrete colours for a themed window, with anything the theme leaves unset filled
+    /// in from Windows' own light or dark palette.
+    ///
+    /// <para>Only <see cref="System"/> leaves them unset, and it leaves *all* of them unset —
+    /// which is exactly what "follow Windows" has to mean for a window that would otherwise
+    /// be a dark panel sitting on a light desktop.</para>
+    /// </summary>
+    public SurfacePalette Surface(bool systemIsLight)
+    {
+        if (!IsExplicit)
+        {
+            return systemIsLight
+                ? new SurfacePalette(
+                    ThemeColor.FromHex("FAFAFA"),
+                    ThemeColor.FromHex("EFEFEF"),
+                    ThemeColor.FromHex("1A1A1A"),
+                    ThemeColor.FromHex("5D5D5D"),
+                    IsDark: false)
+                : new SurfacePalette(
+                    ThemeColor.FromHex("202020"),
+                    ThemeColor.FromHex("2E2E2E"),
+                    ThemeColor.FromHex("FFFFFF"),
+                    ThemeColor.FromHex("C5C5C5"),
+                    IsDark: true);
+        }
+
+        return new SurfacePalette(
+            BackgroundColor ?? ThemeColor.FromHex("202020"),
+            CardColor ?? ThemeColor.FromHex("2E2E2E"),
+            TextPrimary ?? ThemeColor.FromHex("FFFFFF"),
+            TextSecondary ?? ThemeColor.FromHex("C5C5C5"),
+            IsDark);
+    }
 }
+
+/// <summary>Fully resolved window colours — no nulls left for the app layer to guess at.</summary>
+public readonly record struct SurfacePalette(
+    ThemeColor Background,
+    ThemeColor Card,
+    ThemeColor TextPrimary,
+    ThemeColor TextSecondary,
+    bool IsDark);
 
 /// <summary>
 /// Named accent choices offered in Preferences → Appearance, matching the macOS list.

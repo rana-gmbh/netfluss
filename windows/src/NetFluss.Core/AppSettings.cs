@@ -296,11 +296,40 @@ public sealed class AppSettings : INotifyPropertyChanged
     public List<string> HiddenAdapters { get; set; } = [];
 
     /// <summary>Resolved download colour, or <paramref name="fallback"/> for "system".</summary>
+    /// <summary>The selected theme, or <see cref="AppTheme.System"/> for an unknown id.</summary>
+    public AppTheme Theme => AppTheme.Named(ThemeId);
+
     public ThemeColor ResolveDownloadColor(ThemeColor fallback)
         => AccentPalette.Resolve(DownloadAccent, DownloadCustomHex, fallback) ?? fallback;
 
     public ThemeColor ResolveUploadColor(ThemeColor fallback)
         => AccentPalette.Resolve(UploadAccent, UploadCustomHex, fallback) ?? fallback;
+
+    /// <summary>
+    /// The rate colours every surface should draw with, given what Windows' own light or dark
+    /// shell would use.
+    ///
+    /// <para><b>Precedence, which is the whole point of this method.</b> A theme supplies the
+    /// base pair; an accent set to anything other than "Automatic" overrides it for that row.
+    /// So picking Dracula recolours both rows, and a user who has separately pinned upload to
+    /// orange keeps their orange. Matching macOS, where the theme sets the palette and the
+    /// per-element colour pickers win over it.</para>
+    ///
+    /// <para>This exists because the two halves used to be wired independently: the theme
+    /// picker wrote <see cref="ThemeId"/> and nothing ever read it, so choosing Dracula
+    /// changed a line in the settings file and nothing else.</para>
+    /// </summary>
+    public (ThemeColor Download, ThemeColor Upload) ResolveRateColors(
+        ThemeColor systemDownload,
+        ThemeColor systemUpload)
+    {
+        var theme = Theme;
+
+        var baseDownload = theme.IsExplicit ? theme.DownloadColor : systemDownload;
+        var baseUpload = theme.IsExplicit ? theme.UploadColor : systemUpload;
+
+        return (ResolveDownloadColor(baseDownload), ResolveUploadColor(baseUpload));
+    }
 
     private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {

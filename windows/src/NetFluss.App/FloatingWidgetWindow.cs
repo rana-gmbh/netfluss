@@ -81,18 +81,21 @@ internal sealed class FloatingWidgetWindow : Window
         };
     }
 
-    internal void ApplySettings(AppSettings settings, ThemeColor download, ThemeColor upload, bool darkSurface)
+    internal void ApplySettings(AppSettings settings, ThemeColor download, ThemeColor upload, SurfacePalette surface)
     {
         _readout.Layout = settings.ReadoutStyle;
         _readout.ApplyAppearance(settings.ReadoutFontSize + 3, download, upload, download);
 
         // Its own backdrop, unlike the overlay: this floats over arbitrary wallpaper and
-        // windows, so it needs a surface of its own to stay readable.
-        _frame.Background = new SolidColorBrush(darkSurface
-            ? Color.FromArgb(0xE0, 0x20, 0x20, 0x20)
-            : Color.FromArgb(0xE0, 0xFA, 0xFA, 0xFA));
+        // windows, so it needs a surface of its own to stay readable. The colour comes from
+        // the selected theme, so Dracula's panel is Dracula's grey rather than Windows'.
+        _frame.Background = new SolidColorBrush(Color.FromArgb(
+            0xE6,
+            surface.Background.R,
+            surface.Background.G,
+            surface.Background.B));
 
-        _frame.BorderBrush = new SolidColorBrush(darkSurface
+        _frame.BorderBrush = new SolidColorBrush(surface.IsDark
             ? Color.FromArgb(0x33, 0xFF, 0xFF, 0xFF)
             : Color.FromArgb(0x22, 0x00, 0x00, 0x00));
 

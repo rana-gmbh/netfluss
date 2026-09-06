@@ -13,8 +13,8 @@
         Background="Transparent">
 
     <Border CornerRadius="8"
-            Background="#F2202020"
-            BorderBrush="#33FFFFFF"
+            Background="{DynamicResource PopoverBackgroundBrush}"
+            BorderBrush="{DynamicResource PopoverBorderBrush}"
             BorderThickness="1"
             Padding="14">
         <StackPanel>
@@ -26,25 +26,25 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <TextBlock Text="Download" Foreground="#99FFFFFF" FontSize="11" />
+                    <TextBlock Text="Download" Foreground="{DynamicResource PopoverSecondaryBrush}" FontSize="11" />
                     <TextBlock x:Name="DownloadText"
-                               Foreground="#4CC2FF"
+                               Foreground="{DynamicResource PopoverDownloadBrush}"
                                FontSize="20"
                                FontFamily="Consolas"
                                Text="—" />
                 </StackPanel>
 
                 <StackPanel Grid.Column="1">
-                    <TextBlock Text="Upload" Foreground="#99FFFFFF" FontSize="11" />
+                    <TextBlock Text="Upload" Foreground="{DynamicResource PopoverSecondaryBrush}" FontSize="11" />
                     <TextBlock x:Name="UploadText"
-                               Foreground="#6CCB5F"
+                               Foreground="{DynamicResource PopoverUploadBrush}"
                                FontSize="20"
                                FontFamily="Consolas"
                                Text="—" />
                 </StackPanel>
             </Grid>
 
-            <TextBlock Text="Adapters" Foreground="#99FFFFFF" FontSize="11" Margin="0,0,0,6" />
+            <TextBlock Text="Adapters" Foreground="{DynamicResource PopoverSecondaryBrush}" FontSize="11" Margin="0,0,0,6" />
 
             <!--
                 Capped like the macOS popover so many VPN/virtual interfaces cannot push
@@ -54,7 +54,7 @@
                 <ItemsControl x:Name="AdapterList">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#1AFFFFFF" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
+                            <Border Background="{DynamicResource PopoverCardBrush}" CornerRadius="6" Padding="10,8" Margin="0,0,0,6">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -62,17 +62,17 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{Binding DisplayName}" Foreground="White" FontSize="13" />
+                                        <TextBlock Text="{Binding DisplayName}" Foreground="{DynamicResource PopoverTextBrush}" FontSize="13" />
                                         <TextBlock Text="{Binding Description}"
-                                                   Foreground="#80FFFFFF"
+                                                   Foreground="{DynamicResource PopoverSecondaryBrush}"
                                                    FontSize="10"
                                                    TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" HorizontalAlignment="Right">
-                                        <TextBlock Foreground="#4CC2FF" FontSize="11" FontFamily="Consolas"
+                                        <TextBlock Foreground="{DynamicResource PopoverDownloadBrush}" FontSize="11" FontFamily="Consolas"
                                                    Text="{Binding RxRateBps, StringFormat={}↓ {0:N0} B/s}" />
-                                        <TextBlock Foreground="#6CCB5F" FontSize="11" FontFamily="Consolas"
+                                        <TextBlock Foreground="{DynamicResource PopoverUploadBrush}" FontSize="11" FontFamily="Consolas"
                                                    Text="{Binding TxRateBps, StringFormat={}↑ {0:N0} B/s}" />
                                     </StackPanel>
                                 </Grid>

@@ -441,7 +441,7 @@
                         <StackPanel Grid.Column="0" Margin="0,0,16,0">
                             <TextBlock Text="Theme" Style="{StaticResource RowTitle}" />
                             <TextBlock Style="{StaticResource RowSubtitle}"
-                                       Text="Applies to the popover. The meter follows your taskbar." />
+                                       Text="Sets the popover, the widget and the rate colours. A colour set above to anything but Automatic keeps that colour." />
                         </StackPanel>
                         <ComboBox x:Name="ThemeBox" Grid.Column="1" />
                     </Grid>

@@ -369,7 +369,8 @@ public partial class PreferencesWindow : Window
         var settings = _store.Settings;
         var shellLight = SystemTheme.IsShellLight();
         var taskbar = SystemTheme.TaskbarBackground();
-        var (downloadInk, uploadInk) = SystemTheme.DefaultInk();
+        var (systemDownload, systemUpload) = SystemTheme.DefaultInk();
+        var (downloadInk, uploadInk) = settings.ResolveRateColors(systemDownload, systemUpload);
         var swatch = new SolidColorBrush(Color.FromRgb(taskbar.R, taskbar.G, taskbar.B));
 
         var items = new List<PreviewItem>(PreviewSizes.Length);
@@ -380,8 +381,8 @@ public partial class PreferencesWindow : Window
             {
                 Size = size,
                 Layout = ToLayout(settings.MeterStyle),
-                DownloadColor = settings.ResolveDownloadColor(downloadInk),
-                UploadColor = settings.ResolveUploadColor(uploadInk),
+                DownloadColor = downloadInk,
+                UploadColor = uploadInk,
                 UseBits = settings.UseBits,
                 ShowArrows = settings.ShowArrows,
                 TaskbarBackground = taskbar,
@@ -399,8 +400,8 @@ public partial class PreferencesWindow : Window
 
         PreviewStrip.ItemsSource = items;
 
-        UpdateSwatch(DownloadSwatch, settings.ResolveDownloadColor(downloadInk), taskbar, settings.EnforceContrast);
-        UpdateSwatch(UploadSwatch, settings.ResolveUploadColor(uploadInk), taskbar, settings.EnforceContrast);
+        UpdateSwatch(DownloadSwatch, downloadInk, taskbar, settings.EnforceContrast);
+        UpdateSwatch(UploadSwatch, uploadInk, taskbar, settings.EnforceContrast);
 
         PreviewCaption.Text = shellLight
             ? "Your taskbar is light. Shown at each display scaling."
@@ -420,8 +421,8 @@ public partial class PreferencesWindow : Window
             Size = 32,
             Layout = TrayMeterLayout.Icon,
             IconGlyph = TrayGlyphLibrary.Normalize(settings.TrayIconGlyph),
-            DownloadColor = settings.ResolveDownloadColor(downloadInk),
-            UploadColor = settings.ResolveUploadColor(uploadInk),
+            DownloadColor = downloadInk,
+            UploadColor = uploadInk,
             TaskbarBackground = taskbar,
             MinimumContrastRatio = settings.EnforceContrast ? Contrast.MinimumReadableRatio : 0,
         });
